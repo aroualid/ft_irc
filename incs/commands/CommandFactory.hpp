@@ -6,16 +6,16 @@
 
 class CommandFactory
 {
-	private:
-		std::map<std::string, ACommand *> m_commands;
+private:
+	std::map< std::string, ACommand* > m_commands;
 
-		CommandFactory(Server *server);
-		void registerAllCommands();
-		
-	public:
-		CommandFactory *getInstance(Server *server = NULL);
-		static void destroyInstance();
+	CommandFactory(Server* server);
+	void registerAllCommands();
 
-		ACommand *getCommand(const std::string &name);
-		bool hasCommand(const std::string &name) const;
+public:
+	CommandFactory* getInstance(Server* server = NULL);
+	static void destroyInstance();
+
+	ACommand* getCommand(const std::string& name);
+	bool hasCommand(const std::string& name) const;
 };
