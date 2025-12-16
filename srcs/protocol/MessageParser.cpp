@@ -93,14 +93,14 @@ std::string MessageParser::serialize(const Message& message)
 	return (result);
 }
 
-bool MessageParser::isValid(const std::string &raw)
+bool MessageParser::isValid(const std::string& raw)
 {
 	if (raw.empty() || raw.size() < 2 || raw.size() > 512)
 		return (false);
 
 	bool has_valid_ending = false;
 
-	if(raw.size() >= 2 && raw.substr(raw.size() - 2) == "\r\n")
+	if (raw.size() >= 2 && raw.substr(raw.size() - 2) == "\r\n")
 		has_valid_ending = true;
 	else if (raw[raw.size() - 1] == '\n')
 		has_valid_ending = true;
