@@ -1,12 +1,9 @@
 #pragma once
 
-#include <cstddef>
+#include "mock.hpp"
+#include "protocol/Message.hpp"
+#include "protocol/NumericReply.hpp"
 #include <string>
-
-class Server;
-class Client;
-class NumericReply;
-class Message;
 
 class ACommand
 {
@@ -32,7 +29,7 @@ public:
 		return true;
 	};
 
-	virtual size_t minParams() const
+	virtual std::size_t minParams() const
 	{
 		return 0;
 	};
