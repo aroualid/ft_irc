@@ -13,7 +13,7 @@ private:
 	void registerAllCommands();
 
 public:
-	CommandFactory* getInstance(Server* server = NULL);
+	static CommandFactory* getInstance(Server* server = NULL);
 	static void destroyInstance();
 
 	ACommand* getCommand(const std::string& name);
