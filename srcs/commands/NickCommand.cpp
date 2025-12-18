@@ -6,6 +6,10 @@ NickCommand::NickCommand(Server* server) : ACommand(server)
 {
 }
 
+NickCommand::~NickCommand()
+{
+}
+
 bool NickCommand::isValidNickname(const std::string& nickname) const
 {
 	if (nickname.empty() || nickname.length() > 9 || !std::isalpha(nickname[0]))
@@ -53,6 +57,7 @@ void NickCommand::execute(Client* client, const Message& message)
 	}
 
 	bool isNicknameChange = !client->getNickname().empty();
+	client->setNickname(nickname);
 
 	if (isNicknameChange && client->isRegistered())
 	{
