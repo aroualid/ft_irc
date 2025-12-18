@@ -2,25 +2,34 @@ NAME = ft_irc
 
 CXX = c++
 
-FLAGS = -Wall -Wextra -Werror -std=c++98 -I$(INC_DIR)
-
 SRCS_DIR = ./srcs
 INC_DIR = ./incs
 OBJ_DIR = ./objs
 
-SRCS = main.cpp
+
+
+INCLUDES = -I$(INC_DIR) \
+			-I$(INC_DIR)/core \
+			-I$(INC_DIR)/network
+
+FLAGS = -Wall -Wextra -Werror -std=c++98 $(INCLUDES)
+
+SRCS = $(SRCS_DIR)/main.cpp \
+		$(SRCS_DIR)/core/Server.cpp \
+		$(SRCS_DIR)/core/Client.cpp \
+		$(SRCS_DIR)/core/Channel.cpp \
+		$(SRCS_DIR)/network/PollSocketManager.cpp \
+		$(SRCS_DIR)/network/MessageBuffer.cpp
 	   
-OBJ = $(SRCS:%.cpp=$(OBJ_DIR)/%.o)
+OBJ = $(SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
 all: $(NAME)
 
 $(NAME): $(OBJ)
 	$(CXX) $(FLAGS) -o $(NAME) $(OBJ)
 
-$(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
-
-$(OBJ_DIR)/%.o: $(SRCS_DIR)/%.cpp | $(OBJ_DIR)
+$(OBJ_DIR)/%.o: $(SRCS_DIR)/%.cpp
+	@mkdir -p $(dir $@) 
 	$(CXX) $(FLAGS) -c $< -o $@
 
 clean:
