@@ -35,7 +35,7 @@ Message MessageParser::parse(const std::string& raw)
 		return (Message());
 
 	for (size_t i = 0; i < message.m_command.size(); i++)
-		message.m_command[i] = std::toupper(message.m_command[i]);
+		message.m_command[i] = std::toupper(static_cast< unsigned char >(message.m_command[i]));
 
 	while (iss >> word)
 	{
