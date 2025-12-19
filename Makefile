@@ -19,7 +19,16 @@ SRCS = $(SRCS_DIR)/main.cpp \
 		$(SRCS_DIR)/core/Client.cpp \
 		$(SRCS_DIR)/core/Channel.cpp \
 		$(SRCS_DIR)/network/PollSocketManager.cpp \
-		$(SRCS_DIR)/network/MessageBuffer.cpp
+		$(SRCS_DIR)/network/MessageBuffer.cpp \
+		$(SRCS_DIR)/commands/ACommand.cpp \
+		$(SRCS_DIR)/commands/CommandFactory.cpp \
+		$(SRCS_DIR)/commands/PassCommand.cpp \
+		$(SRCS_DIR)/commands/NickCommand.cpp \
+		$(SRCS_DIR)/commands/UserCommand.cpp \
+		$(SRCS_DIR)/protocol/Message.cpp \
+		$(SRCS_DIR)/protocol/MessageParser.cpp \
+		$(SRCS_DIR)/protocol/NumericReply.cpp \
+		$(SRCS_DIR)/protocol/IrcUtils.cpp
 	   
 OBJ = $(SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
