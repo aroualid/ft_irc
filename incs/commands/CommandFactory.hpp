@@ -8,8 +8,9 @@ class CommandFactory
 {
 private:
 	std::map< std::string, ACommand* > m_commands;
+	Server& m_server;
 
-	CommandFactory(Server* server);
+	CommandFactory(Server& server);
 	void registerAllCommands();
 
 public:
