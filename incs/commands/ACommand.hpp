@@ -8,13 +8,13 @@
 class ACommand
 {
 protected:
-	Server* m_server;
+	Server& m_server;
 
 	void sendReply(Client* client, const NumericReply& reply);
 	bool validateParamCount(Client* client, const Message& message, size_t min);
 
 public:
-	ACommand(Server* server);
+	ACommand(Server& server);
 	virtual ~ACommand();
 
 	virtual void execute(Client* client, const Message& message) = 0;

@@ -1,6 +1,6 @@
 #include "commands/ACommand.hpp"
 
-ACommand::ACommand(Server* server) : m_server(server)
+ACommand::ACommand(Server& server) : m_server(server)
 {
 }
 
