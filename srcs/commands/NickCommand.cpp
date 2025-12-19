@@ -64,10 +64,4 @@ void NickCommand::execute(Client* client, const Message& message)
 		// TODO: broadcast nickname change to all currently connected clients
 		// this will come during next milestone
 	}
-
-	if (client->isRegistered())
-	{
-		sendReply(client, NumericReply::welcome(client->getNickname()));
-		// TODO: probably add more info (aka RPL_YOURHOST, RPL_CREATED and RPL_MYINFO)
-	}
 }

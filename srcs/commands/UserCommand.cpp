@@ -33,10 +33,4 @@ void UserCommand::execute(Client* client, const Message& message)
 
 	client->setUsername(username);
 	client->setRealname(realname);
-
-	if (client->isRegistered())
-	{
-		sendReply(client, NumericReply::welcome(client->getNickname()));
-		// TODO: also send RPL_YOURHOST, RPL_CREATED, RPL_MYINFO, RPLISUPPORT
-	}
 }
