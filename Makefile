@@ -16,7 +16,7 @@ INCLUDES = -I$(INC_DIR) \
 			-I$(INC_DIR)/network
 
 FLAGS = -Wall -Wextra -Werror -std=c++98 $(INCLUDES)
-TEST_FLAGS = -Wall -Wextra -std=c++11 $(INCLUDES) -lcriterion
+TEST_FLAGS = -std=c++11 $(INCLUDES) -lcriterion
 
 SRCS = $(SRCS_DIR)/main.cpp \
 		$(SRCS_DIR)/core/Server.cpp \
