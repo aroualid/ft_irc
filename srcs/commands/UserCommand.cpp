@@ -1,7 +1,7 @@
 #include "commands/UserCommand.hpp"
 #include "protocol/NumericReply.hpp"
 
-UserCommand::UserCommand(Server* server) : ACommand(server)
+UserCommand::UserCommand(Server& server) : ACommand(server)
 {
 }
 

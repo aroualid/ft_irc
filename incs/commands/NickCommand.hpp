@@ -8,7 +8,7 @@ private:
 	bool isValidNickname(const std::string& nickname) const;
 
 public:
-	NickCommand(Server* server);
+	NickCommand(Server& server);
 	virtual ~NickCommand();
 
 	void execute(Client* client, const Message& message);

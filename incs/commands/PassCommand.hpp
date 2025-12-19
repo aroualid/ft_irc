@@ -6,7 +6,7 @@
 class PassCommand : public ACommand
 {
 public:
-	PassCommand(Server* server);
+	PassCommand(Server& server);
 	virtual ~PassCommand();
 
 	void execute(Client* client, const Message& message);

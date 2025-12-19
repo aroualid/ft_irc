@@ -2,7 +2,7 @@
 #include "commands/ACommand.hpp"
 #include <cctype>
 
-NickCommand::NickCommand(Server* server) : ACommand(server)
+NickCommand::NickCommand(Server& server) : ACommand(server)
 {
 }
 
@@ -47,7 +47,7 @@ void NickCommand::execute(Client* client, const Message& message)
 		return;
 	}
 
-	Client* existing_client = m_server->getClientByNickname(nickname);
+	Client* existing_client = m_server.getClientByNickname(nickname);
 	if (existing_client && existing_client != client)
 	{
 		sendReply(client,

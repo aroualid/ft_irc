@@ -5,7 +5,7 @@
 class UserCommand : public ACommand
 {
 public:
-	UserCommand(Server* server);
+	UserCommand(Server& server);
 	virtual ~UserCommand();
 
 	void execute(Client* client, const Message& message);
