@@ -23,6 +23,4 @@ void PassCommand::execute(Client* client, const Message& message)
 
 	if (providedPass == m_server.getPassword())
 		client->setPasswordProvided(true);
-	else
-		sendReply(client, NumericReply::passwordMismatch("*"));
 }
