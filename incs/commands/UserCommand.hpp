@@ -2,7 +2,7 @@
 
 #include "ACommand.hpp"
 
-class UserCommand : ACommand
+class UserCommand : public ACommand
 {
 public:
 	UserCommand(Server* server);
