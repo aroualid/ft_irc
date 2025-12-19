@@ -19,7 +19,7 @@ bool NickCommand::isValidNickname(const std::string& nickname) const
 	{
 		char c = nickname[i];
 		if (std::isalnum(c) || c == '-' || c == '[' || c == ']' || c == '\\' || c == '`' ||
-			c == '^' || c == '{' || c == '}')
+			c == '^' || c == '{' || c == '}' || c == '|')
 			continue;
 		return (false);
 	}
