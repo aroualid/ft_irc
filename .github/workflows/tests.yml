@@ -15,5 +15,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Build tests
+        run: docker run --rm --user $(id -u):$(id -g) -v $(pwd):/workspace ghcr.io/vantavoids/critervoid:main make test
+
       - name: Run tests
-        run: make docker-test
+        run: docker run --rm --user $(id -u):$(id -g) -v $(pwd):/workspace ghcr.io/vantavoids/critervoid:main make test_run
