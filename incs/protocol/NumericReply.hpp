@@ -21,4 +21,13 @@ public:
 	static NumericReply needMoreParams(const std::string& nick, const std::string& command);
 	static NumericReply alreadyRegistered(const std::string& nick);
 	static NumericReply passwordMismatch(const std::string& nick);
+	static NumericReply noTopic(const std::string& nick, const std::string& channel);
+	static NumericReply topic(const std::string& nick, const std::string& channel,
+							  const std::string& topic);
+	static NumericReply namReply(const std::string& nick, const std::string& channel,
+								 const std::string& names);
+	static NumericReply endOfNames(const std::string& nick, const std::string& channel);
+	static NumericReply channelIsFull(const std::string& nick, const std::string& channel);
+	static NumericReply inviteOnlyChan(const std::string& nick, const std::string& channel);
+	static NumericReply badChannelKey(const std::string& nick, const std::string& channel);
 };

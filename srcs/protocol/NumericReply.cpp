@@ -57,3 +57,47 @@ NumericReply NumericReply::passwordMismatch(const std::string& nick)
 {
 	return NumericReply(464, nick.empty() ? "*" : nick, ":Password incorrect");
 }
+
+NumericReply NumericReply::noTopic(const std::string& nick, const std::string& channel)
+{
+	std::string message = channel + " :No topic set";
+	return NumericReply(331, nick, message);
+}
+
+NumericReply NumericReply::topic(const std::string& nick, const std::string& channel,
+								 const std::string& topic)
+{
+	std::string message = channel + " :" + topic;
+	return NumericReply(332, nick, message);
+}
+
+NumericReply NumericReply::namReply(const std::string& nick, const std::string& channel,
+									const std::string& names)
+{
+	std::string message = "= " + channel + " :" + names;
+	return NumericReply(353, nick, message);
+}
+
+NumericReply NumericReply::endOfNames(const std::string& nick, const std::string& channel)
+{
+	std::string message = channel + " :End of /NAMES list";
+	return NumericReply(366, nick, message);
+}
+
+NumericReply NumericReply::channelIsFull(const std::string& nick, const std::string& channel)
+{
+	std::string message = channel + " :Cannot join channel (+l)";
+	return NumericReply(471, nick, message);
+}
+
+NumericReply NumericReply::inviteOnlyChan(const std::string& nick, const std::string& channel)
+{
+	std::string message = channel + " :Cannot join channel (+i)";
+	return NumericReply(473, nick, message);
+}
+
+NumericReply NumericReply::badChannelKey(const std::string& nick, const std::string& channel)
+{
+	std::string message = channel + " :Cannot join channel (+k)";
+	return NumericReply(475, nick, message);
+}
