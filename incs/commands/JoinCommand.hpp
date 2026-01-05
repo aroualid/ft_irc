@@ -4,6 +4,9 @@
 
 class JoinCommand : public ACommand
 {
+private:
+	bool isValidChannelName(const std::string& name) const;
+
 public:
 	JoinCommand(Server& server);
 	virtual ~JoinCommand();

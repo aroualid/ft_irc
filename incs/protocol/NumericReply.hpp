@@ -27,6 +27,7 @@ public:
 	static NumericReply namReply(const std::string& nick, const std::string& channel,
 								 const std::string& names);
 	static NumericReply endOfNames(const std::string& nick, const std::string& channel);
+	static NumericReply noSuchChannel(const std::string& nick, const std::string& channel);
 	static NumericReply channelIsFull(const std::string& nick, const std::string& channel);
 	static NumericReply inviteOnlyChan(const std::string& nick, const std::string& channel);
 	static NumericReply badChannelKey(const std::string& nick, const std::string& channel);

@@ -84,6 +84,12 @@ NumericReply NumericReply::endOfNames(const std::string& nick, const std::string
 	return NumericReply(366, nick, message);
 }
 
+NumericReply NumericReply::noSuchChannel(const std::string& nick, const std::string& channel)
+{
+	std::string message = channel + " :No such channel";
+	return NumericReply(403, nick, message);
+}
+
 NumericReply NumericReply::channelIsFull(const std::string& nick, const std::string& channel)
 {
 	std::string message = channel + " :Cannot join channel (+l)";
