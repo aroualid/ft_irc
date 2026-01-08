@@ -1,6 +1,7 @@
 #include "commands/ACommand.hpp"
+#include "core/IMessageBuffer.hpp"
 
-ACommand::ACommand(Server& server) : m_server(server)
+ACommand::ACommand(IServer& server) : m_server(server)
 {
 }
 
@@ -8,7 +9,7 @@ ACommand::~ACommand()
 {
 }
 
-void ACommand::sendReply(Client* client, const NumericReply& reply)
+void ACommand::sendReply(IClient* client, const NumericReply& reply)
 {
 	if (!client)
 		return;
@@ -17,7 +18,7 @@ void ACommand::sendReply(Client* client, const NumericReply& reply)
 	client->getBuffer().appendWrite(replyStr);
 }
 
-bool ACommand::validateParamCount(Client* client, const Message& message, size_t min)
+bool ACommand::validateParamCount(IClient* client, const Message& message, size_t min)
 {
 	if (message.m_params.size() < min)
 	{
