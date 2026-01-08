@@ -1,10 +1,10 @@
 #include "commands/JoinCommand.hpp"
-#include "mock.hpp"
+#include "core/IChannel.hpp"
 #include "protocol/MessageParser.hpp"
 #include "protocol/NumericReply.hpp"
 #include <cstddef>
 
-JoinCommand::JoinCommand(Server& server) : ACommand(server)
+JoinCommand::JoinCommand(IServer& server) : ACommand(server)
 {
 }
 
@@ -30,13 +30,55 @@ bool JoinCommand::isValidChannelName(const std::string& name) const
 	return (true);
 }
 
-void JoinCommand::execute(Client* client, const Message& message)
+std::vector< std::string > JoinCommand::splitByComma(const std::string& str) const
+{
+	std::vector< std::string > result;
+	std::string current;
+
+	for (std::size_t i = 0; i < str.length(); i++)
+	{
+		if (str[i] == ',')
+		{
+			if (!current.empty())
+			{
+				result.push_back(current);
+				current.clear();
+			}
+		}
+		else
+		{
+			current += str[i];
+		}
+	}
+
+	// Don't forget the last element
+	if (!current.empty())
+		result.push_back(current);
+
+	return result;
+}
+
+void JoinCommand::execute(IClient* client, const Message& message)
 {
 	if (!validateParamCount(client, message, minParams()))
 		return;
 
-	std::string channelName = message.m_params[0];
+	std::vector< std::string > channels = splitByComma(message.m_params[0]);
+	std::vector< std::string > keys;
 
+	if (message.m_params.size() > 1)
+		keys = splitByComma(message.m_params[1]);
+
+	for (std::size_t i = 0; i < channels.size(); i++)
+	{
+		std::string key = (i < keys.size()) ? keys[i] : "";
+		joinSingleChannel(client, channels[i], key);
+	}
+}
+
+void JoinCommand::joinSingleChannel(IClient* client, const std::string& channelName,
+									const std::string& key)
+{
 	if (!isValidChannelName(channelName))
 	{
 		sendReply(client, NumericReply::noSuchChannel(client->getNickname(), channelName));
@@ -46,8 +88,10 @@ void JoinCommand::execute(Client* client, const Message& message)
 	if (client->isInChannel(channelName))
 		return;
 
-	Channel* channel = m_server.getChannel(channelName);
-	if (!channel)
+	IChannel* channel = m_server.getChannel(channelName);
+	bool isNewChannel = (channel == NULL);
+
+	if (isNewChannel)
 	{
 		channel = m_server.createChannel(channelName, client);
 		if (!channel)
@@ -58,13 +102,21 @@ void JoinCommand::execute(Client* client, const Message& message)
 	}
 	else
 	{
-		if (!channel->addMember(client))
+		if (!channel->addMember(client, key))
 		{
-			// TODO: check modes if there's specific restrictions
-			// so we can send an appropriate RPL :)
+			if (channel->isInviteOnly() && !channel->isInvited(client))
+				sendReply(client, NumericReply::inviteOnlyChan(client->getNickname(), channelName));
+			else if (channel->getUserLimit() > 0 &&
+					 static_cast< int >(channel->getMemberCount()) >= channel->getUserLimit())
+				sendReply(client, NumericReply::channelIsFull(client->getNickname(), channelName));
+			else if (!channel->getKey().empty() && key != channel->getKey())
+				sendReply(client, NumericReply::badChannelKey(client->getNickname(), channelName));
+			else
+				sendReply(client, NumericReply::inviteOnlyChan(client->getNickname(), channelName));
 			return;
 		}
 	}
+
 	client->joinChannel(channelName);
 
 	Message joinMessage;
