@@ -1,7 +1,9 @@
 #pragma once
 #include "../ft_irc.hpp"
 
-
+class Client;
+class IChannelMode;
+ 
 class Channel {
 private:
     std::string _name;
