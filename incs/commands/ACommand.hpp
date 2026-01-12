@@ -1,6 +1,7 @@
 #pragma once
 
-#include "mock.hpp"
+#include "core/IClient.hpp"
+#include "core/IServer.hpp"
 #include "protocol/Message.hpp"
 #include "protocol/NumericReply.hpp"
 #include <string>
@@ -8,16 +9,16 @@
 class ACommand
 {
 protected:
-	Server& m_server;
+	IServer& m_server;
 
-	void sendReply(Client* client, const NumericReply& reply);
-	bool validateParamCount(Client* client, const Message& message, size_t min);
+	void sendReply(IClient* client, const NumericReply& reply);
+	bool validateParamCount(IClient* client, const Message& message, size_t min);
 
 public:
-	ACommand(Server& server);
+	ACommand(IServer& server);
 	virtual ~ACommand();
 
-	virtual void execute(Client* client, const Message& message) = 0;
+	virtual void execute(IClient* client, const Message& message) = 0;
 
 	virtual bool requiresRegistration() const
 	{
