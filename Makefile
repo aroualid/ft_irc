@@ -79,13 +79,13 @@ test_filter: $(TEST_NAME)
 	./$(TEST_NAME) --filter=$(FILTER) --verbose
 
 docker-test:
-	docker run --rm -v $(PWD):/workspace ghcr.io/vantavoids/critervoid:main sh -c "make fclean && make test && make test_run"
+	docker run --rm --user $(id -u):$(id -g) -v $(PWD):/workspace ghcr.io/vantavoids/critervoid:main sh -c "make fclean && make test && make test_run"
 
 docker-test-shell:
-	docker run --rm -it -v $(PWD):/workspace ghcr.io/vantavoids/critervoid:main /bin/bash
+	docker run --rm --user $(id -u):$(id -g) -it -v $(PWD):/workspace ghcr.io/vantavoids/critervoid:main /bin/bash
 
 docker-test-filter:
-	docker run --rm -v $(PWD):/workspace ghcr.io/vantavoids/critervoid:main make test_filter FILTER=$(FILTER)
+	docker run --rm --user $(id -u):$(id -g) -v $(PWD):/workspace ghcr.io/vantavoids/critervoid:main make test_filter FILTER=$(FILTER)
 
 clean:
 	rm -f $(OBJ)
