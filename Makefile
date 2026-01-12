@@ -43,22 +43,22 @@ $(OBJ_DIR)/%.o: $(SRCS_DIR)/%.cpp
 	$(CXX) $(FLAGS) -c $< -o $@
 
 test:
-	$(MAKE) -C $(TEST_DIR)
+	@$(MAKE) -C $(TEST_DIR)
 
 test_run:
-	$(MAKE) -C $(TEST_DIR) run
+	@$(MAKE) -C $(TEST_DIR) run
 
 test_filter:
-	$(MAKE) -C $(TEST_DIR) filter FILTER=$(FILTER)
+	@$(MAKE) -C $(TEST_DIR) filter FILTER=$(FILTER)
 
 docker-test:
-	$(MAKE) -C $(TEST_DIR) docker-test
+	@$(MAKE) -C $(TEST_DIR) docker-test
 
 docker-test-shell:
-	$(MAKE) -C $(TEST_DIR) docker-test-shell
+	@$(MAKE) -C $(TEST_DIR) docker-test-shell
 
 docker-test-filter:
-	$(MAKE) -C $(TEST_DIR) docker-test-filter FILTER=$(FILTER)
+	@$(MAKE) -C $(TEST_DIR) docker-test-filter FILTER=$(FILTER)
 
 clean:
 	rm -f $(OBJ)
