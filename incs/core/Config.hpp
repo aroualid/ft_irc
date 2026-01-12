@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cerrno>
 #include <stdexcept>
+#include <cstring>
 
 class Config
 {
