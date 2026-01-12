@@ -31,4 +31,9 @@ public:
 	static NumericReply channelIsFull(const std::string& nick, const std::string& channel);
 	static NumericReply inviteOnlyChan(const std::string& nick, const std::string& channel);
 	static NumericReply badChannelKey(const std::string& nick, const std::string& channel);
+	static NumericReply noRecipient(const std::string& nick, const std::string& command);
+	static NumericReply noTextToSend(const std::string& nick);
+	static NumericReply noSuchNick(const std::string& nick, const std::string& target);
+	static NumericReply cannotSendToChan(const std::string& nick, const std::string& channel);
+	static NumericReply notOnChannel(const std::string& nick, const std::string& channel);
 };

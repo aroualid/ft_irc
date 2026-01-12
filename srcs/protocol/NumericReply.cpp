@@ -107,3 +107,32 @@ NumericReply NumericReply::badChannelKey(const std::string& nick, const std::str
 	std::string message = channel + " :Cannot join channel (+k)";
 	return NumericReply(475, nick, message);
 }
+
+NumericReply NumericReply::noSuchNick(const std::string& nick, const std::string& target)
+{
+	std::string message = target + " :No such nick/channel";
+	return NumericReply(401, nick, message);
+}
+
+NumericReply NumericReply::noRecipient(const std::string& nick, const std::string& command)
+{
+	std::string message = ":No recipient given (" + command + ")";
+	return NumericReply(411, nick, message);
+}
+
+NumericReply NumericReply::noTextToSend(const std::string& nick)
+{
+	return NumericReply(412, nick, ":No text to send");
+}
+
+NumericReply NumericReply::cannotSendToChan(const std::string& nick, const std::string& channel)
+{
+	std::string message = channel + " :Cannot send to channel";
+	return NumericReply(404, nick, message);
+}
+
+NumericReply NumericReply::notOnChannel(const std::string& nick, const std::string& channel)
+{
+	std::string message = channel + " :You're not on that channel";
+	return NumericReply(442, nick, message);
+}
