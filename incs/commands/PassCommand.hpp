@@ -6,10 +6,10 @@
 class PassCommand : public ACommand
 {
 public:
-	PassCommand(Server& server);
+	PassCommand(IServer& server);
 	virtual ~PassCommand();
 
-	void execute(Client* client, const Message& message);
+	void execute(IClient* client, const Message& message);
 
 	bool requiresRegistration() const
 	{

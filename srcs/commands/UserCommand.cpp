@@ -1,7 +1,7 @@
 #include "commands/UserCommand.hpp"
 #include "protocol/NumericReply.hpp"
 
-UserCommand::UserCommand(Server& server) : ACommand(server)
+UserCommand::UserCommand(IServer& server) : ACommand(server)
 {
 }
 
@@ -9,7 +9,7 @@ UserCommand::~UserCommand()
 {
 }
 
-void UserCommand::execute(Client* client, const Message& message)
+void UserCommand::execute(IClient* client, const Message& message)
 {
 	if (!validateParamCount(client, message, minParams()))
 		return;

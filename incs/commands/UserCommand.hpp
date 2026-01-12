@@ -5,10 +5,10 @@
 class UserCommand : public ACommand
 {
 public:
-	UserCommand(Server& server);
+	UserCommand(IServer& server);
 	virtual ~UserCommand();
 
-	void execute(Client* client, const Message& message);
+	void execute(IClient* client, const Message& message);
 
 	bool requiresRegistration() const
 	{

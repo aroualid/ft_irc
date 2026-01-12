@@ -8,10 +8,10 @@ private:
 	bool isValidNickname(const std::string& nickname) const;
 
 public:
-	NickCommand(Server& server);
+	NickCommand(IServer& server);
 	virtual ~NickCommand();
 
-	void execute(Client* client, const Message& message);
+	void execute(IClient* client, const Message& message);
 
 	bool requiresRegistration() const
 	{

@@ -1,6 +1,6 @@
 #include "commands/PassCommand.hpp"
 
-PassCommand::PassCommand(Server& server) : ACommand(server)
+PassCommand::PassCommand(IServer& server) : ACommand(server)
 {
 }
 
@@ -8,7 +8,7 @@ PassCommand::~PassCommand()
 {
 }
 
-void PassCommand::execute(Client* client, const Message& message)
+void PassCommand::execute(IClient* client, const Message& message)
 {
 	if (!validateParamCount(client, message, minParams()))
 		return;

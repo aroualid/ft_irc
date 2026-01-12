@@ -2,7 +2,7 @@
 #include "commands/ACommand.hpp"
 #include <cctype>
 
-NickCommand::NickCommand(Server& server) : ACommand(server)
+NickCommand::NickCommand(IServer& server) : ACommand(server)
 {
 }
 
@@ -26,7 +26,7 @@ bool NickCommand::isValidNickname(const std::string& nickname) const
 	return (true);
 }
 
-void NickCommand::execute(Client* client, const Message& message)
+void NickCommand::execute(IClient* client, const Message& message)
 {
 	if (!validateParamCount(client, message, minParams()))
 		return;
@@ -47,7 +47,7 @@ void NickCommand::execute(Client* client, const Message& message)
 		return;
 	}
 
-	Client* existing_client = m_server.getClientByNickname(nickname);
+	IClient* existing_client = m_server.getClientByNickname(nickname);
 	if (existing_client && existing_client != client)
 	{
 		sendReply(client,

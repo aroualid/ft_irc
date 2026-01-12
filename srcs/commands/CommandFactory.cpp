@@ -6,7 +6,7 @@
 
 static CommandFactory* s_instance = NULL;
 
-CommandFactory::CommandFactory(Server& server) : m_commands(), m_server(server)
+CommandFactory::CommandFactory(IServer& server) : m_commands(), m_server(server)
 {
 	registerAllCommands();
 }
@@ -18,7 +18,7 @@ void CommandFactory::registerAllCommands()
 	m_commands["USER"] = new UserCommand(m_server);
 }
 
-CommandFactory* CommandFactory::getInstance(Server* server)
+CommandFactory* CommandFactory::getInstance(IServer* server)
 {
 	if (s_instance == NULL)
 	{
