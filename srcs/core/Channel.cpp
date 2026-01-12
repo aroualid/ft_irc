@@ -109,6 +109,21 @@ bool Channel::applyMode(char mode, bool set, const std::string& param, Client* s
 
 std::string Channel::getModeString() const
 {
+	std::string modes = "+";
+	if (_inviteOnly)
+		modes += "i"; 
+	if (_topicRestricted)
+		modes += "t";
+	if (!_key.empty())
+		modes += "k";
+	if (_userLimit != -1)
+		modes += "l";
+	if (!_key.empty())
+		modes += " " + _key;
+	if (_userLimit)
+		modes += " " + std::to_string(_userLimit);
+
+	return modes;
 
 }
 
