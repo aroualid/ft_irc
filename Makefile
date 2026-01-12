@@ -15,6 +15,7 @@ INCLUDES = -I$(INC_DIR) \
 FLAGS = -Wall -Wextra -Werror -std=c++98 $(INCLUDES)
 
 SRCS = $(SRCS_DIR)/main.cpp \
+		$(SRCS_DIR)/core/Config.cpp \
 		$(SRCS_DIR)/core/Server.cpp \
 		$(SRCS_DIR)/core/Client.cpp \
 		$(SRCS_DIR)/core/Channel.cpp \

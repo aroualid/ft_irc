@@ -1,15 +1,18 @@
 #include "core/Server.hpp"
 
-int	main(int argc, char **argv) {
-	if (argc != 3){
-		std::cerr << "Error\n";
-		return 1;
+int	main(int argc, char **argv)
+{
+	try
+	{
+		Config cfg = Config::checkArgs(argc, argv);
+		Server	srv(cfg);
+		srv.run();
+		return(0);
 	}
 
-	int	port;
-	
-	if (argv[1].isdigit){
-		std::cerr << "Error\n";
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+		return (1);
 	}
-	(void)argv;
 }
