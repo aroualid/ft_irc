@@ -51,7 +51,6 @@ std::vector< std::string > JoinCommand::splitByComma(const std::string& str) con
 		}
 	}
 
-	// Don't forget the last element
 	if (!current.empty())
 		result.push_back(current);
 
