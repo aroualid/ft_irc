@@ -1,9 +1,8 @@
 #pragma once
 #include "../ft_irc.hpp"
-
+#include "../core/IMessageBuffer.hpp"
 class Channel;
 class ClientState;
-class MessageBuffer;
 
 class Client {
 private:
@@ -22,7 +21,7 @@ private:
     ClientState _state;
     bool _passwordProvided;
 
-    MessageBuffer _buffer;
+    IMessageBuffer _buffer;
     std::set<std::string> _channels;
 
 
@@ -49,8 +48,8 @@ public:
     void joinChannel(const std::string& channel);
     void leaveChannel(const std::string& channel);
     bool isInChannel(const std::string& channel) const;
-
+	const std::set< std::string >& getChannels() const;
     // Buffer access
-    MessageBuffer& getBuffer();
+    IMessageBuffer& getBuffer();
     std::string getPrefix() const;  // "nick!user@host"
 };

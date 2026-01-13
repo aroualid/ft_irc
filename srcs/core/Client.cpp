@@ -72,6 +72,10 @@ bool Client::isInChannel(const std::string& channel) const {
     return _channels.find(channel) != _channels.end();
 }
 
+const std::set<std::string>& Client::getChannels() const {
+	return _channels;
+}
+
 void Client::updateRegistrationState()
 {
 	if (_state == REGISTERED)
@@ -81,7 +85,7 @@ void Client::updateRegistrationState()
 	}
 }
 
-MessageBuffer& Client::getBuffer()
+IMessageBuffer& Client::getBuffer()
 {
 	return (_buffer);
 }
