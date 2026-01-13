@@ -104,7 +104,7 @@ filter: $(TEST_NAME)
 	./$(TEST_NAME) --filter=$(FILTER) --verbose
 
 DOCKER_IMAGE = ghcr.io/vantavoids/critervoid:main
-DOCKER_VOLUME = -v $(CURDIR)/..:/workspace:z
+DOCKER_VOLUME = -v $(CURDIR)/..:/workspace
 DOCKER_WORKDIR = -w /workspace/tests
 
 CURRENT_UID := $(shell id -u)
@@ -112,7 +112,7 @@ CURRENT_GID := $(shell id -g)
 ifeq ($(shell [ $(CURRENT_UID) -lt 65536 ] && echo yes || echo no),yes)
 	DOCKER_USER_FLAG = --user $(CURRENT_UID):$(CURRENT_GID)
 else
-	DOCKER_USER_FLAG =
+	DOCKER_USER_FLAG = --user 0:0
 endif
 
 DOCKER_RUN = docker run --rm -t $(DOCKER_USER_FLAG) $(DOCKER_VOLUME) $(DOCKER_WORKDIR) $(DOCKER_IMAGE)
