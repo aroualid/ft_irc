@@ -17,6 +17,7 @@ void MessageBuffer::appendWrite(const std::string& data)
 
 const std::string& MessageBuffer::getWriteBuffer() const
 {
+	std::cout << "[MOCK] Getting write buffer: " << m_writeBuffer;
 	return m_writeBuffer;
 }
 

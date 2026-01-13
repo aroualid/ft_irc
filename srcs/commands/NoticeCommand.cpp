@@ -78,7 +78,7 @@ void NoticeCommand::sendToTarget(IClient* client, const std::string& target,
 
 void NoticeCommand::execute(IClient* client, const Message& message)
 {
-	if (!validateParamCount(client, message, minParams()))
+	if (message.m_params.size() < minParams())
 		return;
 
 	const std::string& targets = message.m_params[0];
