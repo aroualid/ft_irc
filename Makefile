@@ -26,6 +26,8 @@ SRCS = $(SRCS_DIR)/main.cpp \
 		$(SRCS_DIR)/commands/UserCommand.cpp \
 		$(SRCS_DIR)/commands/JoinCommand.cpp \
 		$(SRCS_DIR)/commands/PartCommand.cpp \
+		$(SRCS_DIR)/commands/PrivmsgCommand.cpp \
+		$(SRCS_DIR)/commands/NoticeCommand.cpp \
 		$(SRCS_DIR)/protocol/Message.cpp \
 		$(SRCS_DIR)/protocol/MessageParser.cpp \
 		$(SRCS_DIR)/protocol/NumericReply.cpp \

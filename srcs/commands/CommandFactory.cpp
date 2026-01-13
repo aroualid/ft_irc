@@ -1,8 +1,10 @@
 #include "commands/CommandFactory.hpp"
 #include "commands/JoinCommand.hpp"
 #include "commands/NickCommand.hpp"
+#include "commands/NoticeCommand.hpp"
 #include "commands/PartCommand.hpp"
 #include "commands/PassCommand.hpp"
+#include "commands/PrivmsgCommand.hpp"
 #include "commands/UserCommand.hpp"
 #include <map>
 
@@ -20,6 +22,8 @@ void CommandFactory::registerAllCommands()
 	m_commands["USER"] = new UserCommand(m_server);
 	m_commands["JOIN"] = new JoinCommand(m_server);
 	m_commands["PART"] = new PartCommand(m_server);
+	m_commands["PRIVMSG"] = new PrivmsgCommand(m_server);
+	m_commands["NOTICE"] = new NoticeCommand(m_server);
 }
 
 CommandFactory* CommandFactory::getInstance(IServer* server)
