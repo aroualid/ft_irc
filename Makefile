@@ -19,7 +19,8 @@ SRCS = $(SRCS_DIR)/main.cpp \
 		$(SRCS_DIR)/core/Server.cpp \
 		$(SRCS_DIR)/core/Client.cpp \
 		$(SRCS_DIR)/core/Channel.cpp \
-		$(SRCS_DIR)/network/EPollSocketManager.cpp \
+		$(SRCS_DIR)/network/EpollSocketManager.cpp \
+		$(SRCS_DIR)/network/ISocketManager.cpp \
 		$(SRCS_DIR)/network/MessageBuffer.cpp
 	
 OBJ = $(SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/%.o)
