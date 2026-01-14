@@ -1,41 +1,39 @@
 #include "commands/CommandFactory.hpp"
-#include "commands/JoinCommand.hpp"
-#include "commands/NickCommand.hpp"
-#include "commands/NoticeCommand.hpp"
-#include "commands/PartCommand.hpp"
-#include "commands/PassCommand.hpp"
-#include "commands/PrivmsgCommand.hpp"
-#include "commands/UserCommand.hpp"
+#include "commands/ACommand.hpp"
 #include <map>
+#include <new>
 
-static CommandFactory* s_instance = NULL;
+CommandFactory* CommandFactory::s_instance = NULL;
 
-CommandFactory::CommandFactory(IServer& server) : m_commands(), m_server(server)
+CommandFactory::CommandFactory()
 {
-	registerAllCommands();
 }
 
-void CommandFactory::registerAllCommands()
+CommandFactory::CommandFactory(const CommandFactory& source)
 {
-	m_commands["PASS"] = new PassCommand(m_server);
-	m_commands["NICK"] = new NickCommand(m_server);
-	m_commands["USER"] = new UserCommand(m_server);
-	m_commands["JOIN"] = new JoinCommand(m_server);
-	m_commands["PART"] = new PartCommand(m_server);
-	m_commands["PRIVMSG"] = new PrivmsgCommand(m_server);
-	m_commands["NOTICE"] = new NoticeCommand(m_server);
+	(void)source;
 }
 
-CommandFactory* CommandFactory::getInstance(IServer* server)
+CommandFactory::~CommandFactory()
+{
+	for (std::map< std::string, ACommand* >::iterator it = s_instance->m_commands.begin();
+		 it != s_instance->m_commands.end(); ++it)
+	{
+		delete it->second;
+	}
+	s_instance->m_commands.clear();
+}
+
+CommandFactory& CommandFactory::operator=(const CommandFactory& source)
+{
+	(void)source;
+	return (*this);
+}
+
+CommandFactory* CommandFactory::getInstance()
 {
 	if (s_instance == NULL)
-	{
-		if (server == NULL)
-			return NULL;
-
-		s_instance = new CommandFactory(*server);
-	}
-
+		s_instance = new (std::nothrow) CommandFactory();
 	return s_instance;
 }
 
@@ -43,21 +41,20 @@ void CommandFactory::destroyInstance()
 {
 	if (s_instance)
 	{
-		for (std::map< std::string, ACommand* >::iterator it = s_instance->m_commands.begin();
-			 it != s_instance->m_commands.end(); ++it)
-		{
-			delete it->second;
-		}
-		s_instance->m_commands.clear();
-
 		delete s_instance;
 		s_instance = NULL;
 	}
 }
 
-ACommand* CommandFactory::getCommand(const std::string& name)
+void CommandFactory::registerCommand(const std::string& name, ACommand* command)
 {
-	std::map< std::string, ACommand* >::iterator it = m_commands.find(name);
+	if (command)
+		m_commands[name] = command;
+}
+
+ACommand* CommandFactory::getCommand(const std::string& name) const
+{
+	std::map< std::string, ACommand* >::const_iterator it = m_commands.find(name);
 
 	if (it != m_commands.end())
 		return it->second;

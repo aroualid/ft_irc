@@ -1,6 +1,8 @@
 #pragma once
 
+#include "IServer.hpp"
 #include "commands/ACommand.hpp"
+#include "commands/CommandFactory.hpp"
 #include <cstddef>
 
 class PassCommand : public ACommand
@@ -27,4 +29,6 @@ public:
 	{
 		return "PASS";
 	}
+
+	static ACommand* create(IServer& server);
 };

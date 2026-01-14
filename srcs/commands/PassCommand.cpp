@@ -1,4 +1,17 @@
 #include "commands/PassCommand.hpp"
+#include <new>
+
+namespace
+{
+struct Registrar
+{
+	Registrar()
+	{
+		CommandFactory::getInstance()->registerCommandSpawner("PASS", &PassCommand::create);
+	}
+};
+static Registrar g_registrar;
+}; // namespace
 
 PassCommand::PassCommand(IServer& server) : ACommand(server)
 {
@@ -23,4 +36,9 @@ void PassCommand::execute(IClient* client, const Message& message)
 
 	if (providedPass == m_server.getPassword())
 		client->setPasswordProvided(true);
+}
+
+ACommand* PassCommand::create(IServer& server)
+{
+	return new (std::nothrow) PassCommand(server);
 }
