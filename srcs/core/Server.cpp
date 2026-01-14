@@ -1,5 +1,22 @@
 #include "Server.hpp"
 
+void Server::onIrcLine(int fd, const std::string &line)
+{
+	std::cout << "fd=" << fd << " IRC line: [" << line << "]\n";
+	//cmdHandle(fd, line);
+}
+
+static bool	extractLineCRLF(std::string &buffer, std::string &line) //extractsline only if it is CRLF
+{
+	std::string::size_type	pos = buffer.find("\r\n");
+	if (pos == std::string::npos)
+		return (false);
+	line = buffer.substr(0, pos);
+	buffer.erase(0, pos + 2); //2 here is \r\n
+	return (true);
+}
+
+
 static void	setNonBlocking(int fd)
 {
 	int	flags = fcntl(fd, F_GETFL, 0);
@@ -13,17 +30,16 @@ void	Server::disconnectClient(int fd)
 {
 	try{
 		m_sm->removeSocket(fd);
-	} catch (...){
-
+	} catch (...){ //catch any exception "..."
+ 
 	}
 	close(fd);
-	m_clients.erase(fd);
+	m_inbuf.erase(fd);
 	std::cout << "Disconnected : " << fd << "\n";
 }
 
 void	Server::readClientsData(int fd)
 {
-	//std::cout << "readClientsData loop ready to call\n" << fd ;
 	char	buffer[4096];
 
 	while (true)
@@ -31,9 +47,18 @@ void	Server::readClientsData(int fd)
 		ssize_t	receiving = recv(fd, buffer, sizeof(buffer), 0);
 		if (receiving > 0)
 		{
-			std::cout << fd << " sent " << receiving << " bytes of data: ";
-			std::cout.write(buffer, receiving);
-			std::cout << "\n";
+			m_inbuf[fd].append(buffer, receiving);
+			std::string line;
+			while (extractLineCRLF(m_inbuf[fd], line))
+			{
+				onIrcLine(fd, line);
+			}
+			if (m_inbuf[fd].size() > 65536)
+			{
+				std::cout << "Input buffer is too big, disconnecting : " << fd << "\n";
+				disconnectClient(fd);
+				return;
+			}
 		}
 		else if (receiving == 0)
 		{
@@ -64,7 +89,7 @@ void	Server::acceptNewClients()
 		setNonBlocking(clientFd);
 		m_sm->addSocket(clientFd, EPOLLIN);
 
-		m_clients.insert(clientFd);
+		m_inbuf[clientFd] = "";
 		std::cout << "Client Accepted : " << clientFd << "\n";
 	}
 }

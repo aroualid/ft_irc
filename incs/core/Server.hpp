@@ -29,7 +29,8 @@ class Server
 		int				m_listenFd;
 		ISocketManager  *m_sm;
 
-		std::set<int> m_clients; // temp; later map<int, Client*>
+		std::map<int, std::string> m_inbuf; // temp; later map<int, Client*>
+		void	onIrcLine(int fd, const std::string &line);
 
 		void	handleDisconnections(int fd, unsigned int evt);
 		void	acceptNewClients();
