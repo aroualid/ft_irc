@@ -21,6 +21,7 @@
 
 #include "Config.hpp"
 #include "EpollSocketManager.hpp"
+#include "Client.hpp"
 
 class Server
 {
@@ -29,7 +30,8 @@ class Server
 		int				m_listenFd;
 		ISocketManager  *m_sm;
 
-		std::map<int, std::string> m_inbuf; // temp; later map<int, Client*>
+		std::map<int, Client*> m_clients;
+		Client	*getClient(int fd);
 		void	onIrcLine(int fd, const std::string &line);
 
 		void	handleDisconnections(int fd, unsigned int evt);

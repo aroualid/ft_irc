@@ -1,21 +1,18 @@
 #include "Server.hpp"
 
+Client	*Server::getClient(int fd)
+{
+	std::map<int, Client*>::iterator	it = m_clients.find(fd);
+	if (it == m_clients.end())
+		return (0);
+	return (it->second);
+}
+
 void Server::onIrcLine(int fd, const std::string &line)
 {
 	std::cout << "fd=" << fd << " IRC line: [" << line << "]\n";
 	//cmdHandle(fd, line);
 }
-
-static bool	extractLineCRLF(std::string &buffer, std::string &line) //extractsline only if it is CRLF
-{
-	std::string::size_type	pos = buffer.find("\r\n");
-	if (pos == std::string::npos)
-		return (false);
-	line = buffer.substr(0, pos);
-	buffer.erase(0, pos + 2); //2 here is \r\n
-	return (true);
-}
-
 
 static void	setNonBlocking(int fd)
 {
@@ -34,26 +31,37 @@ void	Server::disconnectClient(int fd)
  
 	}
 	close(fd);
-	m_inbuf.erase(fd);
+	std::map<int, Client*>::iterator it = m_clients.find(fd);
+	if (it != m_clients.end())
+	{
+		delete it->second;
+		m_clients.erase(it);
+	}
 	std::cout << "Disconnected : " << fd << "\n";
 }
 
 void	Server::readClientsData(int fd)
 {
-	char	buffer[4096];
+	Client	*client = getClient(fd);
+	if (!client)
+	{
+		disconnectClient(fd);
+		return ;
+	}
 
+	char	buffer[4096];
 	while (true)
 	{
 		ssize_t	receiving = recv(fd, buffer, sizeof(buffer), 0);
 		if (receiving > 0)
 		{
-			m_inbuf[fd].append(buffer, receiving);
-			std::string line;
-			while (extractLineCRLF(m_inbuf[fd], line))
+			client->getBuffer().appendRead(std::string(buffer, receiving));
+			while (client->getBuffer().hasCompleteMessage())
 			{
+				std::string line = client->getBuffer().getNextMessage();
 				onIrcLine(fd, line);
 			}
-			if (m_inbuf[fd].size() > 65536)
+			if (client->getBuffer().getReadBufferSize() > 65536)
 			{
 				std::cout << "Input buffer is too big, disconnecting : " << fd << "\n";
 				disconnectClient(fd);
@@ -89,7 +97,7 @@ void	Server::acceptNewClients()
 		setNonBlocking(clientFd);
 		m_sm->addSocket(clientFd, EPOLLIN);
 
-		m_inbuf[clientFd] = "";
+		m_clients[clientFd] = new Client(clientFd, "unknown");
 		std::cout << "Client Accepted : " << clientFd << "\n";
 	}
 }
@@ -187,7 +195,15 @@ void	Server::run()
 
 Server::Server(const Config &cfg) : m_cfg(cfg), m_listenFd(-1), m_sm(0) {}
 
-Server::~Server(){
+Server::~Server()
+{
+	for(std::map<int, Client*>::iterator it = m_clients.begin(); it != m_clients.end(); it++)
+	{
+		close(it->first);
+		delete (it->second);
+	}
+	m_clients.clear();
+
 	if (m_listenFd != -1)
 		close(m_listenFd);
 	delete(m_sm);
