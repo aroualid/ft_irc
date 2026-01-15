@@ -8,6 +8,7 @@ enum CommandType
 	PASS,
 	NICK,
 	USER,
+	QUIT,
 
 	// channel operations
 	JOIN,
