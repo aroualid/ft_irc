@@ -3,15 +3,8 @@
 #include <iostream>
 
 Channel::Channel(const std::string& name)
-	: m_name(name)
-	, m_topic("")
-	, m_key("")
-	, m_members()
-	, m_operators()
-	, m_invited()
-	, m_inviteOnly(false)
-	, m_topicRestricted(true)
-	, m_userLimit(-1)
+	: m_name(name), m_topic(""), m_key(""), m_members(), m_operators(), m_invited(),
+	  m_inviteOnly(false), m_topicRestricted(true), m_userLimit(-1)
 {
 	std::cout << "[MOCK] Channel created: " << name << std::endl;
 }
@@ -21,13 +14,34 @@ Channel::~Channel()
 	std::cout << "[MOCK] Channel destroyed: " << m_name << std::endl;
 }
 
-const std::string& Channel::getName() const { return m_name; }
-const std::string& Channel::getTopic() const { return m_topic; }
-const std::string& Channel::getKey() const { return m_key; }
-size_t Channel::getMemberCount() const { return m_members.size(); }
-bool Channel::isInviteOnly() const { return m_inviteOnly; }
-bool Channel::isTopicRestricted() const { return m_topicRestricted; }
-int Channel::getUserLimit() const { return m_userLimit; }
+const std::string& Channel::getName() const
+{
+	return m_name;
+}
+const std::string& Channel::getTopic() const
+{
+	return m_topic;
+}
+const std::string& Channel::getKey() const
+{
+	return m_key;
+}
+size_t Channel::getMemberCount() const
+{
+	return m_members.size();
+}
+bool Channel::isInviteOnly() const
+{
+	return m_inviteOnly;
+}
+bool Channel::isTopicRestricted() const
+{
+	return m_topicRestricted;
+}
+int Channel::getUserLimit() const
+{
+	return m_userLimit;
+}
 
 void Channel::setTopic(const std::string& topic)
 {
@@ -44,15 +58,15 @@ void Channel::setKey(const std::string& key)
 void Channel::setInviteOnly(bool inviteOnly)
 {
 	m_inviteOnly = inviteOnly;
-	std::cout << "[MOCK] Invite-only " << (inviteOnly ? "enabled" : "disabled")
-		<< " for " << m_name << std::endl;
+	std::cout << "[MOCK] Invite-only " << (inviteOnly ? "enabled" : "disabled") << " for " << m_name
+			  << std::endl;
 }
 
 void Channel::setTopicRestricted(bool restricted)
 {
 	m_topicRestricted = restricted;
-	std::cout << "[MOCK] Topic restriction " << (restricted ? "enabled" : "disabled")
-		<< " for " << m_name << std::endl;
+	std::cout << "[MOCK] Topic restriction " << (restricted ? "enabled" : "disabled") << " for "
+			  << m_name << std::endl;
 }
 
 void Channel::setUserLimit(int limit)
@@ -83,7 +97,7 @@ bool Channel::addMember(IClient* client, const std::string& key)
 		std::cout << "[MOCK] " << m_name << ": Join denied - invite only" << std::endl;
 		return false;
 	}
-	if (m_userLimit > 0 && static_cast<int>(m_members.size()) >= m_userLimit)
+	if (m_userLimit > 0 && static_cast< int >(m_members.size()) >= m_userLimit)
 	{
 		std::cout << "[MOCK] " << m_name << ": Join denied - channel full" << std::endl;
 		return false;
@@ -134,7 +148,7 @@ void Channel::addOperator(IClient* client)
 std::string Channel::getMemberList() const
 {
 	std::string list;
-	for (std::set<IClient*>::const_iterator it = m_members.begin(); it != m_members.end(); ++it)
+	for (std::set< IClient* >::const_iterator it = m_members.begin(); it != m_members.end(); ++it)
 	{
 		if (it != m_members.begin())
 			list += " ";
@@ -151,7 +165,7 @@ void Channel::broadcast(const std::string& message, IClient* exclude)
 	if (exclude)
 		std::cout << " (excluding one client)";
 	std::cout << std::endl;
-	for (std::set<IClient*>::iterator it = m_members.begin(); it != m_members.end(); ++it)
+	for (std::set< IClient* >::iterator it = m_members.begin(); it != m_members.end(); ++it)
 	{
 		if (*it != exclude)
 			(*it)->getBuffer().appendWrite(message);

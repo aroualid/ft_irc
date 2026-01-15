@@ -1,9 +1,10 @@
-#include <criterion/criterion.h>
-#include "mocks/Server.hpp"
-#include "mocks/Client.hpp"
-#include "mocks/Channel.hpp"
+#include "commands/CommandFactory.hpp"
 #include "commands/JoinCommand.hpp"
+#include "mocks/Channel.hpp"
+#include "mocks/Client.hpp"
+#include "mocks/Server.hpp"
 #include "protocol/Message.hpp"
+#include <criterion/criterion.h>
 
 Test(JoinCommand, single_channel_join)
 {
@@ -13,12 +14,13 @@ Test(JoinCommand, single_channel_join)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	JoinCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
 	Message msg;
 	msg.m_command = "JOIN";
 	msg.m_params.push_back("#test");
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	cr_assert(client.isInChannel("#test"));
 	cr_assert_eq(server.getChannelCount(), 1);
@@ -28,6 +30,7 @@ Test(JoinCommand, single_channel_join)
 	cr_assert_eq(channel->getMemberCount(), 1);
 	cr_assert(channel->hasMember(&client));
 	cr_assert(channel->isOperator(&client));
+	delete cmd;
 }
 
 Test(JoinCommand, multiple_channels_join)
@@ -38,17 +41,19 @@ Test(JoinCommand, multiple_channels_join)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	JoinCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
 	Message msg;
 	msg.m_command = "JOIN";
 	msg.m_params.push_back("#test,#foo,#bar");
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	cr_assert(client.isInChannel("#test"));
 	cr_assert(client.isInChannel("#foo"));
 	cr_assert(client.isInChannel("#bar"));
 	cr_assert_eq(server.getChannelCount(), 3);
+	delete cmd;
 }
 
 Test(JoinCommand, channel_with_key)
@@ -64,11 +69,12 @@ Test(JoinCommand, channel_with_key)
 	client2.setNickname("bob");
 	client2.setUsername("bob");
 
-	JoinCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
 	Message msg1;
 	msg1.m_command = "JOIN";
 	msg1.m_params.push_back("#secret");
-	cmd.execute(&client1, msg1);
+	cmd->execute(&client1, msg1);
 
 	IChannel* channel = server.getChannel("#secret");
 	cr_assert_not_null(channel);
@@ -79,10 +85,11 @@ Test(JoinCommand, channel_with_key)
 	msg2.m_params.push_back("#secret");
 	msg2.m_params.push_back("password123");
 
-	cmd.execute(&client2, msg2);
+	cmd->execute(&client2, msg2);
 
 	cr_assert(client2.isInChannel("#secret"));
 	cr_assert_eq(channel->getMemberCount(), 2);
+	delete cmd;
 }
 
 Test(JoinCommand, channel_with_wrong_key)
@@ -98,11 +105,12 @@ Test(JoinCommand, channel_with_wrong_key)
 	client2.setNickname("bob");
 	client2.setUsername("bob");
 
-	JoinCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
 	Message msg1;
 	msg1.m_command = "JOIN";
 	msg1.m_params.push_back("#secret");
-	cmd.execute(&client1, msg1);
+	cmd->execute(&client1, msg1);
 
 	IChannel* channel = server.getChannel("#secret");
 	channel->setKey("password123");
@@ -112,10 +120,11 @@ Test(JoinCommand, channel_with_wrong_key)
 	msg2.m_params.push_back("#secret");
 	msg2.m_params.push_back("wrongpass");
 
-	cmd.execute(&client2, msg2);
+	cmd->execute(&client2, msg2);
 
 	cr_assert_not(client2.isInChannel("#secret"));
 	cr_assert_eq(channel->getMemberCount(), 1);
+	delete cmd;
 }
 
 Test(JoinCommand, multiple_channels_with_keys)
@@ -126,17 +135,19 @@ Test(JoinCommand, multiple_channels_with_keys)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	JoinCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
 	Message msg;
 	msg.m_command = "JOIN";
 	msg.m_params.push_back("#test,#foo");
 	msg.m_params.push_back("key1,key2");
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	cr_assert(client.isInChannel("#test"));
 	cr_assert(client.isInChannel("#foo"));
 	cr_assert_eq(server.getChannelCount(), 2);
+	delete cmd;
 }
 
 Test(JoinCommand, invalid_channel_name_no_prefix)
@@ -147,15 +158,17 @@ Test(JoinCommand, invalid_channel_name_no_prefix)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	JoinCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
 	Message msg;
 	msg.m_command = "JOIN";
 	msg.m_params.push_back("invalid");
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	cr_assert_not(client.isInChannel("invalid"));
 	cr_assert_eq(server.getChannelCount(), 0);
+	delete cmd;
 }
 
 Test(JoinCommand, invalid_channel_name_with_space)
@@ -166,15 +179,17 @@ Test(JoinCommand, invalid_channel_name_with_space)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	JoinCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
 	Message msg;
 	msg.m_command = "JOIN";
 	msg.m_params.push_back("#test channel");
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	cr_assert_not(client.isInChannel("#test channel"));
 	cr_assert_eq(server.getChannelCount(), 0);
+	delete cmd;
 }
 
 Test(JoinCommand, invalid_channel_name_too_long)
@@ -185,7 +200,8 @@ Test(JoinCommand, invalid_channel_name_too_long)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	JoinCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
 	Message msg;
 	msg.m_command = "JOIN";
 	std::string longName = "#";
@@ -193,10 +209,11 @@ Test(JoinCommand, invalid_channel_name_too_long)
 		longName += "a";
 	msg.m_params.push_back(longName);
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	cr_assert_not(client.isInChannel(longName));
 	cr_assert_eq(server.getChannelCount(), 0);
+	delete cmd;
 }
 
 Test(JoinCommand, join_already_in_channel)
@@ -207,16 +224,18 @@ Test(JoinCommand, join_already_in_channel)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	JoinCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
 	Message msg;
 	msg.m_command = "JOIN";
 	msg.m_params.push_back("#test");
 
-	cmd.execute(&client, msg);
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	IChannel* channel = server.getChannel("#test");
 	cr_assert_eq(channel->getMemberCount(), 1);
+	delete cmd;
 }
 
 Test(JoinCommand, invite_only_channel_no_invite)
@@ -232,11 +251,12 @@ Test(JoinCommand, invite_only_channel_no_invite)
 	client2.setNickname("bob");
 	client2.setUsername("bob");
 
-	JoinCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
 	Message msg1;
 	msg1.m_command = "JOIN";
 	msg1.m_params.push_back("#private");
-	cmd.execute(&client1, msg1);
+	cmd->execute(&client1, msg1);
 
 	IChannel* channel = server.getChannel("#private");
 	channel->setInviteOnly(true);
@@ -244,10 +264,11 @@ Test(JoinCommand, invite_only_channel_no_invite)
 	Message msg2;
 	msg2.m_command = "JOIN";
 	msg2.m_params.push_back("#private");
-	cmd.execute(&client2, msg2);
+	cmd->execute(&client2, msg2);
 
 	cr_assert_not(client2.isInChannel("#private"));
 	cr_assert_eq(channel->getMemberCount(), 1);
+	delete cmd;
 }
 
 Test(JoinCommand, invite_only_channel_with_invite)
@@ -263,11 +284,12 @@ Test(JoinCommand, invite_only_channel_with_invite)
 	client2.setNickname("bob");
 	client2.setUsername("bob");
 
-	JoinCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
 	Message msg1;
 	msg1.m_command = "JOIN";
 	msg1.m_params.push_back("#private");
-	cmd.execute(&client1, msg1);
+	cmd->execute(&client1, msg1);
 
 	IChannel* channel = server.getChannel("#private");
 	channel->setInviteOnly(true);
@@ -276,10 +298,11 @@ Test(JoinCommand, invite_only_channel_with_invite)
 	Message msg2;
 	msg2.m_command = "JOIN";
 	msg2.m_params.push_back("#private");
-	cmd.execute(&client2, msg2);
+	cmd->execute(&client2, msg2);
 
 	cr_assert(client2.isInChannel("#private"));
 	cr_assert_eq(channel->getMemberCount(), 2);
+	delete cmd;
 }
 
 Test(JoinCommand, channel_full)
@@ -295,11 +318,12 @@ Test(JoinCommand, channel_full)
 	client2.setNickname("bob");
 	client2.setUsername("bob");
 
-	JoinCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
 	Message msg1;
 	msg1.m_command = "JOIN";
 	msg1.m_params.push_back("#limited");
-	cmd.execute(&client1, msg1);
+	cmd->execute(&client1, msg1);
 
 	IChannel* channel = server.getChannel("#limited");
 	channel->setUserLimit(1);
@@ -307,10 +331,11 @@ Test(JoinCommand, channel_full)
 	Message msg2;
 	msg2.m_command = "JOIN";
 	msg2.m_params.push_back("#limited");
-	cmd.execute(&client2, msg2);
+	cmd->execute(&client2, msg2);
 
 	cr_assert_not(client2.isInChannel("#limited"));
 	cr_assert_eq(channel->getMemberCount(), 1);
+	delete cmd;
 }
 
 Test(JoinCommand, first_member_becomes_operator)
@@ -321,15 +346,17 @@ Test(JoinCommand, first_member_becomes_operator)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	JoinCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
 	Message msg;
 	msg.m_command = "JOIN";
 	msg.m_params.push_back("#new");
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	IChannel* channel = server.getChannel("#new");
 	cr_assert(channel->isOperator(&client));
+	delete cmd;
 }
 
 Test(JoinCommand, ampersand_channel_prefix)
@@ -340,16 +367,18 @@ Test(JoinCommand, ampersand_channel_prefix)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	JoinCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
 	Message msg;
 	msg.m_command = "JOIN";
 	msg.m_params.push_back("&local");
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	cr_assert(client.isInChannel("&local"));
 	IChannel* channel = server.getChannel("&local");
 	cr_assert_not_null(channel);
+	delete cmd;
 }
 
 Test(JoinCommand, empty_channel_name)
@@ -360,14 +389,16 @@ Test(JoinCommand, empty_channel_name)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	JoinCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
 	Message msg;
 	msg.m_command = "JOIN";
 	msg.m_params.push_back("");
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	cr_assert_eq(server.getChannelCount(), 0);
+	delete cmd;
 }
 
 Test(JoinCommand, mixed_valid_invalid_channels)
@@ -378,15 +409,17 @@ Test(JoinCommand, mixed_valid_invalid_channels)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	JoinCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
 	Message msg;
 	msg.m_command = "JOIN";
 	msg.m_params.push_back("#valid,invalid,#alsoValid");
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	cr_assert(client.isInChannel("#valid"));
 	cr_assert_not(client.isInChannel("invalid"));
 	cr_assert(client.isInChannel("#alsoValid"));
 	cr_assert_eq(server.getChannelCount(), 2);
+	delete cmd;
 }

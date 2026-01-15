@@ -3,27 +3,31 @@
 #include <iostream>
 
 Server::Server(int port, const std::string& password)
-	: m_port(port)
-	, m_password(password)
-	, m_clients()
-	, m_channels()
+	: m_port(port), m_password(password), m_clients(), m_channels()
 {
 	std::cout << "[MOCK] Server created: port=" << port << " password=" << password << std::endl;
 }
 
 Server::~Server()
 {
-	for (std::map<std::string, IChannel*>::iterator it = m_channels.begin(); it != m_channels.end(); ++it)
+	for (std::map< std::string, IChannel* >::iterator it = m_channels.begin();
+		 it != m_channels.end(); ++it)
 		delete it->second;
 	std::cout << "[MOCK] Server destroyed" << std::endl;
 }
 
-int Server::getPort() const { return m_port; }
-const std::string& Server::getPassword() const { return m_password; }
+int Server::getPort() const
+{
+	return m_port;
+}
+const std::string& Server::getPassword() const
+{
+	return m_password;
+}
 
 IClient* Server::getClientByNickname(const std::string& nick)
 {
-	std::map<std::string, IClient*>::iterator it = m_clients.find(nick);
+	std::map< std::string, IClient* >::iterator it = m_clients.find(nick);
 	if (it != m_clients.end())
 		return it->second;
 	return NULL;
@@ -43,7 +47,7 @@ void Server::unregisterClient(const std::string& nick)
 
 IChannel* Server::getChannel(const std::string& name)
 {
-	std::map<std::string, IChannel*>::iterator it = m_channels.find(name);
+	std::map< std::string, IChannel* >::iterator it = m_channels.find(name);
 	if (it != m_channels.end())
 		return it->second;
 	return NULL;

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "core/IChannel.hpp"
-#include <string>
 #include <set>
+#include <string>
 
 class Channel : public IChannel
 {
@@ -10,9 +10,9 @@ private:
 	std::string m_name;
 	std::string m_topic;
 	std::string m_key;
-	std::set<IClient*> m_members;
-	std::set<IClient*> m_operators;
-	std::set<IClient*> m_invited;
+	std::set< IClient* > m_members;
+	std::set< IClient* > m_operators;
+	std::set< IClient* > m_invited;
 	bool m_inviteOnly;
 	bool m_topicRestricted;
 	int m_userLimit;

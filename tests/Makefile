@@ -20,39 +20,44 @@ MOCK_DIR = $(TEST_DIR)/mocks
 OBJ_DIR = ./objs
 
 INCLUDES = -I$(INC_DIR) \
-           -I$(INC_DIR)/core \
-           -I$(INC_DIR)/network \
-           -I$(INC_DIR)/commands \
-           -I$(INC_DIR)/protocol \
-           -I$(TEST_DIR)
+		   -I$(INC_DIR)/core \
+		   -I$(INC_DIR)/network \
+		   -I$(INC_DIR)/commands \
+		   -I$(INC_DIR)/protocol \
+		   -I$(TEST_DIR)
 
 MOCK_SRCS = $(MOCK_DIR)/Server.cpp \
-            $(MOCK_DIR)/Client.cpp \
-            $(MOCK_DIR)/Channel.cpp \
-            $(MOCK_DIR)/MessageBuffer.cpp
+			$(MOCK_DIR)/Client.cpp \
+			$(MOCK_DIR)/Channel.cpp \
+			$(MOCK_DIR)/MessageBuffer.cpp
 
 MOCK_OBJ = $(MOCK_SRCS:$(MOCK_DIR)/%.cpp=$(OBJ_DIR)/mocks/%.o)
 
 REQUIRED_SRCS = $(SRCS_DIR)/protocol/Message.cpp \
-                $(SRCS_DIR)/protocol/MessageParser.cpp \
-                $(SRCS_DIR)/protocol/NumericReply.cpp \
-                $(SRCS_DIR)/protocol/IrcUtils.cpp \
-                $(SRCS_DIR)/commands/ACommand.cpp \
-                $(SRCS_DIR)/commands/JoinCommand.cpp \
-                $(SRCS_DIR)/commands/PartCommand.cpp \
-                $(SRCS_DIR)/commands/PrivmsgCommand.cpp \
-                $(SRCS_DIR)/commands/NoticeCommand.cpp
+				$(SRCS_DIR)/protocol/MessageParser.cpp \
+				$(SRCS_DIR)/protocol/NumericReply.cpp \
+				$(SRCS_DIR)/protocol/IrcUtils.cpp \
+				$(SRCS_DIR)/commands/ACommand.cpp \
+				$(SRCS_DIR)/commands/CommandFactory.cpp \
+				$(SRCS_DIR)/commands/PassCommand.cpp \
+				$(SRCS_DIR)/commands/NickCommand.cpp \
+				$(SRCS_DIR)/commands/UserCommand.cpp \
+				$(SRCS_DIR)/commands/JoinCommand.cpp \
+				$(SRCS_DIR)/commands/PartCommand.cpp \
+				$(SRCS_DIR)/commands/PrivmsgCommand.cpp \
+				$(SRCS_DIR)/commands/NoticeCommand.cpp
 
 REQUIRED_OBJ = $(REQUIRED_SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/srcs/%.o)
 
 TEST_SRCS = test_irc_utils.cpp \
-            test_message.cpp \
-            test_message_parser.cpp \
-            test_numeric_reply.cpp \
-            test_join_command.cpp \
-            test_part_command.cpp \
-            test_privmsg_command.cpp \
-            test_notice_command.cpp
+			test_message.cpp \
+			test_message_parser.cpp \
+			test_numeric_reply.cpp \
+			test_join_command.cpp \
+			test_part_command.cpp \
+			test_privmsg_command.cpp \
+			test_notice_command.cpp \
+			test_command_factory.cpp \
 
 TEST_OBJ = $(TEST_SRCS:%.cpp=$(OBJ_DIR)/%.o)
 

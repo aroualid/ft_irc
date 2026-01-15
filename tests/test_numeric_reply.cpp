@@ -1,5 +1,5 @@
-#include <criterion/criterion.h>
 #include "protocol/NumericReply.hpp"
+#include <criterion/criterion.h>
 
 Test(NumericReply, constructor_basic)
 {

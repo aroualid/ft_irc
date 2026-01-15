@@ -1,9 +1,9 @@
 #pragma once
 
-#include "core/IClient.hpp"
 #include "MessageBuffer.hpp"
-#include <string>
+#include "core/IClient.hpp"
 #include <set>
+#include <string>
 
 class Client : public IClient
 {
@@ -16,7 +16,7 @@ private:
 	bool m_passwordProvided;
 	bool m_registered;
 	MessageBuffer m_buffer;
-	std::set<std::string> m_channels;
+	std::set< std::string > m_channels;
 
 public:
 	Client(int fd, const std::string& hostname);
@@ -41,7 +41,7 @@ public:
 	void joinChannel(const std::string& channel);
 	void leaveChannel(const std::string& channel);
 	bool isInChannel(const std::string& channel) const;
-	const std::set<std::string>& getChannels() const;
+	const std::set< std::string >& getChannels() const;
 
 	IMessageBuffer& getBuffer();
 	const IMessageBuffer& getBuffer() const;

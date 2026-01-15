@@ -1,6 +1,6 @@
-#include <criterion/criterion.h>
-#include "protocol/MessageParser.hpp"
 #include "protocol/Message.hpp"
+#include "protocol/MessageParser.hpp"
+#include <criterion/criterion.h>
 
 Test(MessageParser, parse_simple_command)
 {

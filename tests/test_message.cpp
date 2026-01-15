@@ -1,5 +1,5 @@
-#include <criterion/criterion.h>
 #include "protocol/Message.hpp"
+#include <criterion/criterion.h>
 
 Test(Message, isValid_with_command)
 {

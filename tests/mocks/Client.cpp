@@ -2,15 +2,8 @@
 #include <iostream>
 
 Client::Client(int fd, const std::string& hostname)
-	: m_fd(fd)
-	, m_nickname("")
-	, m_username("")
-	, m_realname("")
-	, m_hostname(hostname)
-	, m_passwordProvided(false)
-	, m_registered(false)
-	, m_buffer()
-	, m_channels()
+	: m_fd(fd), m_nickname(""), m_username(""), m_realname(""), m_hostname(hostname),
+	  m_passwordProvided(false), m_registered(false), m_buffer(), m_channels()
 {
 	std::cout << "[MOCK] Client created: fd=" << fd << " host=" << hostname << std::endl;
 }
@@ -20,15 +13,39 @@ Client::~Client()
 	std::cout << "[MOCK] Client destroyed: fd=" << m_fd << std::endl;
 }
 
-int Client::getFd() const { return m_fd; }
-const std::string& Client::getNickname() const { return m_nickname; }
-const std::string& Client::getUsername() const { return m_username; }
-const std::string& Client::getRealname() const { return m_realname; }
-const std::string& Client::getHostname() const { return m_hostname; }
+int Client::getFd() const
+{
+	return m_fd;
+}
+const std::string& Client::getNickname() const
+{
+	return m_nickname;
+}
+const std::string& Client::getUsername() const
+{
+	return m_username;
+}
+const std::string& Client::getRealname() const
+{
+	return m_realname;
+}
+const std::string& Client::getHostname() const
+{
+	return m_hostname;
+}
 
-bool Client::isPasswordProvided() const { return m_passwordProvided; }
-bool Client::isRegistered() const { return m_registered; }
-bool Client::isAuthenticated() const { return m_passwordProvided; }
+bool Client::isPasswordProvided() const
+{
+	return m_passwordProvided;
+}
+bool Client::isRegistered() const
+{
+	return m_registered;
+}
+bool Client::isAuthenticated() const
+{
+	return m_passwordProvided;
+}
 
 void Client::setNickname(const std::string& nick)
 {
@@ -82,7 +99,7 @@ bool Client::isInChannel(const std::string& channel) const
 	return m_channels.find(channel) != m_channels.end();
 }
 
-const std::set<std::string>& Client::getChannels() const
+const std::set< std::string >& Client::getChannels() const
 {
 	return m_channels;
 }

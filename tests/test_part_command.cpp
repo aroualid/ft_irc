@@ -1,9 +1,10 @@
-#include <criterion/criterion.h>
-#include "mocks/Server.hpp"
-#include "mocks/Client.hpp"
-#include "mocks/Channel.hpp"
+#include "commands/CommandFactory.hpp"
 #include "commands/PartCommand.hpp"
+#include "mocks/Channel.hpp"
+#include "mocks/Client.hpp"
+#include "mocks/Server.hpp"
 #include "protocol/Message.hpp"
+#include <criterion/criterion.h>
 
 Test(PartCommand, successful_part_single_channel)
 {
@@ -21,17 +22,19 @@ Test(PartCommand, successful_part_single_channel)
 	cr_assert_eq(channel->getMemberCount(), 1);
 
 	// Now PART
-	PartCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
 	msg.m_params.push_back("#test");
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	// Verify client left and channel was deleted (empty)
 	cr_assert_not(client.isInChannel("#test"));
 	cr_assert_null(server.getChannel("#test"));
 	cr_assert_eq(server.getChannelCount(), 0);
+	delete cmd;
 }
 
 Test(PartCommand, part_with_message)
@@ -45,13 +48,14 @@ Test(PartCommand, part_with_message)
 	server.createChannel("#test", &client);
 	client.joinChannel("#test");
 
-	PartCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
 	msg.m_params.push_back("#test");
 	msg.m_params.push_back("Going to lunch, BRB!");
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	// Check that PART message was broadcast
 	const std::string& buffer = client.getBuffer().getWriteBuffer();
@@ -60,6 +64,7 @@ Test(PartCommand, part_with_message)
 	cr_assert(buffer.find("Going to lunch, BRB!") != std::string::npos);
 
 	cr_assert_not(client.isInChannel("#test"));
+	delete cmd;
 }
 
 Test(PartCommand, part_nonexistent_channel)
@@ -70,18 +75,20 @@ Test(PartCommand, part_nonexistent_channel)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	PartCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
 	msg.m_params.push_back("#nonexistent");
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	// Check ERR_NOSUCHCHANNEL (403) was sent
 	const std::string& buffer = client.getBuffer().getWriteBuffer();
 	cr_assert(buffer.find("403") != std::string::npos);
 	cr_assert(buffer.find("#nonexistent") != std::string::npos);
 	cr_assert(buffer.find("No such channel") != std::string::npos);
+	delete cmd;
 }
 
 Test(PartCommand, part_channel_not_on)
@@ -102,18 +109,20 @@ Test(PartCommand, part_channel_not_on)
 	bob.joinChannel("#test");
 
 	// Alice tries to leave it (but she's not in it)
-	PartCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
 	msg.m_params.push_back("#test");
 
-	cmd.execute(&alice, msg);
+	cmd->execute(&alice, msg);
 
 	// Check ERR_NOTONCHANNEL (442) was sent
 	const std::string& buffer = alice.getBuffer().getWriteBuffer();
 	cr_assert(buffer.find("442") != std::string::npos);
 	cr_assert(buffer.find("#test") != std::string::npos);
 	cr_assert(buffer.find("not on that channel") != std::string::npos);
+	delete cmd;
 }
 
 Test(PartCommand, part_no_parameters)
@@ -124,18 +133,20 @@ Test(PartCommand, part_no_parameters)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	PartCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
 	// No parameters!
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	// Check ERR_NEEDMOREPARAMS (461) was sent
 	const std::string& buffer = client.getBuffer().getWriteBuffer();
 	cr_assert(buffer.find("461") != std::string::npos);
 	cr_assert(buffer.find("PART") != std::string::npos);
 	cr_assert(buffer.find("Not enough parameters") != std::string::npos);
+	delete cmd;
 }
 
 Test(PartCommand, part_broadcasts_to_all_members)
@@ -167,12 +178,13 @@ Test(PartCommand, part_broadcasts_to_all_members)
 	cr_assert_eq(channel->getMemberCount(), 3);
 
 	// Alice leaves
-	PartCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
 	msg.m_params.push_back("#test");
 
-	cmd.execute(&alice, msg);
+	cmd->execute(&alice, msg);
 
 	// Alice should have received PART message
 	const std::string& alice_buffer = alice.getBuffer().getWriteBuffer();
@@ -191,6 +203,7 @@ Test(PartCommand, part_broadcasts_to_all_members)
 	cr_assert_not(alice.isInChannel("#test"));
 	cr_assert_eq(channel->getMemberCount(), 2);
 	cr_assert_not_null(server.getChannel("#test"));
+	delete cmd;
 }
 
 Test(PartCommand, last_member_parts_channel_deleted)
@@ -216,11 +229,12 @@ Test(PartCommand, last_member_parts_channel_deleted)
 	cr_assert_not_null(server.getChannel("#test"));
 
 	// Alice leaves
-	PartCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg1;
 	msg1.m_command = "PART";
 	msg1.m_params.push_back("#test");
-	cmd.execute(&alice, msg1);
+	cmd->execute(&alice, msg1);
 
 	// Channel still exists (bob is still there)
 	cr_assert_not_null(server.getChannel("#test"));
@@ -230,11 +244,12 @@ Test(PartCommand, last_member_parts_channel_deleted)
 	Message msg2;
 	msg2.m_command = "PART";
 	msg2.m_params.push_back("#test");
-	cmd.execute(&bob, msg2);
+	cmd->execute(&bob, msg2);
 
 	// Channel should be deleted
 	cr_assert_null(server.getChannel("#test"));
 	cr_assert_eq(server.getChannelCount(), 0);
+	delete cmd;
 }
 
 Test(PartCommand, part_removes_operator_status)
@@ -260,16 +275,18 @@ Test(PartCommand, part_removes_operator_status)
 	cr_assert_not(channel->isOperator(&bob));
 
 	// Alice leaves
-	PartCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
 	msg.m_params.push_back("#test");
 
-	cmd.execute(&alice, msg);
+	cmd->execute(&alice, msg);
 
 	// Alice should no longer be operator (she's not even a member)
 	cr_assert_not(channel->hasMember(&alice));
 	cr_assert_not(channel->isOperator(&alice));
+	delete cmd;
 }
 
 Test(PartCommand, part_with_prefix_in_broadcast)
@@ -283,18 +300,20 @@ Test(PartCommand, part_with_prefix_in_broadcast)
 	server.createChannel("#test", &alice);
 	alice.joinChannel("#test");
 
-	PartCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
 	msg.m_params.push_back("#test");
 
-	cmd.execute(&alice, msg);
+	cmd->execute(&alice, msg);
 
 	// Check broadcast includes proper prefix (nick!user@host)
 	const std::string& buffer = alice.getBuffer().getWriteBuffer();
 	cr_assert(buffer.find("alice!alice_user@localhost") != std::string::npos);
 	cr_assert(buffer.find("PART") != std::string::npos);
 	cr_assert(buffer.find("#test") != std::string::npos);
+	delete cmd;
 }
 
 Test(PartCommand, part_ampersand_channel)
@@ -311,15 +330,17 @@ Test(PartCommand, part_ampersand_channel)
 
 	cr_assert(client.isInChannel("&local"));
 
-	PartCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
 	msg.m_params.push_back("&local");
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	cr_assert_not(client.isInChannel("&local"));
 	cr_assert_null(server.getChannel("&local"));
+	delete cmd;
 }
 
 Test(PartCommand, part_empty_message_parameter)
@@ -333,16 +354,18 @@ Test(PartCommand, part_empty_message_parameter)
 	server.createChannel("#test", &client);
 	client.joinChannel("#test");
 
-	PartCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
 	msg.m_params.push_back("#test");
 	msg.m_params.push_back(""); // Empty part message
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	// Should work fine, just no message
 	cr_assert_not(client.isInChannel("#test"));
+	delete cmd;
 }
 
 Test(PartCommand, part_channel_name_case_sensitive)
@@ -357,14 +380,16 @@ Test(PartCommand, part_channel_name_case_sensitive)
 	server.createChannel("#Test", &client);
 	client.joinChannel("#Test");
 
-	PartCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
 	msg.m_params.push_back("#Test"); // Must match case
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	cr_assert_not(client.isInChannel("#Test"));
+	delete cmd;
 }
 
 Test(PartCommand, operator_parts_doesnt_transfer_ops)
@@ -390,17 +415,19 @@ Test(PartCommand, operator_parts_doesnt_transfer_ops)
 	cr_assert_not(channel->isOperator(&bob));
 
 	// Alice parts
-	PartCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
 	msg.m_params.push_back("#test");
 
-	cmd.execute(&alice, msg);
+	cmd->execute(&alice, msg);
 
 	// Bob should NOT automatically become operator
 	// (This is RFC 1459 behavior - ops don't transfer on PART)
 	cr_assert_not(channel->isOperator(&bob));
 	cr_assert_eq(channel->getMemberCount(), 1);
+	delete cmd;
 }
 
 Test(PartCommand, multiple_channels_in_client_list)
@@ -424,15 +451,17 @@ Test(PartCommand, multiple_channels_in_client_list)
 	cr_assert(client.isInChannel("#test3"));
 
 	// Part one channel
-	PartCommand cmd(server);
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
 	msg.m_params.push_back("#test2");
 
-	cmd.execute(&client, msg);
+	cmd->execute(&client, msg);
 
 	// Should only leave #test2
 	cr_assert(client.isInChannel("#test1"));
 	cr_assert_not(client.isInChannel("#test2"));
 	cr_assert(client.isInChannel("#test3"));
+	delete cmd;
 }

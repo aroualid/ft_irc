@@ -1,16 +1,16 @@
 #pragma once
 
 #include "core/IServer.hpp"
-#include <string>
 #include <map>
+#include <string>
 
 class Server : public IServer
 {
 private:
 	int m_port;
 	std::string m_password;
-	std::map<std::string, IClient*> m_clients;
-	std::map<std::string, IChannel*> m_channels;
+	std::map< std::string, IClient* > m_clients;
+	std::map< std::string, IChannel* > m_channels;
 
 public:
 	Server(int port, const std::string& password);

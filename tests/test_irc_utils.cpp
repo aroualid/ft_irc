@@ -1,5 +1,5 @@
-#include <criterion/criterion.h>
 #include "protocol/IrcUtils.hpp"
+#include <criterion/criterion.h>
 
 Test(IrcUtils, iequals_basic_comparison)
 {

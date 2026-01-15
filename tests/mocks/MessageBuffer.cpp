@@ -1,8 +1,12 @@
 #include "MessageBuffer.hpp"
 #include <iostream>
 
-MessageBuffer::MessageBuffer() {}
-MessageBuffer::~MessageBuffer() {}
+MessageBuffer::MessageBuffer()
+{
+}
+MessageBuffer::~MessageBuffer()
+{
+}
 
 void MessageBuffer::appendRead(const std::string& data)
 {
