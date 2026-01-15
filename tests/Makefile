@@ -58,6 +58,9 @@ TEST_SRCS = test_irc_utils.cpp \
 			test_privmsg_command.cpp \
 			test_notice_command.cpp \
 			test_command_factory.cpp \
+			test_pass_command.cpp \
+			test_nick_command.cpp \
+			test_user_command.cpp \
 
 TEST_OBJ = $(TEST_SRCS:%.cpp=$(OBJ_DIR)/%.o)
 

@@ -14,7 +14,7 @@ public:
 	~MockCommand()
 	{
 	}
-	void execute(IClient* client, const Message& message)
+	void doExecute(IClient* client, const Message& message)
 	{
 		(void)client;
 		(void)message;
@@ -38,7 +38,7 @@ public:
 	~MockCommand2()
 	{
 	}
-	void execute(IClient* client, const Message& message)
+	void doExecute(IClient* client, const Message& message)
 	{
 		(void)client;
 		(void)message;
@@ -53,8 +53,8 @@ public:
 	}
 };
 
-REGISTER_COMMAND(MockCommand, irc::MOCK);
-REGISTER_COMMAND(MockCommand2, irc::MOCK2);
+REGISTER_COMMAND(MockCommand, irc::MOCK, "MOCK");
+REGISTER_COMMAND(MockCommand2, irc::MOCK2, "MOCK2");
 
 /*
 class NotACommand {
