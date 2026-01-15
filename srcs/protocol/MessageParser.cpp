@@ -1,4 +1,5 @@
 #include "protocol/MessageParser.hpp"
+#include "commands/CommandFactory.hpp"
 #include <cstddef>
 #include <sstream>
 #include <string>
@@ -36,6 +37,8 @@ Message MessageParser::parse(const std::string& raw)
 
 	for (size_t i = 0; i < message.m_command.size(); i++)
 		message.m_command[i] = std::toupper(static_cast< unsigned char >(message.m_command[i]));
+
+	message.m_command_type = CommandFactory::stringToCommandType(message.m_command);
 
 	while (iss >> word)
 	{

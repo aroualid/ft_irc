@@ -1,8 +1,12 @@
 #include "commands/JoinCommand.hpp"
+#include "commands/CommandRegistration.hpp"
+#include "commands/CommandType.hpp"
 #include "core/IChannel.hpp"
 #include "protocol/MessageParser.hpp"
 #include "protocol/NumericReply.hpp"
 #include <cstddef>
+
+REGISTER_COMMAND(JoinCommand, irc::JOIN)
 
 JoinCommand::JoinCommand(IServer& server) : ACommand(server)
 {
@@ -135,4 +139,9 @@ void JoinCommand::joinSingleChannel(IClient* client, const std::string& channelN
 	std::string memberList = channel->getMemberList();
 	sendReply(client, NumericReply::namReply(client->getNickname(), channelName, memberList));
 	sendReply(client, NumericReply::endOfNames(client->getNickname(), channelName));
+}
+
+ACommand* JoinCommand::create(IServer& server)
+{
+	return new (std::nothrow) JoinCommand(server);
 }

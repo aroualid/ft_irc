@@ -1,5 +1,9 @@
 #include "commands/UserCommand.hpp"
+#include "commands/CommandRegistration.hpp"
+#include "commands/CommandType.hpp"
 #include "protocol/NumericReply.hpp"
+
+REGISTER_COMMAND(UserCommand, irc::USER)
 
 UserCommand::UserCommand(IServer& server) : ACommand(server)
 {
@@ -33,4 +37,9 @@ void UserCommand::execute(IClient* client, const Message& message)
 
 	client->setUsername(username);
 	client->setRealname(realname);
+}
+
+ACommand* UserCommand::create(IServer& server)
+{
+	return new (std::nothrow) UserCommand(server);
 }

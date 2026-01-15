@@ -1,7 +1,11 @@
 #include "commands/PartCommand.hpp"
+#include "commands/CommandRegistration.hpp"
+#include "commands/CommandType.hpp"
 #include "core/IChannel.hpp"
 #include "protocol/MessageParser.hpp"
 #include "protocol/NumericReply.hpp"
+
+REGISTER_COMMAND(PartCommand, irc::PART)
 
 PartCommand::PartCommand(IServer& server) : ACommand(server)
 {
@@ -47,4 +51,9 @@ void PartCommand::execute(IClient* client, const Message& message)
 	client->leaveChannel(channelName);
 
 	m_server.deleteChannelIfEmpty(channel);
+}
+
+ACommand* PartCommand::create(IServer& server)
+{
+	return new (std::nothrow) PartCommand(server);
 }

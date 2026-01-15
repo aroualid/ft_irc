@@ -1,6 +1,10 @@
 #include "commands/NickCommand.hpp"
 #include "commands/ACommand.hpp"
+#include "commands/CommandRegistration.hpp"
+#include "commands/CommandType.hpp"
 #include <cctype>
+
+REGISTER_COMMAND(NickCommand, irc::NICK)
 
 NickCommand::NickCommand(IServer& server) : ACommand(server)
 {
@@ -64,4 +68,9 @@ void NickCommand::execute(IClient* client, const Message& message)
 		// TODO: broadcast nickname change to all currently connected clients
 		// this will come during next milestone
 	}
+}
+
+ACommand* NickCommand::create(IServer& server)
+{
+	return new (std::nothrow) NickCommand(server);
 }

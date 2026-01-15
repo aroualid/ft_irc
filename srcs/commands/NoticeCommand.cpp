@@ -1,7 +1,11 @@
 #include "commands/NoticeCommand.hpp"
+#include "commands/CommandRegistration.hpp"
+#include "commands/CommandType.hpp"
 #include "core/IChannel.hpp"
 #include "core/IMessageBuffer.hpp"
 #include "protocol/MessageParser.hpp"
+
+REGISTER_COMMAND(NoticeCommand, irc::NOTICE)
 
 NoticeCommand::NoticeCommand(IServer& server) : ACommand(server)
 {
@@ -91,4 +95,9 @@ void NoticeCommand::execute(IClient* client, const Message& message)
 		if (!targetList[i].empty())
 			sendToTarget(client, targetList[i], text);
 	}
+}
+
+ACommand* NoticeCommand::create(IServer& server)
+{
+	return new (std::nothrow) NoticeCommand(server);
 }

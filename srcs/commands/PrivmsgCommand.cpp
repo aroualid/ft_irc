@@ -1,8 +1,12 @@
 #include "commands/PrivmsgCommand.hpp"
+#include "commands/CommandRegistration.hpp"
+#include "commands/CommandType.hpp"
 #include "core/IChannel.hpp"
 #include "core/IMessageBuffer.hpp"
 #include "protocol/MessageParser.hpp"
 #include "protocol/NumericReply.hpp"
+
+REGISTER_COMMAND(PrivmsgCommand, irc::PRIVMSG)
 
 PrivmsgCommand::PrivmsgCommand(IServer& server) : ACommand(server)
 {
@@ -101,4 +105,9 @@ void PrivmsgCommand::execute(IClient* client, const Message& message)
 		if (!targetList[i].empty())
 			sendToTarget(client, targetList[i], text);
 	}
+}
+
+ACommand* PrivmsgCommand::create(IServer& server)
+{
+	return new (std::nothrow) PrivmsgCommand(server);
 }

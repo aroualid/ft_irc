@@ -1,9 +1,27 @@
 #include "commands/CommandFactory.hpp"
+#include "IServer.hpp"
 #include "commands/ACommand.hpp"
+#include "commands/CommandType.hpp"
 #include <map>
 #include <new>
 
 CommandFactory* CommandFactory::s_instance = NULL;
+
+static std::map< std::string, irc::CommandType > create_command_map()
+{
+	std::map< std::string, irc::CommandType > m;
+	m["PASS"] = irc::PASS;
+	m["NICK"] = irc::NICK;
+	m["USER"] = irc::USER;
+	m["JOIN"] = irc::JOIN;
+	m["PART"] = irc::PART;
+	m["PRIVMSG"] = irc::PRIVMSG;
+	m["NOTICE"] = irc::NOTICE;
+	// and other commands go here when they're done
+	return m;
+}
+
+static const std::map< std::string, irc::CommandType > g_commandMap = create_command_map();
 
 CommandFactory::CommandFactory()
 {
@@ -16,12 +34,7 @@ CommandFactory::CommandFactory(const CommandFactory& source)
 
 CommandFactory::~CommandFactory()
 {
-	for (std::map< std::string, ACommand* >::iterator it = s_instance->m_commands.begin();
-		 it != s_instance->m_commands.end(); ++it)
-	{
-		delete it->second;
-	}
-	s_instance->m_commands.clear();
+	m_commandSpawners.clear();
 }
 
 CommandFactory& CommandFactory::operator=(const CommandFactory& source)
@@ -34,7 +47,7 @@ CommandFactory* CommandFactory::getInstance()
 {
 	if (s_instance == NULL)
 		s_instance = new (std::nothrow) CommandFactory();
-	return s_instance;
+	return (s_instance);
 }
 
 void CommandFactory::destroyInstance()
@@ -46,23 +59,31 @@ void CommandFactory::destroyInstance()
 	}
 }
 
-void CommandFactory::registerCommand(const std::string& name, ACommand* command)
+void CommandFactory::registerCommandSpawner(irc::CommandType type, CommandSpawner spawner)
 {
-	if (command)
-		m_commands[name] = command;
+	if (spawner)
+		m_commandSpawners[type] = spawner;
 }
 
-ACommand* CommandFactory::getCommand(const std::string& name) const
+ACommand* CommandFactory::createCommand(irc::CommandType type, IServer& server) const
 {
-	std::map< std::string, ACommand* >::const_iterator it = m_commands.find(name);
+	std::map< irc::CommandType, CommandSpawner >::const_iterator it = m_commandSpawners.find(type);
 
-	if (it != m_commands.end())
-		return it->second;
+	if (it != m_commandSpawners.end())
+		return (it->second(server));
 
-	return NULL;
+	return (NULL);
 }
 
-bool CommandFactory::hasCommand(const std::string& name) const
+bool CommandFactory::hasCommand(irc::CommandType type) const
 {
-	return m_commands.find(name) != m_commands.end();
+	return (m_commandSpawners.count(type) > 0);
+}
+
+irc::CommandType CommandFactory::stringToCommandType(const std::string& commandName)
+{
+	std::map< std::string, irc::CommandType >::const_iterator it = g_commandMap.find(commandName);
+	if (it != g_commandMap.end())
+		return (it->second);
+	return (irc::CMD_UNKNOWN);
 }

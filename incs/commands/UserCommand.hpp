@@ -4,8 +4,10 @@
 
 class UserCommand : public ACommand
 {
-public:
+private:
 	UserCommand(IServer& server);
+
+public:
 	virtual ~UserCommand();
 
 	void execute(IClient* client, const Message& message);
@@ -26,4 +28,6 @@ public:
 	{
 		return "USER";
 	}
+
+	static ACommand* create(IServer& server);
 };

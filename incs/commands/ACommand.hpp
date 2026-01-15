@@ -8,14 +8,19 @@
 
 class ACommand
 {
+private:
+	ACommand(const ACommand& source);
+	ACommand& operator=(const ACommand& other);
+
 protected:
 	IServer& m_server;
 
 	void sendReply(IClient* client, const NumericReply& reply);
 	bool validateParamCount(IClient* client, const Message& message, size_t min);
 
-public:
 	ACommand(IServer& server);
+
+public:
 	virtual ~ACommand();
 
 	virtual void execute(IClient* client, const Message& message) = 0;

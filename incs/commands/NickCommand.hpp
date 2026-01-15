@@ -7,8 +7,9 @@ class NickCommand : public ACommand
 private:
 	bool isValidNickname(const std::string& nickname) const;
 
-public:
 	NickCommand(IServer& server);
+
+public:
 	virtual ~NickCommand();
 
 	void execute(IClient* client, const Message& message);
@@ -29,4 +30,6 @@ public:
 	{
 		return "NICK";
 	}
+
+	static ACommand* create(IServer& server);
 };

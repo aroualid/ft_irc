@@ -1,17 +1,9 @@
 #include "commands/PassCommand.hpp"
+#include "commands/CommandRegistration.hpp"
+#include "commands/CommandType.hpp"
 #include <new>
 
-namespace
-{
-struct Registrar
-{
-	Registrar()
-	{
-		CommandFactory::getInstance()->registerCommandSpawner("PASS", &PassCommand::create);
-	}
-};
-static Registrar g_registrar;
-}; // namespace
+REGISTER_COMMAND(PassCommand, irc::PASS)
 
 PassCommand::PassCommand(IServer& server) : ACommand(server)
 {

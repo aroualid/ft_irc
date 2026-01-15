@@ -7,8 +7,10 @@
 
 class PassCommand : public ACommand
 {
-public:
+private:
 	PassCommand(IServer& server);
+
+public:
 	virtual ~PassCommand();
 
 	void execute(IClient* client, const Message& message);

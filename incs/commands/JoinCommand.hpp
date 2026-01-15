@@ -10,8 +10,9 @@ private:
 	std::vector< std::string > splitByComma(const std::string& str) const;
 	void joinSingleChannel(IClient* client, const std::string& channelName, const std::string& key);
 
-public:
 	JoinCommand(IServer& server);
+
+public:
 	virtual ~JoinCommand();
 
 	void execute(IClient* client, const Message& message);
@@ -32,4 +33,6 @@ public:
 	{
 		return "JOIN";
 	}
+
+	static ACommand* create(IServer& server);
 };

@@ -9,8 +9,9 @@ private:
 	std::vector< std::string > splitByComma(const std::string& str) const;
 	void sendToTarget(IClient* client, const std::string& target, const std::string& text);
 
-public:
 	PrivmsgCommand(IServer& server);
+
+public:
 	virtual ~PrivmsgCommand();
 
 	void execute(IClient* client, const Message& message);
@@ -31,4 +32,6 @@ public:
 	{
 		return "PRIVMSG";
 	}
+
+	static ACommand* create(IServer& server);
 };

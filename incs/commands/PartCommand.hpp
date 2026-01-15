@@ -8,8 +8,10 @@
 
 class PartCommand : public ACommand
 {
-public:
+private:
 	PartCommand(IServer& server);
+
+public:
 	virtual ~PartCommand();
 
 	void execute(IClient* client, const Message& message);
@@ -30,4 +32,6 @@ public:
 	{
 		return "PART";
 	}
+
+	static ACommand* create(IServer& server);
 };
