@@ -2,9 +2,10 @@
 #include "commands/ACommand.hpp"
 #include "commands/CommandRegistration.hpp"
 #include "commands/CommandType.hpp"
+#include "protocol/NumericReply.hpp"
 #include <cctype>
 
-REGISTER_COMMAND(NickCommand, irc::NICK)
+REGISTER_COMMAND(NickCommand, irc::NICK, "NICK")
 
 NickCommand::NickCommand(IServer& server) : ACommand(server)
 {
@@ -30,11 +31,8 @@ bool NickCommand::isValidNickname(const std::string& nickname) const
 	return (true);
 }
 
-void NickCommand::execute(IClient* client, const Message& message)
+void NickCommand::doExecute(IClient* client, const Message& message)
 {
-	if (!validateParamCount(client, message, minParams()))
-		return;
-
 	const std::string& nickname = message.m_params[0];
 	if (nickname.empty())
 	{
@@ -60,13 +58,18 @@ void NickCommand::execute(IClient* client, const Message& message)
 		return;
 	}
 
+	bool wasRegistered = client->isRegistered();
 	bool isNicknameChange = !client->getNickname().empty();
 	client->setNickname(nickname);
 
-	if (isNicknameChange && client->isRegistered())
+	if (!wasRegistered && client->isRegistered())
 	{
-		// TODO: broadcast nickname change to all currently connected clients
-		// this will come during next milestone
+		sendReply(client, NumericReply::welcome(client->getNickname()));
+	}
+	else if (isNicknameChange && client->isRegistered())
+	{
+		// TODO: broadcast nickname change to all channels this user is in
+		// this will come during milestone 3
 	}
 }
 

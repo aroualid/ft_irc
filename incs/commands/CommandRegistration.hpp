@@ -28,7 +28,7 @@ template < typename BaseCommand, typename ConcreteCommand > struct IsDerivedFrom
 // tldr; command calls CommandFactory and goes:
 // "heeeeey~ im <insert command name> and that's how you instantiate me *wink wink ;)*"
 
-#define REGISTER_COMMAND(CommandClass, CommandType)                                                \
+#define REGISTER_COMMAND(CommandClass, CommandType, CommandName)                                   \
 	namespace                                                                                      \
 	{                                                                                              \
 	class CommandRegistrar_##CommandClass                                                          \
@@ -37,7 +37,7 @@ template < typename BaseCommand, typename ConcreteCommand > struct IsDerivedFrom
 		CommandRegistrar_##CommandClass()                                                          \
 		{                                                                                          \
 			(void)sizeof(detail::IsDerivedFrom< ACommand, CommandClass >);                         \
-			CommandFactory::getInstance()->registerCommandSpawner(CommandType,                     \
+			CommandFactory::getInstance()->registerCommandSpawner(CommandName, CommandType,        \
 																  &CommandClass::create);          \
 		}                                                                                          \
 	};                                                                                             \

@@ -15,7 +15,7 @@ private:
 public:
 	virtual ~JoinCommand();
 
-	void execute(IClient* client, const Message& message);
+	void doExecute(IClient* client, const Message& message);
 
 	bool requiresRegistration() const
 	{

@@ -1,12 +1,10 @@
 #pragma once
 
 #include "commands/ACommand.hpp"
-#include <vector>
 
 class NoticeCommand : public ACommand
 {
 private:
-	std::vector< std::string > splitByComma(const std::string& str) const;
 	void sendToTarget(IClient* client, const std::string& target, const std::string& text);
 
 	NoticeCommand(IServer& server);
@@ -14,7 +12,9 @@ private:
 public:
 	virtual ~NoticeCommand();
 
+	// override execute to skip error replies (NOTICE never sends errors per RFC)
 	void execute(IClient* client, const Message& message);
+	void doExecute(IClient* client, const Message& message);
 
 	bool requiresRegistration() const
 	{

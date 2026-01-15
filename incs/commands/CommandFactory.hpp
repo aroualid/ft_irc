@@ -14,6 +14,7 @@ class CommandFactory
 {
 private:
 	std::map< irc::CommandType, CommandSpawner > m_commandSpawners;
+	std::map< std::string, irc::CommandType > m_stringToType;
 	static CommandFactory* s_instance;
 
 	CommandFactory();
@@ -26,8 +27,9 @@ public:
 	static CommandFactory* getInstance();
 	static void destroyInstance();
 
-	void registerCommandSpawner(irc::CommandType type, CommandSpawner spawner);
+	void registerCommandSpawner(const std::string& commandName, irc::CommandType type,
+								CommandSpawner spawner);
 	ACommand* createCommand(irc::CommandType type, IServer& server) const;
 	bool hasCommand(irc::CommandType type) const;
-	static irc::CommandType stringToCommandType(const std::string& commandName);
+	irc::CommandType stringToCommandType(const std::string& commandName) const;
 };

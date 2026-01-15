@@ -7,22 +7,6 @@
 
 CommandFactory* CommandFactory::s_instance = NULL;
 
-static std::map< std::string, irc::CommandType > create_command_map()
-{
-	std::map< std::string, irc::CommandType > m;
-	m["PASS"] = irc::PASS;
-	m["NICK"] = irc::NICK;
-	m["USER"] = irc::USER;
-	m["JOIN"] = irc::JOIN;
-	m["PART"] = irc::PART;
-	m["PRIVMSG"] = irc::PRIVMSG;
-	m["NOTICE"] = irc::NOTICE;
-	// and other commands go here when they're done
-	return m;
-}
-
-static const std::map< std::string, irc::CommandType > g_commandMap = create_command_map();
-
 CommandFactory::CommandFactory()
 {
 }
@@ -59,10 +43,14 @@ void CommandFactory::destroyInstance()
 	}
 }
 
-void CommandFactory::registerCommandSpawner(irc::CommandType type, CommandSpawner spawner)
+void CommandFactory::registerCommandSpawner(const std::string& commandName, irc::CommandType type,
+											CommandSpawner spawner)
 {
 	if (spawner)
+	{
 		m_commandSpawners[type] = spawner;
+		m_stringToType[commandName] = type;
+	}
 }
 
 ACommand* CommandFactory::createCommand(irc::CommandType type, IServer& server) const
@@ -80,10 +68,10 @@ bool CommandFactory::hasCommand(irc::CommandType type) const
 	return (m_commandSpawners.count(type) > 0);
 }
 
-irc::CommandType CommandFactory::stringToCommandType(const std::string& commandName)
+irc::CommandType CommandFactory::stringToCommandType(const std::string& commandName) const
 {
-	std::map< std::string, irc::CommandType >::const_iterator it = g_commandMap.find(commandName);
-	if (it != g_commandMap.end())
+	std::map< std::string, irc::CommandType >::const_iterator it = m_stringToType.find(commandName);
+	if (it != m_stringToType.end())
 		return (it->second);
 	return (irc::CMD_UNKNOWN);
 }

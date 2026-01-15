@@ -3,7 +3,7 @@
 #include "commands/CommandType.hpp"
 #include <new>
 
-REGISTER_COMMAND(PassCommand, irc::PASS)
+REGISTER_COMMAND(PassCommand, irc::PASS, "PASS")
 
 PassCommand::PassCommand(IServer& server) : ACommand(server)
 {
@@ -13,11 +13,8 @@ PassCommand::~PassCommand()
 {
 }
 
-void PassCommand::execute(IClient* client, const Message& message)
+void PassCommand::doExecute(IClient* client, const Message& message)
 {
-	if (!validateParamCount(client, message, minParams()))
-		return;
-
 	if (client->isRegistered())
 	{
 		sendReply(client, NumericReply::alreadyRegistered(client->getNickname()));

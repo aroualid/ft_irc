@@ -6,7 +6,7 @@
 #include "protocol/NumericReply.hpp"
 #include <cstddef>
 
-REGISTER_COMMAND(JoinCommand, irc::JOIN)
+REGISTER_COMMAND(JoinCommand, irc::JOIN, "JOIN")
 
 JoinCommand::JoinCommand(IServer& server) : ACommand(server)
 {
@@ -61,11 +61,8 @@ std::vector< std::string > JoinCommand::splitByComma(const std::string& str) con
 	return result;
 }
 
-void JoinCommand::execute(IClient* client, const Message& message)
+void JoinCommand::doExecute(IClient* client, const Message& message)
 {
-	if (!validateParamCount(client, message, minParams()))
-		return;
-
 	std::vector< std::string > channels = splitByComma(message.m_params[0]);
 	std::vector< std::string > keys;
 

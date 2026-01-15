@@ -5,7 +5,7 @@
 #include "core/IMessageBuffer.hpp"
 #include "protocol/MessageParser.hpp"
 
-REGISTER_COMMAND(NoticeCommand, irc::NOTICE)
+REGISTER_COMMAND(NoticeCommand, irc::NOTICE, "NOTICE")
 
 NoticeCommand::NoticeCommand(IServer& server) : ACommand(server)
 {
@@ -15,37 +15,18 @@ NoticeCommand::~NoticeCommand()
 {
 }
 
-std::vector< std::string > NoticeCommand::splitByComma(const std::string& str) const
+void NoticeCommand::execute(IClient* client, const Message& message)
 {
-	std::vector< std::string > result;
-	std::string current;
+	if (!client || message.m_params.size() < minParams())
+		return;
 
-	for (std::size_t i = 0; i < str.length(); i++)
-	{
-		if (str[i] == ',')
-		{
-			if (!current.empty())
-			{
-				result.push_back(current);
-				current.clear();
-			}
-		}
-		else
-		{
-			current += str[i];
-		}
-	}
-
-	if (!current.empty())
-		result.push_back(current);
-
-	return result;
+	doExecute(client, message);
 }
 
 void NoticeCommand::sendToTarget(IClient* client, const std::string& target,
 								 const std::string& text)
 {
-	if (!target.empty() && (target[0] == '#' || target[0] == '&'))
+	if (isChannelName(target))
 	{
 		IChannel* channel = m_server.getChannel(target);
 		if (!channel)
@@ -54,14 +35,8 @@ void NoticeCommand::sendToTarget(IClient* client, const std::string& target,
 		if (!channel->hasMember(client))
 			return;
 
-		Message notice;
-		notice.m_prefix = client->getPrefix();
-		notice.m_command = getName();
-		notice.m_params.push_back(target);
-		notice.m_params.push_back(text);
-
-		std::string serialized = MessageParser::serialize(notice);
-		channel->broadcast(serialized, client);
+		Message msg = buildMessage(client, target, text);
+		broadcastToChannel(channel, client, msg);
 	}
 	else
 	{
@@ -69,22 +44,13 @@ void NoticeCommand::sendToTarget(IClient* client, const std::string& target,
 		if (!targetClient)
 			return;
 
-		Message notice;
-		notice.m_prefix = client->getPrefix();
-		notice.m_command = getName();
-		notice.m_params.push_back(target);
-		notice.m_params.push_back(text);
-
-		std::string serialized = MessageParser::serialize(notice);
-		targetClient->getBuffer().appendWrite(serialized);
+		Message msg = buildMessage(client, target, text);
+		sendToClient(targetClient, client, msg);
 	}
 }
 
-void NoticeCommand::execute(IClient* client, const Message& message)
+void NoticeCommand::doExecute(IClient* client, const Message& message)
 {
-	if (message.m_params.size() < minParams())
-		return;
-
 	const std::string& targets = message.m_params[0];
 	const std::string& text = message.m_params[1];
 

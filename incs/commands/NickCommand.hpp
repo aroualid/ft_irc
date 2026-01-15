@@ -12,7 +12,7 @@ private:
 public:
 	virtual ~NickCommand();
 
-	void execute(IClient* client, const Message& message);
+	void doExecute(IClient* client, const Message& message);
 
 	bool requiresRegistration() const
 	{

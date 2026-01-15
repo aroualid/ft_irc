@@ -3,7 +3,7 @@
 #include "commands/CommandType.hpp"
 #include "protocol/NumericReply.hpp"
 
-REGISTER_COMMAND(UserCommand, irc::USER)
+REGISTER_COMMAND(UserCommand, irc::USER, "USER")
 
 UserCommand::UserCommand(IServer& server) : ACommand(server)
 {
@@ -13,11 +13,8 @@ UserCommand::~UserCommand()
 {
 }
 
-void UserCommand::execute(IClient* client, const Message& message)
+void UserCommand::doExecute(IClient* client, const Message& message)
 {
-	if (!validateParamCount(client, message, minParams()))
-		return;
-
 	if (client->isRegistered())
 	{
 		sendReply(client, NumericReply::alreadyRegistered(client->getNickname()));
@@ -35,8 +32,14 @@ void UserCommand::execute(IClient* client, const Message& message)
 		return;
 	}
 
+	bool wasRegistered = client->isRegistered();
 	client->setUsername(username);
 	client->setRealname(realname);
+
+	if (!wasRegistered && client->isRegistered())
+	{
+		sendReply(client, NumericReply::welcome(client->getNickname()));
+	}
 }
 
 ACommand* UserCommand::create(IServer& server)

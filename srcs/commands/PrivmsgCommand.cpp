@@ -6,7 +6,7 @@
 #include "protocol/MessageParser.hpp"
 #include "protocol/NumericReply.hpp"
 
-REGISTER_COMMAND(PrivmsgCommand, irc::PRIVMSG)
+REGISTER_COMMAND(PrivmsgCommand, irc::PRIVMSG, "PRIVMSG")
 
 PrivmsgCommand::PrivmsgCommand(IServer& server) : ACommand(server)
 {
@@ -16,37 +16,10 @@ PrivmsgCommand::~PrivmsgCommand()
 {
 }
 
-std::vector< std::string > PrivmsgCommand::splitByComma(const std::string& str) const
-{
-	std::vector< std::string > result;
-	std::string current;
-
-	for (std::size_t i = 0; i < str.length(); i++)
-	{
-		if (str[i] == ',')
-		{
-			if (!current.empty())
-			{
-				result.push_back(current);
-				current.clear();
-			}
-		}
-		else
-		{
-			current += str[i];
-		}
-	}
-
-	if (!current.empty())
-		result.push_back(current);
-
-	return result;
-}
-
 void PrivmsgCommand::sendToTarget(IClient* client, const std::string& target,
 								  const std::string& text)
 {
-	if (!target.empty() && (target[0] == '#' || target[0] == '&'))
+	if (isChannelName(target))
 	{
 		IChannel* channel = m_server.getChannel(target);
 		if (!channel)
@@ -61,14 +34,8 @@ void PrivmsgCommand::sendToTarget(IClient* client, const std::string& target,
 			return;
 		}
 
-		Message privmsg;
-		privmsg.m_prefix = client->getPrefix();
-		privmsg.m_command = getName();
-		privmsg.m_params.push_back(target);
-		privmsg.m_params.push_back(text);
-
-		std::string serialized = MessageParser::serialize(privmsg);
-		channel->broadcast(serialized, client);
+		Message msg = buildMessage(client, target, text);
+		broadcastToChannel(channel, client, msg);
 	}
 	else
 	{
@@ -79,22 +46,13 @@ void PrivmsgCommand::sendToTarget(IClient* client, const std::string& target,
 			return;
 		}
 
-		Message privmsg;
-		privmsg.m_prefix = client->getPrefix();
-		privmsg.m_command = getName();
-		privmsg.m_params.push_back(target);
-		privmsg.m_params.push_back(text);
-
-		std::string serialized = MessageParser::serialize(privmsg);
-		targetClient->getBuffer().appendWrite(serialized);
+		Message msg = buildMessage(client, target, text);
+		sendToClient(targetClient, client, msg);
 	}
 }
 
-void PrivmsgCommand::execute(IClient* client, const Message& message)
+void PrivmsgCommand::doExecute(IClient* client, const Message& message)
 {
-	if (!validateParamCount(client, message, minParams()))
-		return;
-
 	const std::string& targets = message.m_params[0];
 	const std::string& text = message.m_params[1];
 

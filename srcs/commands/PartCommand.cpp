@@ -5,7 +5,7 @@
 #include "protocol/MessageParser.hpp"
 #include "protocol/NumericReply.hpp"
 
-REGISTER_COMMAND(PartCommand, irc::PART)
+REGISTER_COMMAND(PartCommand, irc::PART, "PART")
 
 PartCommand::PartCommand(IServer& server) : ACommand(server)
 {
@@ -15,11 +15,8 @@ PartCommand::~PartCommand()
 {
 }
 
-void PartCommand::execute(IClient* client, const Message& message)
+void PartCommand::doExecute(IClient* client, const Message& message)
 {
-	if (!validateParamCount(client, message, minParams()))
-		return;
-
 	std::string channelName = message.m_params[0];
 	std::string partMessage = message.m_params.size() > 1 ? message.m_params[1] : "";
 
