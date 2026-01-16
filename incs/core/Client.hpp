@@ -1,10 +1,11 @@
 #pragma once
 #include "../ft_irc.hpp"
 #include "../core/IMessageBuffer.hpp"
-class Channel;
+#include "IClient.hpp"
+#include "IChannel.hpp"
 class ClientState;
 
-class Client {
+class Client : public IClient{
 private:
     int _fd;
     std::string _nickname;
