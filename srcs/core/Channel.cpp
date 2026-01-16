@@ -14,8 +14,6 @@ Channel::~Channel() {
     _invited.clear();
 }
 
-
-
 bool Channel::addMember(IClient* client, const std::string& key)
 {
 	if (hasMember(client) == true)
@@ -38,19 +36,31 @@ void Channel::removeMember(IClient* client)
 	_members.erase(client);
 }
 
-bool Channel::hasMember(IClient* client) const {
-    return _members.find(client) != _members.end();
+void Channel::addInvite(IClient* client)
+{
+	_invited.insert(client);
 }
 
-void Channel::addOperator(IClient* client)
+bool Channel::isInvited(IClient* client) const
 {
-	_operators.insert(client);
+	return (_invited.find(client) != _invited.end());
 }
 
 bool Channel::isOperator(IClient* client) const
 {
 	return (_operators.find(client) != _operators.end());
 }
+
+bool Channel::hasMember(IClient* client) const {
+    return _members.find(client) != _members.end();
+}
+
+void Channel::addOperator(IClient* client)
+{
+	if (hasMember(client))
+		_operators.insert(client);
+}
+
 
 bool Channel::applyMode(char mode, bool set, const std::string& param, IClient* setter)
 {
@@ -165,3 +175,23 @@ std::string Channel::getMemberList() const {
     }
     return list;
 }
+
+bool Channel::isEmpty() const
+{
+	return _members.empty();
+}
+
+void Channel::setTopic(const std::string& topic) {_topic = topic;}
+void Channel::setKey(const std::string& key) {_key = key;}
+void Channel::setInviteOnly(bool inviteOnly) {_inviteOnly = inviteOnly;}
+void Channel::setTopicRestricted(bool restricted) {_topicRestricted = restricted ;}
+void Channel::setUserLimit(int limit) {_userLimit = limit;}
+
+
+const std::string& Channel::getName() const {return _name;}
+const std::string& Channel::getTopic() const {return _topic;}
+const std::string& Channel::getKey() const {return _key;}
+size_t Channel::getMemberCount() const {return _members.size();}
+bool Channel::isInviteOnly() const {return _inviteOnly;}
+bool Channel::isTopicRestricted() const {return _topicRestricted;}
+int Channel::getUserLimit() const {return _userLimit;}

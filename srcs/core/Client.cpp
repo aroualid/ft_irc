@@ -26,6 +26,16 @@ const std::string& Client::getRealname() const
 	return (_realname);
 }
 
+const std::string& Client::getHostname() const
+{
+	return (_hostname);
+}
+
+bool Client::isPasswordProvided() const
+{
+	return (_passwordProvided);
+}
+
 bool Client::isAuthenticated() const
 {
 	return (_passwordProvided);
@@ -86,6 +96,11 @@ void Client::updateRegistrationState()
 }
 
 IMessageBuffer& Client::getBuffer()
+{
+	return (_buffer);
+}
+
+const IMessageBuffer& Client::getBuffer() const
 {
 	return (_buffer);
 }

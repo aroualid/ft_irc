@@ -35,6 +35,10 @@ public:
     const std::string& getNickname() const;
     const std::string& getUsername() const;
     const std::string& getRealname() const;
+	const std::string& getHostname() const;
+
+
+	bool isPasswordProvided() const;
     bool isAuthenticated() const;
     bool isRegistered() const;
 
@@ -52,5 +56,6 @@ public:
 	const std::set< std::string >& getChannels() const;
     // Buffer access
     IMessageBuffer& getBuffer();
+    const IMessageBuffer& getBuffer() const;
     std::string getPrefix() const;  // "nick!user@host"
 };

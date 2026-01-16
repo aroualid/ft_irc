@@ -30,6 +30,8 @@ public:
     void removeMember(IClient* client);
     bool hasMember(IClient* client) const;
 
+	void addInvite(IClient* client);
+	bool isInvited(IClient* client) const;
     // Operator management
     void addOperator(IClient* client);
     bool isOperator(IClient* client) const;
@@ -41,4 +43,19 @@ public:
     // Broadcasting
     void broadcast(const std::string& message, IClient* exclude = NULL);
     std::string getMemberList() const;
+	bool isEmpty() const;
+
+	void setTopic(const std::string& topic);
+	void setKey(const std::string& key);
+	void setInviteOnly(bool inviteOnly);
+	void setTopicRestricted(bool restricted);
+	void setUserLimit(int limit);
+
+	const std::string& getName() const;
+	const std::string& getTopic() const;
+	const std::string& getKey() const;
+	size_t getMemberCount() const;
+	bool isInviteOnly() const;
+	bool isTopicRestricted() const;
+	int getUserLimit() const;
 };
