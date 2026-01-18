@@ -2,19 +2,31 @@
 #include "MessageBuffer.hpp"
 #include <set>
 
+class Channel;
+class ClientState;
+class MessageBuffer;
+
 class Client {
 private:
-	int _fd;
-	std::string _nickname;
+    int _fd;
+    std::string _nickname;
     std::string _username;
     std::string _realname;
     std::string _hostname;
-
-    //ClientState _state;
-    bool		_passwordProvided;
 	
+    enum ClientState {
+	    HANDSHAKE,
+	    LOGIN,
+	    REGISTERED,
+	    DISCONNECTED
+	};
+
+    ClientState _state;
+    bool		_passwordProvided;
+
     MessageBuffer _buffer;
     std::set<std::string> _channels;
+
 
 public:
     Client(int fd, const std::string& hostname);
@@ -23,11 +35,15 @@ public:
     // Getters
     int getFd() const;
     const std::string& getNickname() const;
+    const std::string& getUsername() const;
+    const std::string& getRealname() const;
     bool isAuthenticated() const;
     bool isRegistered() const;
 
     // State management
     void setNickname(const std::string& nick);
+    void setUsername(const std::string& user);
+    void setRealname(const std::string& real);
     void setPasswordProvided(bool provided);
     void updateRegistrationState();
 

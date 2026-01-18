@@ -1,0 +1,53 @@
+name: Discord PR Ping (Ari/Yanis/Eliza)
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  notify-team:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Identifier et Notifier
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          ACTOR: ${{ github.actor }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          # --- 1. CONFIGURATION DES IDS DISCORD ---
+          # Remplace les 000... par les vrais IDs (clic droit sur l'user discord -> copier l'identifiant)
+          ID_ARI="<@426791921713938433>"
+          ID_YANIS="<@432440007450427404>"
+          ID_ELIZA="<@286106334183555072>"
+
+          MESSAGE=""
+
+          # --- 2. LOGIQUE DE DETECTION (Remplace les pseudos GitHub ici) ---
+          
+          # CAS 1 : C'est ARI qui fait la PR
+          if [ "$ACTOR" == "aroualid" ]; then
+            MESSAGE="Hey $ID_ELIZA et $ID_YANIS, Ari vient d'ouvrir une PR ! 🚀"
+
+          # CAS 2 : C'est YANIS qui fait la PR
+          elif [ "$ACTOR" == "vantavoids" ]; then
+            MESSAGE="Salut $ID_ARI et $ID_ELIZA, Yanis attend votre review ! 👓"
+
+          # CAS 3 : C'est ELIZA qui fait la PR
+          elif [ "$ACTOR" == "encrypt6" ]; then
+             MESSAGE="Hello $ID_YANIS et $ID_ARI, c'est au tour d'Eliza ! 💻"
+
+          else
+             # Optionnel : Si quelqu'un d'autre fait une PR (ex: toi ou un bot)
+             MESSAGE="Nouvelle PR de $ACTOR (pas de ping spécifique)."
+          fi
+
+          # --- 3. ENVOI DU MESSAGE ---
+          
+          # On prépare le JSON avec le message et le lien
+          PAYLOAD="🚨 **Review demandée**\n$MESSAGE\n$PR_URL"
+          
+          # Envoi à Discord
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "{\"content\": \"$PAYLOAD\"}" \
+               $DISCORD_WEBHOOK

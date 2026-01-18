@@ -19,9 +19,9 @@
 #include <map>
 #include <set>
 
-#include "Config.hpp"
-#include "EpollSocketManager.hpp"
+#include "PollSocketManager.hpp"
 #include "Client.hpp"
+#include "Config.hpp"
 
 class Server
 {

@@ -1,0 +1,35 @@
+#pragma once
+
+#include "ACommand.hpp"
+
+class NickCommand : public ACommand
+{
+private:
+	bool isValidNickname(const std::string& nickname) const;
+
+	NickCommand(IServer& server);
+
+public:
+	virtual ~NickCommand();
+
+	void doExecute(IClient* client, const Message& message);
+
+	bool requiresRegistration() const
+	{
+		return false;
+	}
+	bool requiresAuthentication() const
+	{
+		return true;
+	}
+	std::size_t minParams() const
+	{
+		return 1;
+	}
+	std::string getName() const
+	{
+		return "NICK";
+	}
+
+	static ACommand* create(IServer& server);
+};
