@@ -1,4 +1,8 @@
 #include "../../incs/core/Channel.hpp"
+#include  <cstdlib>
+#include <string>
+#include <sstream>
+#include <sys/socket.h>
 
 Channel::Channel(const std::string& name) : _name(name), _topic(""), _key(""), _inviteOnly(false), _topicRestricted(false), _userLimit(-1)
 {
@@ -10,9 +14,7 @@ Channel::~Channel() {
     _invited.clear();
 }
 
-
-
-bool Channel::addMember(Client* client, const std::string& key)
+bool Channel::addMember(IClient* client, const std::string& key)
 {
 	if (hasMember(client) == true)
 		return false;
@@ -29,26 +31,38 @@ bool Channel::addMember(Client* client, const std::string& key)
 	return true;
 }
 
-void Channel::removeMember(Client* client)
+void Channel::removeMember(IClient* client)
 {
 	_members.erase(client);
 }
 
-bool Channel::hasMember(Client* client) const {
-    return _members.find(client) != _members.end();
-}
-
-void Channel::addOperator(Client* client)
+void Channel::addInvite(IClient* client)
 {
-	_operators.insert(client);
+	_invited.insert(client);
 }
 
-bool Channel::isOperator(Client* client) const
+bool Channel::isInvited(IClient* client) const
+{
+	return (_invited.find(client) != _invited.end());
+}
+
+bool Channel::isOperator(IClient* client) const
 {
 	return (_operators.find(client) != _operators.end());
 }
 
-bool Channel::applyMode(char mode, bool set, const std::string& param, Client* setter)
+bool Channel::hasMember(IClient* client) const {
+    return _members.find(client) != _members.end();
+}
+
+void Channel::addOperator(IClient* client)
+{
+	if (hasMember(client))
+		_operators.insert(client);
+}
+
+
+bool Channel::applyMode(char mode, bool set, const std::string& param, IClient* setter)
 {
 	if (!isOperator(setter))
         return false;
@@ -121,38 +135,39 @@ std::string Channel::getModeString() const
 	if (!_key.empty())
 		modes += " " + _key;
 	if (_userLimit)
-		modes += " " + std::to_string(_userLimit);
+	{
+		std::ostringstream oss;
+		oss << _userLimit;
+		std::string str = oss.str();
+		modes += " " + str;
+	}
 
 	return modes;
 
 }
 
-void Channel::broadcast(const std::string& message, Client* exclude) {
-    std::set<Client*>::iterator it;
+void Channel::broadcast(const std::string& message, IClient* exclude) {
+    std::set<IClient*>::iterator it;
     
     for (it = _members.begin(); it != _members.end(); ++it) {
-        Client* member = *it;
+        IClient* member = *it;
         
-        // On n'envoie pas le message à celui qui l'a écrit (si exclude est fourni)
         if (member == exclude)
             continue;
             
-        // Envoi basique via socket. 
-        // Note: Assure-toi que le message termine bien par \r\n
         send(member->getFd(), message.c_str(), message.length(), 0);
     }
 }
 
 std::string Channel::getMemberList() const {
     std::string list = "";
-    std::set<Client*>::iterator it;
+    std::set<IClient*>::iterator it;
 
     for (it = _members.begin(); it != _members.end(); ++it) {
-        Client* member = *it;
+        IClient* member = *it;
         
         if (it != _members.begin()) list += " ";
         
-        // Préfixe pour les opérateurs (@)
         if (isOperator(member))
             list += "@";
         
@@ -160,3 +175,23 @@ std::string Channel::getMemberList() const {
     }
     return list;
 }
+
+bool Channel::isEmpty() const
+{
+	return _members.empty();
+}
+
+void Channel::setTopic(const std::string& topic) {_topic = topic;}
+void Channel::setKey(const std::string& key) {_key = key;}
+void Channel::setInviteOnly(bool inviteOnly) {_inviteOnly = inviteOnly;}
+void Channel::setTopicRestricted(bool restricted) {_topicRestricted = restricted ;}
+void Channel::setUserLimit(int limit) {_userLimit = limit;}
+
+
+const std::string& Channel::getName() const {return _name;}
+const std::string& Channel::getTopic() const {return _topic;}
+const std::string& Channel::getKey() const {return _key;}
+size_t Channel::getMemberCount() const {return _members.size();}
+bool Channel::isInviteOnly() const {return _inviteOnly;}
+bool Channel::isTopicRestricted() const {return _topicRestricted;}
+int Channel::getUserLimit() const {return _userLimit;}

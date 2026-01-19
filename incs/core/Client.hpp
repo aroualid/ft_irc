@@ -1,11 +1,11 @@
 #pragma once
 #include "../ft_irc.hpp"
-
-class Channel;
+#include "../core/IMessageBuffer.hpp"
+#include "IClient.hpp"
+#include "IChannel.hpp"
 class ClientState;
-class MessageBuffer;
 
-class Client {
+class Client : public IClient{
 private:
     int _fd;
     std::string _nickname;
@@ -22,7 +22,7 @@ private:
     ClientState _state;
     bool _passwordProvided;
 
-    MessageBuffer _buffer;
+    IMessageBuffer _buffer;
     std::set<std::string> _channels;
 
 
@@ -35,6 +35,10 @@ public:
     const std::string& getNickname() const;
     const std::string& getUsername() const;
     const std::string& getRealname() const;
+	const std::string& getHostname() const;
+
+
+	bool isPasswordProvided() const;
     bool isAuthenticated() const;
     bool isRegistered() const;
 
@@ -49,8 +53,9 @@ public:
     void joinChannel(const std::string& channel);
     void leaveChannel(const std::string& channel);
     bool isInChannel(const std::string& channel) const;
-
+	const std::set< std::string >& getChannels() const;
     // Buffer access
-    MessageBuffer& getBuffer();
+    IMessageBuffer& getBuffer();
+    const IMessageBuffer& getBuffer() const;
     std::string getPrefix() const;  // "nick!user@host"
 };
