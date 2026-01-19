@@ -57,7 +57,7 @@ IChannel* Server::createChannel(const std::string& name, IClient* creator)
 {
 	if (getChannel(name))
 		return NULL;
-	Channel* channel = new Channel(name);
+	ChannelMock* channel = new ChannelMock(name);
 	m_channels[name] = channel;
 	if (creator)
 		channel->addMember(creator);
