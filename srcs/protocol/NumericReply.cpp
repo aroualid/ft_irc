@@ -136,3 +136,9 @@ NumericReply NumericReply::notOnChannel(const std::string& nick, const std::stri
 	std::string message = channel + " :You're not on that channel";
 	return NumericReply(442, nick, message);
 }
+
+NumericReply NumericReply::noOrigin(const std::string& nick)
+{
+	std::string message = ":No origin specified";
+	return NumericReply(409, nick, message);
+}

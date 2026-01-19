@@ -27,4 +27,5 @@ public:
 	IChannel* createChannel(const std::string& name, IClient* creator);
 	void deleteChannelIfEmpty(IChannel* channel);
 	size_t getChannelCount() const;
+	std::string getServerName() const;
 };

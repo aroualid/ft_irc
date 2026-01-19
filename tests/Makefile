@@ -46,7 +46,8 @@ REQUIRED_SRCS = $(SRCS_DIR)/protocol/Message.cpp \
 				$(SRCS_DIR)/commands/PartCommand.cpp \
 				$(SRCS_DIR)/commands/PrivmsgCommand.cpp \
 				$(SRCS_DIR)/commands/NoticeCommand.cpp \
-				$(SRCS_DIR)/commands/QuitCommand.cpp
+				$(SRCS_DIR)/commands/QuitCommand.cpp \
+				$(SRCS_DIR)/commands/PingCommand.cpp
 
 REQUIRED_OBJ = $(REQUIRED_SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/srcs/%.o)
 
@@ -63,6 +64,7 @@ TEST_SRCS = test_irc_utils.cpp \
 			test_nick_command.cpp \
 			test_user_command.cpp \
 			test_quit_command.cpp \
+			test_ping_command.cpp
 
 TEST_OBJ = $(TEST_SRCS:%.cpp=$(OBJ_DIR)/%.o)
 

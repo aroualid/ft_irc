@@ -79,3 +79,8 @@ size_t Server::getChannelCount() const
 {
 	return m_channels.size();
 }
+
+std::string Server::getServerName() const
+{
+	return "mock_server.serv";
+}
