@@ -76,4 +76,7 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re test test_run test_filter docker-test docker-test-shell docker-test-filter
+format:
+	@find . -type f \( -name "*.cpp" -o -name "*.hpp" \) -exec clang-format -i {} +
+
+.PHONY: all clean fclean re format test test_run test_filter docker-test docker-test-shell docker-test-filter
