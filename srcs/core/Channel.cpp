@@ -1,4 +1,6 @@
 #include "../../incs/core/Channel.hpp"
+#include "core/IClient.hpp"
+#include "core/IMessageBuffer.hpp"
 #include  <cstdlib>
 #include <string>
 #include <sstream>
@@ -91,8 +93,8 @@ bool Channel::applyMode(char mode, bool set, const std::string& param, IClient* 
 					return false;
 				_userLimit = std::atoi(param.c_str());
 				return true;
+			default : return false;
 		}
-		return false;
 	}
 	if (set == false)
 	{
@@ -115,15 +117,18 @@ bool Channel::applyMode(char mode, bool set, const std::string& param, IClient* 
 			case 'l':
 				_userLimit = -1;
 				return true;
+			default : return false;
 		}
-		return false;
 	}
 	return false;
 }
 
 std::string Channel::getModeString() const
 {
-	std::string modes = "+";
+	std::string modes = "";
+	if (!_inviteOnly && !_topicRestricted && _key.empty() && _userLimit == -1)
+		return (modes);
+	modes = "+";
 	if (_inviteOnly)
 		modes += "i"; 
 	if (_topicRestricted)
@@ -134,7 +139,7 @@ std::string Channel::getModeString() const
 		modes += "l";
 	if (!_key.empty())
 		modes += " " + _key;
-	if (_userLimit)
+	if (_userLimit != -1)
 	{
 		std::ostringstream oss;
 		oss << _userLimit;
@@ -154,8 +159,7 @@ void Channel::broadcast(const std::string& message, IClient* exclude) {
         
         if (member == exclude)
             continue;
-            
-        send(member->getFd(), message.c_str(), message.length(), 0);
+		member->getBuffer().appendWrite(message);
     }
 }
 
