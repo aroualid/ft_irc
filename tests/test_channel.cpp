@@ -186,10 +186,11 @@ Test(Channel, applyModeNoOp)
 	std::string feur = "didier";
 	Channel canal(feur);
 	Client client1(3, "localhost");
+	Client client2(4, "localhost");
 	canal.setKey("bonjour");
-	client1.setPasswordProvided(true);
 	canal.addMember(&client1, "bonjour");
-	cr_assert(!canal.applyMode('o', "true", "", &client1));
+	canal.addMember(&client2, "bonjour");
+	cr_assert(!canal.applyMode('o', "true", "", &client2));
 }
 
 Test(Channel, applyFalseMode)
