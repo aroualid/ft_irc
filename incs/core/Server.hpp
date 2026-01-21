@@ -19,12 +19,15 @@
 #include <map>
 #include <set>
 
-#include "PollSocketManager.hpp"
-#include "IClient.hpp"
-#include "Config.hpp"
-#include "core/IServer.hpp"
+//#include "PollSocketManager.hpp"
 
-class Server
+#include "core/IServer.hpp"
+#include "IClient.hpp"
+#include "IChannel.hpp"
+#include "core/Config.hpp"
+#include "network/ISocketManager.hpp"
+
+class Server: public IServer
 {
 	private:
 		const Config	m_cfg;
@@ -32,6 +35,10 @@ class Server
 		ISocketManager  *m_sm;
 
 		std::map<int, IClient*> m_clients;
+		std::map<std::string, IClient*> m_clientsByNick;
+		std::map<std::string, IChannel*>m_channels;
+
+
 		IClient	*getClient(int fd);
 		void	onIrcLine(int fd, const std::string &line);
 
@@ -44,4 +51,12 @@ class Server
 		Server(const Config &cfg);
 		~Server();
 		void	run();
+
+		//IServer
+		int	getPort() const;
+		const std::string &getPassword()const;
+
+		IClient*	getClientByNickName(const std::string &nick);
+		void		registerClient(const std::string &nick, IClient* client);
+		void		unregisterClient(const std::string)
 };
