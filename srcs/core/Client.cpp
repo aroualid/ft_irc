@@ -1,14 +1,5 @@
-#include "Client.hpp"
-
-Client::Client(int fd, const std::string& hostname): _fd(fd), _hostname(hostname), _state(HANDSHAKE), _passwordProvided(false), _buffer("")
-{
-	return (_fd);
-}
-
-const std::string& Client::getNickname() const
-{
-	return (_nickname);
-}
+#include "core/Client.hpp"
+#include "core/IMessageBuffer.hpp"
 
 Client::Client(int fd, const std::string &hostname)
 	:_fd(fd),
@@ -21,6 +12,17 @@ Client::Client(int fd, const std::string &hostname)
 	_buffer(),
 	_channels()
 {}
+
+int	Client::getFd() const
+{
+	return _fd;
+}
+
+const std::string& Client::getNickname() const
+{
+	return (_nickname);
+}
+
 
 Client::~Client() {}
 const std::string& Client::getUsername() const

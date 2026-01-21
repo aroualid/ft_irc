@@ -1,6 +1,7 @@
 #include "../../incs/core/Channel.hpp"
 #include "core/IClient.hpp"
 #include "core/IMessageBuffer.hpp"
+#include "network/MessageBuffer.hpp"
 #include  <cstdlib>
 #include <string>
 #include <sstream>
@@ -144,10 +145,6 @@ std::string Channel::getModeString() const
 		modes += "l";
 	if (!_key.empty())
 		modes += " " + _key;
-<<<<<<< HEAD
-	//if (_userLimit)
-		//modes += " " + std::to_string(_userLimit); CA C EST DU CPP11 pas 98
-=======
 	if (_userLimit != -1)
 	{
 		std::ostringstream oss;
@@ -155,7 +152,6 @@ std::string Channel::getModeString() const
 		std::string str = oss.str();
 		modes += " " + str;
 	}
->>>>>>> origin/main
 
 	return modes;
 

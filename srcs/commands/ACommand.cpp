@@ -2,6 +2,9 @@
 #include "core/IChannel.hpp"
 #include "core/IMessageBuffer.hpp"
 #include "protocol/MessageParser.hpp"
+#include "network/MessageBuffer.hpp"
+#include "core/IClient.hpp"
+
 #include <vector>
 
 ACommand::ACommand(IServer& server) : m_server(server)

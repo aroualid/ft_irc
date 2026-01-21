@@ -4,6 +4,7 @@
 #include <string>
 
 class IMessageBuffer;
+//class MessageBuffer;
 
 class IClient
 {
@@ -35,6 +36,8 @@ public:
 
 	virtual IMessageBuffer& getBuffer() = 0;
 	virtual const IMessageBuffer& getBuffer() const = 0;
+
+	// MessageBuffer& getBuffer();
 
 	virtual std::string getPrefix() const = 0;
 };

@@ -1,8 +1,13 @@
-#include "Server.hpp"
+#include "core/Server.hpp"
+#include "core/Channel.hpp"
+#include "core/Client.hpp"
+#include "core/IClient.hpp"
+#include "core/IMessageBuffer.hpp"
+#include "network/MessageBuffer.hpp"
 
-Client	*Server::getClient(int fd)
+IClient	*Server::getClient(int fd)
 {
-	std::map<int, Client*>::iterator	it = m_clients.find(fd);
+	std::map<int, IClient*>::iterator	it = m_clients.find(fd);
 	if (it == m_clients.end())
 		return (0);
 	return (it->second);
@@ -31,7 +36,7 @@ void	Server::disconnectClient(int fd)
  
 	}
 	close(fd);
-	std::map<int, Client*>::iterator it = m_clients.find(fd);
+	std::map<int, IClient*>::iterator it = m_clients.find(fd);
 	if (it != m_clients.end())
 	{
 		delete it->second;
@@ -42,7 +47,7 @@ void	Server::disconnectClient(int fd)
 
 void	Server::readClientsData(int fd)
 {
-	Client	*client = getClient(fd);
+	IClient	*client = getClient(fd);
 	if (!client)
 	{
 		disconnectClient(fd);
@@ -197,7 +202,7 @@ Server::Server(const Config &cfg) : m_cfg(cfg), m_listenFd(-1), m_sm(0) {}
 
 Server::~Server()
 {
-	for(std::map<int, Client*>::iterator it = m_clients.begin(); it != m_clients.end(); it++)
+	for(std::map<int, IClient*>::iterator it = m_clients.begin(); it != m_clients.end(); it++)
 	{
 		close(it->first);
 		delete (it->second);

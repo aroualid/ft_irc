@@ -20,8 +20,9 @@
 #include <set>
 
 #include "PollSocketManager.hpp"
-#include "Client.hpp"
+#include "IClient.hpp"
 #include "Config.hpp"
+#include "core/IServer.hpp"
 
 class Server
 {
@@ -30,8 +31,8 @@ class Server
 		int				m_listenFd;
 		ISocketManager  *m_sm;
 
-		std::map<int, Client*> m_clients;
-		Client	*getClient(int fd);
+		std::map<int, IClient*> m_clients;
+		IClient	*getClient(int fd);
 		void	onIrcLine(int fd, const std::string &line);
 
 		void	handleDisconnections(int fd, unsigned int evt);

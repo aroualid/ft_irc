@@ -1,4 +1,4 @@
-#include "MessageBuffer.hpp"
+#include "network/MessageBuffer.hpp"
 
 
 MessageBuffer::MessageBuffer() : m_readBuffer(), m_writeBuffer(){}
@@ -12,7 +12,6 @@ bool	MessageBuffer::hasCompleteMessage() const
 {
 	return (m_readBuffer.find("\r\n") != std::string::npos);
 }
-
 
 std::string	MessageBuffer::getNextMessage()
 {
@@ -45,4 +44,9 @@ void MessageBuffer::consumeWriteBuffer(size_t bytes)
 		m_writeBuffer.clear();
 	else
 		m_writeBuffer.erase(0, bytes);
+}
+
+void MessageBuffer::clearWriteBuffer()
+{
+	m_writeBuffer.clear();
 }
