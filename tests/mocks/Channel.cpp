@@ -2,91 +2,91 @@
 #include "Client.hpp"
 #include <iostream>
 
-Channel::Channel(const std::string& name)
+ChannelMock::ChannelMock(const std::string& name)
 	: m_name(name), m_topic(""), m_key(""), m_members(), m_operators(), m_invited(),
 	  m_inviteOnly(false), m_topicRestricted(true), m_userLimit(-1)
 {
-	std::cout << "[MOCK] Channel created: " << name << std::endl;
+	std::cout << "[MOCK] ChannelMock created: " << name << std::endl;
 }
 
-Channel::~Channel()
+ChannelMock::~ChannelMock()
 {
-	std::cout << "[MOCK] Channel destroyed: " << m_name << std::endl;
+	std::cout << "[MOCK] ChannelMock destroyed: " << m_name << std::endl;
 }
 
-const std::string& Channel::getName() const
+const std::string& ChannelMock::getName() const
 {
 	return m_name;
 }
-const std::string& Channel::getTopic() const
+const std::string& ChannelMock::getTopic() const
 {
 	return m_topic;
 }
-const std::string& Channel::getKey() const
+const std::string& ChannelMock::getKey() const
 {
 	return m_key;
 }
-size_t Channel::getMemberCount() const
+size_t ChannelMock::getMemberCount() const
 {
 	return m_members.size();
 }
-bool Channel::isInviteOnly() const
+bool ChannelMock::isInviteOnly() const
 {
 	return m_inviteOnly;
 }
-bool Channel::isTopicRestricted() const
+bool ChannelMock::isTopicRestricted() const
 {
 	return m_topicRestricted;
 }
-int Channel::getUserLimit() const
+int ChannelMock::getUserLimit() const
 {
 	return m_userLimit;
 }
 
-void Channel::setTopic(const std::string& topic)
+void ChannelMock::setTopic(const std::string& topic)
 {
 	m_topic = topic;
 	std::cout << "[MOCK] Topic set for " << m_name << ": " << topic << std::endl;
 }
 
-void Channel::setKey(const std::string& key)
+void ChannelMock::setKey(const std::string& key)
 {
 	m_key = key;
 	std::cout << "[MOCK] Key set for " << m_name << std::endl;
 }
 
-void Channel::setInviteOnly(bool inviteOnly)
+void ChannelMock::setInviteOnly(bool inviteOnly)
 {
 	m_inviteOnly = inviteOnly;
 	std::cout << "[MOCK] Invite-only " << (inviteOnly ? "enabled" : "disabled") << " for " << m_name
 			  << std::endl;
 }
 
-void Channel::setTopicRestricted(bool restricted)
+void ChannelMock::setTopicRestricted(bool restricted)
 {
 	m_topicRestricted = restricted;
 	std::cout << "[MOCK] Topic restriction " << (restricted ? "enabled" : "disabled") << " for "
 			  << m_name << std::endl;
 }
 
-void Channel::setUserLimit(int limit)
+void ChannelMock::setUserLimit(int limit)
 {
 	m_userLimit = limit;
 	std::cout << "[MOCK] User limit set to " << limit << " for " << m_name << std::endl;
 }
 
-void Channel::addInvite(IClient* client)
+void ChannelMock::addInvite(IClient* client)
 {
 	m_invited.insert(client);
 	std::cout << "[MOCK] " << m_name << ": Added invite" << std::endl;
 }
 
-bool Channel::isInvited(IClient* client) const
+bool ChannelMock::isInvited(IClient* client) const
 {
 	return m_invited.find(client) != m_invited.end();
 }
 
-bool Channel::addMember(IClient* client, const std::string& key)
+bool ChannelMock::addMember(IClient* client, const std::string& key)
 {
 	if (!client)
 		return false;
@@ -119,24 +119,24 @@ bool Channel::addMember(IClient* client, const std::string& key)
 	return true;
 }
 
-void Channel::removeMember(IClient* client)
+void ChannelMock::removeMember(IClient* client)
 {
 	m_members.erase(client);
 	m_operators.erase(client);
 	std::cout << "[MOCK] " << m_name << ": Removed member" << std::endl;
 }
 
-bool Channel::hasMember(IClient* client) const
+bool ChannelMock::hasMember(IClient* client) const
 {
 	return m_members.find(client) != m_members.end();
 }
 
-bool Channel::isOperator(IClient* client) const
+bool ChannelMock::isOperator(IClient* client) const
 {
 	return m_operators.find(client) != m_operators.end();
 }
 
-void Channel::addOperator(IClient* client)
+void ChannelMock::addOperator(IClient* client)
 {
 	if (hasMember(client))
 	{
@@ -145,7 +145,7 @@ void Channel::addOperator(IClient* client)
 	}
 }
 
-std::string Channel::getMemberList() const
+std::string ChannelMock::getMemberList() const
 {
 	std::string list;
 	for (std::set< IClient* >::const_iterator it = m_members.begin(); it != m_members.end(); ++it)
@@ -159,7 +159,7 @@ std::string Channel::getMemberList() const
 	return list;
 }
 
-void Channel::broadcast(const std::string& message, IClient* exclude)
+void ChannelMock::broadcast(const std::string& message, IClient* exclude)
 {
 	std::cout << "[MOCK] " << m_name << ": Broadcasting message";
 	if (exclude)
@@ -172,7 +172,7 @@ void Channel::broadcast(const std::string& message, IClient* exclude)
 	}
 }
 
-bool Channel::isEmpty() const
+bool ChannelMock::isEmpty() const
 {
 	return m_members.empty();
 }

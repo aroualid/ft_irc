@@ -1,6 +1,6 @@
 #include "../../incs/core/Client.hpp"
 
-Client::Client(int fd, const std::string& hostname): _fd(fd), _hostname(hostname), _state(HANDSHAKE), _passwordProvided(false)
+Client::Client(int fd, const std::string& hostname): _fd(fd), _hostname(hostname), _state(HANDSHAKE), _passwordProvided(false), _buffer("")
 {
     _nickname = "";
     _username = "";

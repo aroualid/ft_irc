@@ -1,6 +1,5 @@
 #pragma once
 #include "../ft_irc.hpp"
-#include "../core/IClient.hpp"
 #include "../core/IChannel.hpp"
 
 class IChannelMode;

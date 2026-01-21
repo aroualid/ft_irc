@@ -4,7 +4,7 @@
 #include <set>
 #include <string>
 
-class Channel : public IChannel
+class ChannelMock : public IChannel
 {
 private:
 	std::string m_name;
@@ -18,8 +18,8 @@ private:
 	int m_userLimit;
 
 public:
-	Channel(const std::string& name);
-	virtual ~Channel();
+	ChannelMock(const std::string& name);
+	virtual ~ChannelMock();
 
 	const std::string& getName() const;
 	const std::string& getTopic() const;
