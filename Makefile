@@ -33,6 +33,8 @@ SRCS = $(SRCS_DIR)/main.cpp \
 		$(SRCS_DIR)/commands/PrivmsgCommand.cpp \
 		$(SRCS_DIR)/commands/NoticeCommand.cpp \
 		$(SRCS_DIR)/commands/QuitCommand.cpp \
+		$(SRCS_DIR)/commands/PingCommand.cpp \
+		$(SRCS_DIR)/commands/PongCommand.cpp \
 		$(SRCS_DIR)/protocol/Message.cpp \
 		$(SRCS_DIR)/protocol/MessageParser.cpp \
 		$(SRCS_DIR)/protocol/NumericReply.cpp \
@@ -78,4 +80,7 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re test test_run test_filter docker-test docker-test-shell docker-test-filter
+format:
+	@find . -type f \( -name "*.cpp" -o -name "*.hpp" \) -exec clang-format -i {} +
+
+.PHONY: all clean fclean re format test test_run test_filter docker-test docker-test-shell docker-test-filter

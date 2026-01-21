@@ -22,6 +22,10 @@ enum CommandType
 	MOCK,
 	MOCK2,
 
+	// ping / pong
+	PING,
+	PONG,
+
 	// unknown/invalid
 	CMD_UNKNOWN
 };
