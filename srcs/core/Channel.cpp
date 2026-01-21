@@ -30,6 +30,11 @@ bool Channel::addMember(IClient* client, const std::string& key)
             return false;
 	}
 	_members.insert(client);
+	_invited.erase(client);
+	if (_members.size() == 1)
+	{
+		_operators.insert(client);	
+	}		
 	return true;
 }
 
