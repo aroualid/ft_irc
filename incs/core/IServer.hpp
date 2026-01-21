@@ -23,4 +23,5 @@ public:
 	virtual IChannel* createChannel(const std::string& name, IClient* creator) = 0;
 	virtual void deleteChannelIfEmpty(IChannel* channel) = 0;
 	virtual size_t getChannelCount() const = 0;
+	virtual std::string getServerName() const = 0;
 };

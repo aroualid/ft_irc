@@ -36,4 +36,5 @@ public:
 	static NumericReply noSuchNick(const std::string& nick, const std::string& target);
 	static NumericReply cannotSendToChan(const std::string& nick, const std::string& channel);
 	static NumericReply notOnChannel(const std::string& nick, const std::string& channel);
+	static NumericReply noOrigin(const std::string& nick);
 };
