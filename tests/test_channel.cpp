@@ -15,6 +15,12 @@ Test(Channel, newUser)
 	Client client1(3, "localhost");
 	Client client2(4, "localhost");
 	canal.setKey("bonjour");
+	client1.setNickname(std::string("Didier"));	
+	client2.setNickname(std::string("Didier"));	
+	client1.setUsername(std::string("Didier"));	
+	client2.setUsername(std::string("Didier"));	
+	client1.setPasswordProvided(true);
+	client2.setPasswordProvided(true);
 	canal.addMember(&client2, "bonjour");
 	cr_assert(canal.addMember(&client1, "bonjour"));
 }
@@ -26,6 +32,9 @@ Test(Channel, alreadyUser)
 	Channel canal(feur);
 	Client client1(3, "localhost");
 	canal.setKey("bonjour");
+	client1.setNickname(std::string("Didier"));	
+	client1.setUsername(std::string("Didier"));	
+	client1.setPasswordProvided(true);
 	canal.addMember(&client1, "bonjour");
 	cr_assert(!canal.addMember(&client1, "bonjour"));
 }
@@ -37,6 +46,9 @@ Test(Channel, falsePassword)
 	Channel canal(feur);
 	Client client1(3, "localhost");
 	canal.setKey("bonjour");
+	client1.setPasswordProvided(true);
+	client1.setNickname(std::string("Didier"));	
+	client1.setUsername(std::string("Didier"));	
 	cr_assert(!canal.addMember(&client1, "test"));
 }
 
@@ -46,8 +58,11 @@ Test(Channel, goodPassword)
 	cr_log_info("Testing Channel addMember");
 	std::string feur = "didier";
 	Channel canal(feur);
-Client client1(3, "localhost");
+	Client client1(3, "localhost");
 	canal.setKey("bonjour");
+	client1.setPasswordProvided(true);
+	client1.setNickname(std::string("Didier"));	
+	client1.setUsername(std::string("Didier"));	
 	cr_assert(canal.addMember(&client1, "bonjour"));
 }
 
@@ -62,6 +77,18 @@ Test(Channel, noUserLimit)
 	Client client3(5, "localhost");
 	Client client4(6, "localhost");
 	canal.setKey("bonjour");
+	client1.setPasswordProvided(true);
+	client2.setPasswordProvided(true);
+	client3.setPasswordProvided(true);
+	client4.setPasswordProvided(true);
+	client1.setNickname(std::string("Didier"));	
+	client2.setNickname(std::string("Didier"));	
+	client3.setNickname(std::string("Didier"));	
+	client4.setNickname(std::string("Didier"));	
+	client1.setUsername(std::string("Didier"));	
+	client2.setUsername(std::string("Didier"));	
+	client3.setUsername(std::string("Didier"));	
+	client4.setUsername(std::string("Didier"));	
 	canal.addMember(&client2, "bonjour");
 	canal.addMember(&client3, "bonjour");
 	canal.addMember(&client4, "bonjour");
@@ -78,6 +105,18 @@ Test(Channel, userLimitIsOn )
 	Client client3(5, "localhost");
 	Client client4(6, "localhost");
 	canal.setKey("bonjour");
+	client1.setPasswordProvided(true);
+	client2.setPasswordProvided(true);
+	client3.setPasswordProvided(true);
+	client4.setPasswordProvided(true);
+	client1.setNickname(std::string("Didier"));	
+	client2.setNickname(std::string("Didier"));	
+	client3.setNickname(std::string("Didier"));	
+	client4.setNickname(std::string("Didier"));	
+	client1.setUsername(std::string("Didier"));	
+	client2.setUsername(std::string("Didier"));	
+	client3.setUsername(std::string("Didier"));	
+	client4.setUsername(std::string("Didier"));	
 	canal.setUserLimit(3);
 	canal.addMember(&client2, "bonjour");
 	canal.addMember(&client3, "bonjour");
@@ -92,8 +131,11 @@ Test(Channel, userIsInvite)
 	Channel canal(feur);
 	Client client1(3, "localhost");
 	canal.setKey("bonjour");
+	client1.setPasswordProvided(true);
 	canal.setInviteOnly(true);
 	canal.addInvite(&client1);
+	client1.setNickname(std::string("Didier"));	
+	client1.setUsername(std::string("Didier"));	
 	cr_assert(canal.addMember(&client1, "bonjour"));
 }
 
@@ -104,7 +146,10 @@ Test(Channel, userIsNoInvite)
 	Channel canal(feur);
 	Client client1(3, "localhost");
 	canal.setKey("bonjour");
+	client1.setPasswordProvided(true);
 	canal.setInviteOnly(true);
+	client1.setNickname(std::string("Didier"));	
+	client1.setUsername(std::string("Didier"));	
 	cr_assert(!canal.addMember(&client1, "bonjour"));
 }
 
@@ -115,6 +160,9 @@ Test(Channel, HasUser)
 	Channel canal(feur);
 	Client client1(3, "localhost");
 	canal.setKey("bonjour");
+	client1.setPasswordProvided(true);
+	client1.setNickname(std::string("Didier"));	
+	client1.setUsername(std::string("Didier"));	
 	canal.addMember(&client1, "bonjour");
 	cr_assert(canal.hasMember(&client1));
 }
@@ -125,6 +173,9 @@ Test(Channel, HasRemoveUser)
 	Channel canal(feur);
 	Client client1(3, "localhost");
 	canal.setKey("bonjour");
+	client1.setPasswordProvided(true);
+	client1.setNickname(std::string("Didier"));	
+	client1.setUsername(std::string("Didier"));	
 	canal.addMember(&client1, "bonjour");
 	canal.removeMember(&client1);
 	cr_assert(!canal.hasMember(&client1));
@@ -136,6 +187,7 @@ Test(Channel, applyModeNoOp)
 	Channel canal(feur);
 	Client client1(3, "localhost");
 	canal.setKey("bonjour");
+	client1.setPasswordProvided(true);
 	canal.addMember(&client1, "bonjour");
 	cr_assert(!canal.applyMode('o', "true", "", &client1));
 }
@@ -146,6 +198,9 @@ Test(Channel, applyFalseMode)
 	Channel canal(feur);
 	Client client1(3, "localhost");
 	canal.setKey("bonjour");
+	client1.setPasswordProvided(true);
+	client1.setNickname(std::string("Didier"));	
+	client1.setUsername(std::string("Didier"));	
 	canal.addMember(&client1, "bonjour");
 	canal.addOperator(&client1);
 	cr_assert(!canal.applyMode('z', "true", "", &client1));
@@ -157,6 +212,9 @@ Test(Channel, applyModeWithoutParam)
 	Channel canal(feur);
 	Client client1(3, "localhost");
 	canal.setKey("bonjour");
+	client1.setNickname(std::string("Didier"));	
+	client1.setUsername(std::string("Didier"));	
+	client1.setPasswordProvided(true);
 	canal.addMember(&client1, "bonjour");
 	canal.addOperator(&client1);
 	cr_assert(!canal.applyMode('l', "true", "", &client1));
@@ -169,6 +227,9 @@ Test(Channel, applyModeOp)
 	Channel canal(feur);
 	Client client1(3, "localhost");
 	canal.setKey("bonjour");
+	client1.setNickname(std::string("Didier"));	
+	client1.setUsername(std::string("Didier"));	
+	client1.setPasswordProvided(true);
 	canal.addMember(&client1, "bonjour");
 	canal.addOperator(&client1);
 	cr_assert(canal.applyMode('o', "true", "", &client1));
@@ -180,6 +241,9 @@ Test(Channel, applyTrueMode)
 	Channel canal(feur);
 	Client client1(3, "localhost");
 	canal.setKey("bonjour");
+	client1.setNickname(std::string("Didier"));	
+	client1.setPasswordProvided(true);
+	client1.setUsername(std::string("Didier"));	
 	canal.addMember(&client1, "bonjour");
 	canal.addOperator(&client1);
 	cr_assert(canal.applyMode('t', "true", "", &client1));
@@ -190,6 +254,9 @@ Test(Channel, applyModeWithParam)
 	std::string feur = "didier";
 	Channel canal(feur);
 	Client client1(3, "localhost");
+	client1.setNickname(std::string("Didier"));	
+	client1.setPasswordProvided(true);
+	client1.setUsername(std::string("Didier"));	
 	canal.setKey("bonjour");
 	canal.addMember(&client1, "bonjour");
 	canal.addOperator(&client1);
@@ -239,15 +306,23 @@ Test(Channel, getMemberListNoOp)
 	Client client3(5, "localhost");
 	Client client4(6, "localhost");
 	canal.setKey("bonjour");
-	canal.addMember(&client1, "bonjour");
-	canal.addMember(&client2, "bonjour");
-	canal.addMember(&client3, "bonjour");
-	canal.addMember(&client4, "bonjour");
+	client1.setPasswordProvided(true);
+	client2.setPasswordProvided(true);
+	client3.setPasswordProvided(true);
+	client4.setPasswordProvided(true);
 	client1.setNickname(std::string("a"));
 	client2.setNickname(std::string ("b"));
 	client3.setNickname(std::string ("c"));
 	client4.setNickname(std::string ("d"));
-	cr_assert(canal.getMemberList() == std::string("d c b a"));
+	client1.setUsername(std::string("Didier"));	
+	client2.setUsername(std::string("Didier"));	
+	client3.setUsername(std::string("Didier"));	
+	client4.setUsername(std::string("Didier"));	
+	canal.addMember(&client1, "bonjour");
+	canal.addMember(&client2, "bonjour");
+	canal.addMember(&client3, "bonjour");
+	canal.addMember(&client4, "bonjour");
+	cr_assert(canal.getMemberList() == std::string("d c b @a"));
 }
 
 Test(Channel, getMemberListOneOp)
@@ -259,16 +334,24 @@ Test(Channel, getMemberListOneOp)
 	Client client3(5, "localhost");
 	Client client4(6, "localhost");
 	canal.setKey("bonjour");
+	client1.setPasswordProvided(true);
+	client2.setPasswordProvided(true);
+	client3.setPasswordProvided(true);
+	client4.setPasswordProvided(true);
+	client1.setNickname(std::string("a"));
+	client2.setNickname(std::string ("b"));
+	client3.setNickname(std::string ("c"));
+	client4.setNickname(std::string ("d"));
+	client1.setUsername(std::string("Didier"));	
+	client2.setUsername(std::string("Didier"));	
+	client3.setUsername(std::string("Didier"));	
+	client4.setUsername(std::string("Didier"));	
 	canal.addMember(&client1, "bonjour");
 	canal.addMember(&client2, "bonjour");
 	canal.addMember(&client3, "bonjour");
 	canal.addMember(&client4, "bonjour");
 	canal.addOperator(&client2);
-	client1.setNickname(std::string("a"));
-	client2.setNickname(std::string ("b"));
-	client3.setNickname(std::string ("c"));
-	client4.setNickname(std::string ("d"));
-	cr_assert(canal.getMemberList() == std::string("d c @b a"));
+	cr_assert(canal.getMemberList() == std::string("d c @b @a"));
 }
 
 Test(Channel, isNotEmpty)
@@ -279,6 +362,18 @@ Test(Channel, isNotEmpty)
 	Client client2(4, "localhost");
 	Client client3(5, "localhost");
 	Client client4(6, "localhost");
+	client1.setPasswordProvided(true);
+	client2.setPasswordProvided(true);
+	client3.setPasswordProvided(true);
+	client4.setPasswordProvided(true);
+	client1.setNickname(std::string("Didier"));	
+	client2.setNickname(std::string("Didier"));	
+	client3.setNickname(std::string("Didier"));	
+	client4.setNickname(std::string("Didier"));	
+	client1.setUsername(std::string("Didier"));	
+	client2.setUsername(std::string("Didier"));	
+	client3.setUsername(std::string("Didier"));	
+	client4.setUsername(std::string("Didier"));	
 	canal.setKey("bonjour");
 	canal.addMember(&client1, "bonjour");
 	canal.addMember(&client2, "bonjour");
@@ -295,6 +390,18 @@ Test(Channel, isEmpty)
 	Client client2(4, "localhost");
 	Client client3(5, "localhost");
 	Client client4(6, "localhost");
+	client1.setPasswordProvided(true);
+	client2.setPasswordProvided(true);
+	client3.setPasswordProvided(true);
+	client4.setPasswordProvided(true);
+	client1.setNickname(std::string("Didier"));	
+	client2.setNickname(std::string("Didier"));	
+	client3.setNickname(std::string("Didier"));	
+	client4.setNickname(std::string("Didier"));	
+	client1.setUsername(std::string("Didier"));	
+	client2.setUsername(std::string("Didier"));	
+	client3.setUsername(std::string("Didier"));	
+	client4.setUsername(std::string("Didier"));	
 	cr_assert(canal.isEmpty());
 }
 
@@ -306,6 +413,18 @@ Test(Channel, broadcast)
 	Client client2(4, "localhost");
 	Client client3(5, "localhost");
 	Client client4(6, "localhost");
+	client1.setPasswordProvided(true);
+	client2.setPasswordProvided(true);
+	client3.setPasswordProvided(true);
+	client4.setPasswordProvided(true);
+	client1.setNickname(std::string("Didier"));	
+	client2.setNickname(std::string("Didier"));	
+	client3.setNickname(std::string("Didier"));	
+	client4.setNickname(std::string("Didier"));	
+	client1.setUsername(std::string("Didier"));	
+	client2.setUsername(std::string("Didier"));	
+	client3.setUsername(std::string("Didier"));	
+	client4.setUsername(std::string("Didier"));	
 	canal.setKey("bonjour");
 	canal.addMember(&client1, "bonjour");
 	canal.addMember(&client2, "bonjour");
