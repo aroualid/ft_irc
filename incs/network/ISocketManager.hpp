@@ -1,6 +1,7 @@
+#pragma once
 
 #include <vector>
-#include "PollSocketManager.hpp"
+#include <sys/epoll.h>
 
 struct SocketEvent{
 	int fd;

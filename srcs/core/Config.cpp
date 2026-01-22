@@ -43,7 +43,7 @@ int Config::getPort() const
     return this->m_port;
 }
 
-const std::string &Config::getPasswd() const
+const std::string &Config::getPassword() const
 {
     return this->m_passwd;
 }

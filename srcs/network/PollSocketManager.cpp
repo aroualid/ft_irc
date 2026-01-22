@@ -1,12 +1,12 @@
 #include "PollSocketManager.hpp"
 
 
-const	std::vector<epoll_event> &EpollSocketManager::getEvents() const
+const	std::vector<epoll_event> &PollSocketManager::getEvents() const
 {
 	return (m_events);
 }
 
-int	EpollSocketManager::wait(int timeout_ms)
+int	PollSocketManager::wait(int timeout_ms)
 {
 	int	n = epoll_wait(
 		m_epollFd,
@@ -25,7 +25,7 @@ int	EpollSocketManager::wait(int timeout_ms)
 
 }
 
-void	EpollSocketManager::modifySocket(int fd, int events)
+void	PollSocketManager::modifySocket(int fd, int events)
 {
 	epoll_event	evt;
 
@@ -39,14 +39,14 @@ void	EpollSocketManager::modifySocket(int fd, int events)
 }
 
 
-void	EpollSocketManager::removeSocket(int fd)
+void	PollSocketManager::removeSocket(int fd)
 {
 	if (epoll_ctl(m_epollFd, EPOLL_CTL_DEL, fd, 0) == -1)
 		throw std::runtime_error("Deletion of socket failed\n");
 }
 
 
-void	EpollSocketManager::addSocket(int fd, int events)
+void	PollSocketManager::addSocket(int fd, int events)
 {
 	epoll_event	evt;
 
@@ -59,7 +59,7 @@ void	EpollSocketManager::addSocket(int fd, int events)
 		throw std::runtime_error("Creation of socket failed\n");
 }
 
-EpollSocketManager::EpollSocketManager() : m_epollFd(-1), m_events(64) //64  = 
+PollSocketManager::PollSocketManager() : m_epollFd(-1), m_events(64) //64  = 
 {
 	m_epollFd = epoll_create(64); //creation of the epoll instance. 
 	if (m_epollFd == -1)
@@ -67,7 +67,7 @@ EpollSocketManager::EpollSocketManager() : m_epollFd(-1), m_events(64) //64  =
 		
 }
 
-EpollSocketManager::~EpollSocketManager()
+PollSocketManager::~PollSocketManager()
 {
 	if (m_epollFd != -1)
 		close(m_epollFd);

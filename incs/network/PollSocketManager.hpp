@@ -9,17 +9,17 @@
 
 #include "ISocketManager.hpp"
 
-class EpollSocketManager : public ISocketManager {
+class PollSocketManager : public ISocketManager {
 private:
 	int m_epollFd;
 	std::vector<epoll_event> m_events;
 
-	EpollSocketManager(const EpollSocketManager&); //copy constructor
-	EpollSocketManager &operator=(const EpollSocketManager&); //assignement operator
+	PollSocketManager(const PollSocketManager&); //copy constructor
+	PollSocketManager &operator=(const PollSocketManager&); //assignement operator
 
 public:
-	EpollSocketManager();
-	~EpollSocketManager();
+	PollSocketManager();
+	~PollSocketManager();
 
 	void addSocket(int fd, int events);
 	void removeSocket(int fd);

@@ -4,6 +4,90 @@
 #include "core/IClient.hpp"
 #include "core/IMessageBuffer.hpp"
 #include "network/MessageBuffer.hpp"
+#include "network/PollSocketManager.hpp"
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+int Server::getPort() const
+{
+	return m_cfg.getPort();
+}
+
+const std::string &Server::getPassword() const
+{
+    return m_cfg.getPassword();
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//getClientByNickname
+//register
+//unregister
+
+
+void	Server::deleteChannelIfEmpty(IChannel *channel)
+{
+	if (!channel)
+		return;
+	if (!channel->isEmpty())
+		return;
+	m_channels.erase(channel->getName());
+	delete channel;
+}
+
+IChannel	*Server::createChannel(const std::string &name, IClient *creator)
+{
+	IChannel	*existing = getChannel(name);
+	if (existing)
+		return (existing);
+	
+	Channel *channel = new Channel(name);
+	m_channels[name] = channel;
+
+	channel->addMember(creator, "");
+	return (channel);
+}
+
+
+IClient	*Server::getClientByNickname(const std::string &nick)
+{
+	std::map<std::string, IClient*>::iterator it = m_clientsByNick.find(nick);
+	if (it != m_clientsByNick.end())
+	{
+		return (it->second);
+	}
+	return (0);
+}
+
+void	Server::registerClient(const std::string &nick, IClient *client)
+{
+	if (!-nick.empty())
+	{
+		m_clientsByNick[nick] = client;
+	}
+}
+
+void	Server::unregisterClient(const std::string &nick)
+{
+	m_clientsByNick.erase(nick);
+}
+
+IChannel	*Server::getChannel(const std::string &name)
+{
+	std::map<std::string, IChannel*>::iterator it = m_channels.find(name); // returns name of the wanted channel
+	if (it != m_channels.end())
+		return (it->second);
+	return (0); //nullptr
+}
+
+size_t	Server::getChannelCount() const
+{
+	return (m_channels.size());
+}
+
+std::string	Server::getServerName() const
+{
+	return("ircserv");
+}
 
 IClient	*Server::getClient(int fd)
 {
@@ -164,7 +248,7 @@ void	Server::run()
 	m_listenFd = createListeningSocket(m_cfg.getPort()); //the "door" of the server irc
 	std::cout << "Listening...\n";
 
-	m_sm = new EpollSocketManager(); //THE Manager of the Sockets
+	m_sm = new PollSocketManager(); //THE Manager of the Sockets
 
 	setNonBlocking(m_listenFd);
 

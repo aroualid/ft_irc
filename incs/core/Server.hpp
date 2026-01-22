@@ -56,7 +56,13 @@ class Server: public IServer
 		int	getPort() const;
 		const std::string &getPassword()const;
 
-		IClient*	getClientByNickName(const std::string &nick);
-		void		registerClient(const std::string &nick, IClient* client);
-		void		unregisterClient(const std::string)
+		IClient		*getClientByNickname(const std::string &nick);
+		void		registerClient(const std::string &nick, IClient *client);
+		void		unregisterClient(const std::string &nick);
+		
+		IChannel	*getChannel(const std::string  &name);
+		IChannel	*createChannel(const std::string  &name, IClient *creator);
+		void		deleteChannelIfEmpty(IChannel *channel);
+		size_t		getChannelCount() const;
+		std::string	getServerName()const;
 };

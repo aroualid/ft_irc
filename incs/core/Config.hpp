@@ -14,6 +14,6 @@ class Config
 
     public:
         int                 getPort() const;
-        const std::string	&getPasswd() const;
+        const std::string	&getPassword() const;
         static Config       checkArgs(int argc, char **argv);
 };
