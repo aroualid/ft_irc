@@ -1,16 +1,17 @@
 #pragma once
 #include "../ft_irc.hpp"
-
-class Channel;
-class Client;
+class IClient;
+class IChannel;
 class IChannelMode {
 public:
     virtual ~IChannelMode() {}
 
-    virtual bool apply(Channel* channel, bool set,
-                      const std::string& param, Client* setter) = 0;
+    virtual bool apply(IChannel* channel, bool set,
+                      const std::string& param, IClient* setter) = 0;
     virtual char getModeChar() const = 0;
-    virtual bool requiresParam(bool set) const = 0;
+    virtual bool requiresParamToSet() const = 0;    // +mode needs param?
+    virtual bool requiresParamToUnset() const = 0;  // -mode needs param?
     virtual bool validateParam(const std::string& param) const = 0;
-    virtual std::string getState(Channel* channel) const = 0;
+    virtual bool isActive(IChannel* channel) const = 0;        // is mode currently set?
+    virtual std::string getParam(IChannel* channel) const = 0; // "" if no param
 };
