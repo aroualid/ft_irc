@@ -60,7 +60,7 @@ IClient	*Server::getClientByNickname(const std::string &nick)
 
 void	Server::registerClient(const std::string &nick, IClient *client)
 {
-	if (!-nick.empty())
+	if (!nick.empty())
 	{
 		m_clientsByNick[nick] = client;
 	}
@@ -100,6 +100,16 @@ IClient	*Server::getClient(int fd)
 void Server::onIrcLine(int fd, const std::string &line)
 {
 	std::cout << "fd=" << fd << " IRC line: [" << line << "]\n";
+
+	IClient	*client = getClient(fd);
+	if (!client)
+		return;
+
+	client->getBuffer().appendWrite(":ircserv NOTICE * :you said: " + line + "\r\n");  //:prefix COMMAND target (* is general, everyone) //DEBUG
+	std::cout << "queued out=" << client->getBuffer().getWriteBuffer().size() << " bytes\n";
+
+	m_sm->modifySocket(fd, EPOLLIN| EPOLLOUT );
+	writeClientsData(fd);
 	//cmdHandle(fd, line);
 }
 
@@ -127,6 +137,41 @@ void	Server::disconnectClient(int fd)
 		m_clients.erase(it);
 	}
 	std::cout << "Disconnected : " << fd << "\n";
+}
+
+void	Server::writeClientsData(int fd)
+{
+	IClient *client = getClient(fd);
+	if (!client)
+	{
+		disconnectClient(fd);
+		return ;
+	}
+	const std::string &out = client->getBuffer().getWriteBuffer();
+	if (out.empty())
+	{
+		m_sm->modifySocket(fd, EPOLLIN);
+		return;
+	}
+
+	ssize_t	sent = send(fd, out.data(), out.size(), MSG_NOSIGNAL);
+
+	if (sent > 0)
+	{
+		client->getBuffer().consumeWriteBuffer((size_t)sent);
+		if (client->getBuffer().getWriteBuffer().empty())
+			m_sm->modifySocket(fd, EPOLLIN);
+		else
+			m_sm->modifySocket(fd, EPOLLIN | EPOLLOUT);
+
+	}
+
+	else if(sent == -1)
+	{
+		if (errno ==EAGAIN || errno == EWOULDBLOCK)
+			return;
+		disconnectClient(fd);
+	}
 }
 
 void	Server::readClientsData(int fd)
@@ -273,9 +318,15 @@ void	Server::run()
 			{
 				acceptNewClients();
 			}
-			else if (evt & EPOLLIN) //clients sent data
+			else
 			{
-				readClientsData(fd);
+				if (evt & EPOLLIN) //clients sent data
+				{
+					readClientsData(fd);
+				}
+				if (evt & EPOLLOUT)
+					writeClientsData(fd);
+
 			}
 		}
 	}

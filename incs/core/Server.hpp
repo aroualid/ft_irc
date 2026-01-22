@@ -47,6 +47,10 @@ class Server: public IServer
 		void	readClientsData(int fd);
 		void	disconnectClient(int fd);
 
+		void	writeClientsData(int fd);
+		
+		;
+
 	public:
 		Server(const Config &cfg);
 		~Server();
