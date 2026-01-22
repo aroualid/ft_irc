@@ -6,7 +6,10 @@
 #include "network/MessageBuffer.hpp"
 #include "network/PollSocketManager.hpp"
 
-
+#include "commands/CommandFactory.hpp"
+#include "commands/ACommand.hpp"
+#include "protocol/MessageParser.hpp"
+#include "protocol/Message.hpp"
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 int Server::getPort() const
 {
@@ -99,17 +102,37 @@ IClient	*Server::getClient(int fd)
 
 void Server::onIrcLine(int fd, const std::string &line)
 {
-	std::cout << "fd=" << fd << " IRC line: [" << line << "]\n";
-
+	//std::cout << "fd=" << fd << " IRC line: [" << line << "]\n";
 	IClient	*client = getClient(fd);
 	if (!client)
 		return;
 
-	client->getBuffer().appendWrite(":ircserv NOTICE * :you said: " + line + "\r\n");  //:prefix COMMAND target (* is general, everyone) //DEBUG
-	std::cout << "queued out=" << client->getBuffer().getWriteBuffer().size() << " bytes\n";
+	Message	msg = MessageParser::parse(line);
+	if (!msg.isValid())
+		return;
+	
+	CommandFactory *factory = CommandFactory::getInstance();
+	irc::CommandType type = factory->stringToCommandType(msg.m_command);
+	if (!factory->hasCommand(type))
+	{
+		std::cout << "DEBUG : unknown command ?\n";
+		return;
+	}
 
-	m_sm->modifySocket(fd, EPOLLIN| EPOLLOUT );
-	writeClientsData(fd);
+	ACommand	*cmd = factory->createCommand(type, *this);
+	if (!cmd)
+		return;
+
+	cmd->execute(client, msg);
+	delete cmd;
+
+	// client->getBuffer().appendWrite(":ircserv NOTICE * :you said: " + line + "\r\n");  //:prefix COMMAND target (* is general, everyone) //DEBUG
+	// std::cout << "queued out=" << client->getBuffer().getWriteBuffer().size() << " bytes\n";
+	if (!client->getBuffer().getWriteBuffer().empty())
+	{
+		m_sm->modifySocket(fd, EPOLLIN| EPOLLOUT );
+		writeClientsData(fd);
+	}
 	//cmdHandle(fd, line);
 }
 
