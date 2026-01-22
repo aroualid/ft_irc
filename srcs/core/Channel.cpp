@@ -74,7 +74,7 @@ void Channel::removeOperator(IClient* client)
 		_operators.erase(client);
 }
 
-bool Channel::applyMode(char mode, bool set, const std::string& param, IClient* setter)
+/*bool Channel::applyMode(char mode, bool set, const std::string& param, IClient* setter)
 {
 	if (!isOperator(setter))
         return false;
@@ -131,7 +131,7 @@ bool Channel::applyMode(char mode, bool set, const std::string& param, IClient* 
 		}
 	}
 	return false;
-}
+}*/
 
 std::string Channel::getModeString() const
 {

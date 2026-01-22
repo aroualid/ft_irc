@@ -36,7 +36,7 @@ public:
     bool isOperator(IClient* client) const;
 	void removeOperator(IClient* client);
     // Mode application
-    bool applyMode(char mode, bool set, const std::string& param, IClient* setter);
+    //bool applyMode(char mode, bool set, const std::string& param, IClient* setter);
     std::string getModeString() const;
 
     // Broadcasting
