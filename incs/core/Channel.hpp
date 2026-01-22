@@ -34,7 +34,7 @@ public:
     // Operator management
     void addOperator(IClient* client);
     bool isOperator(IClient* client) const;
-
+	void removeOperator(IClient* client);
     // Mode application
     bool applyMode(char mode, bool set, const std::string& param, IClient* setter);
     std::string getModeString() const;

@@ -34,6 +34,7 @@ public:
 
 	virtual bool isOperator(IClient* client) const = 0;
 	virtual void addOperator(IClient* client) = 0;
+	virtual void removeOperator(IClient* client) = 0;
 
 	virtual std::string getMemberList() const = 0;
 	virtual void broadcast(const std::string& message, IClient* exclude = NULL) = 0;

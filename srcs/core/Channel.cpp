@@ -68,6 +68,11 @@ void Channel::addOperator(IClient* client)
 		_operators.insert(client);
 }
 
+void Channel::removeOperator(IClient* client)
+{
+	if (isOperator(client))
+		_operators.erase(client);
+}
 
 bool Channel::applyMode(char mode, bool set, const std::string& param, IClient* setter)
 {
@@ -117,7 +122,7 @@ bool Channel::applyMode(char mode, bool set, const std::string& param, IClient* 
 			case 'o': 
 				if (hasMember(setter) == false)
 					return false;
-				_operators.erase(setter);
+				removeOperator(setter);
 				return true;
 			case 'l':
 				_userLimit = -1;
