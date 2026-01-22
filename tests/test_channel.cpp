@@ -181,7 +181,7 @@ Test(Channel, HasRemoveUser)
 	cr_assert(!canal.hasMember(&client1));
 }
 
-/*Test(Channel, applyModeNoOp)
+Test(Channel, applyModeNoOp)
 {
 	std::string feur = "didier";
 	Channel canal(feur);
@@ -263,7 +263,6 @@ Test(Channel, applyModeWithParam)
 	canal.addOperator(&client1);
 	cr_assert(canal.applyMode('l', "true", "12", &client1));
 }
-*/
 
 Test(Channel, getModeStringAll)
 {

@@ -1,8 +1,6 @@
 #pragma once
-#include "../ft_irc.hpp"
-#include "../core/IChannel.hpp"
-
-class IChannelMode;
+#include "modes/IChannelMode.hpp"
+#include "core/IChannel.hpp"
  
 class Channel: public IChannel {
 private:
@@ -36,7 +34,7 @@ public:
     bool isOperator(IClient* client) const;
 	void removeOperator(IClient* client);
     // Mode application
-    //bool applyMode(char mode, bool set, const std::string& param, IClient* setter);
+	bool applyMode(char mode, bool set, const std::string& param, IClient* setter);
     std::string getModeString() const;
 
     // Broadcasting

@@ -44,6 +44,7 @@ public:
 
 	bool isOperator(IClient* client) const;
 	void addOperator(IClient* client);
+	void removeOperator(IClient* client);
 
 	std::string getMemberList() const;
 	void broadcast(const std::string& message, IClient* exclude = NULL);

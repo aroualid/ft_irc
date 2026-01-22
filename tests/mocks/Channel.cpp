@@ -145,6 +145,12 @@ void ChannelMock::addOperator(IClient* client)
 	}
 }
 
+void ChannelMock::removeOperator(IClient* client)
+{
+	if (isOperator(client))
+		m_operators.erase(client);
+}
+
 std::string ChannelMock::getMemberList() const
 {
 	std::string list;
