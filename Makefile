@@ -34,6 +34,11 @@ SRCS = $(SRCS_DIR)/main.cpp \
 		$(SRCS_DIR)/protocol/Message.cpp \
 		$(SRCS_DIR)/protocol/MessageParser.cpp \
 		$(SRCS_DIR)/protocol/NumericReply.cpp \
+		$(SRCS_DIR)/modes/InviteOnlyMode.cpp \
+		$(SRCS_DIR)/modes/TopicRestrictedMode.cpp \
+		$(SRCS_DIR)/modes/OperatorMode.cpp \
+		$(SRCS_DIR)/modes/KeyMode.cpp \
+		$(SRCS_DIR)/modes/UserLimitMode.cpp \
 		$(SRCS_DIR)/protocol/IrcUtils.cpp
 	   
 OBJ = $(SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/%.o)

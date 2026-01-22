@@ -1,5 +1,7 @@
 #include "modes/UserLimitMode.hpp" 
 #include "core/IChannel.hpp"
+#include "modes/IChannelMode.hpp"
+#include <sstream>
 #include <cstdlib>
 bool UserLimitMode::apply(IChannel* channel, bool set, const std::string& param, IClient* setter)
 {
@@ -28,3 +30,13 @@ bool UserLimitMode::validateParam(const std::string& param) const
 	}
     return true;
 }
+
+std::string UserLimitMode::getParam(IChannel *channel) const
+{
+	std::stringstream ss;
+
+    ss << channel->getUserLimit(); 
+
+    return ss.str();
+}
+ 

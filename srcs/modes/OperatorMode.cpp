@@ -3,21 +3,22 @@
 
 bool OperatorMode::apply(IChannel* channel, bool set, const std::string& param, IClient* setter)
 {
-    (void)param;
+	(void) setter;
+	IClient *client = channel->getMemberByNickname(param);
 
-	if (channel->hasMember(setter))
+	if (channel->hasMember(client))
 	{
 		if (set)
 		{
-			if (!channel->isOperator(setter))
-				channel->addOperator(setter);
+			if (!channel->isOperator(client))
+				channel->addOperator(client);
 			else
 				return false;
 		}
 		else if (!set)
 		{
-			if (channel->isOperator(setter))
-				channel->removeOperator(setter);
+			if (channel->isOperator(client))
+				channel->removeOperator(client);
 			else
 				return false;
 		}

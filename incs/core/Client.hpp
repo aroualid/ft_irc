@@ -22,7 +22,7 @@ private:
     ClientState _state;
     bool _passwordProvided;
 
-    IMessageBuffer _buffer;
+    //IMessageBuffer _buffer;
     std::set<std::string> _channels;
 
 

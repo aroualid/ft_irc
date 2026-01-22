@@ -20,6 +20,7 @@ int Server::getPort() const
 {
 	return m_port;
 }
+
 const std::string& Server::getPassword() const
 {
 	return m_password;

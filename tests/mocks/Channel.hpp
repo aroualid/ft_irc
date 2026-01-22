@@ -49,4 +49,5 @@ public:
 	std::string getMemberList() const;
 	void broadcast(const std::string& message, IClient* exclude = NULL);
 	bool isEmpty() const;
+	IClient* getMemberByNickname(const std::string& nick);
 };

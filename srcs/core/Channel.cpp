@@ -1,5 +1,6 @@
 #include "core/Channel.hpp"
 #include "core/IClient.hpp"
+#include "core/Client.hpp"
 #include "core/IMessageBuffer.hpp"
 #include "modes/IChannelMode.hpp"
 #include "modes/InviteOnlyMode.hpp"
@@ -10,6 +11,7 @@
 #include  <cstdlib>
 #include <string>
 #include <sstream>
+#include <vector>
 #include <sys/socket.h>
 
 Channel::Channel(const std::string& name) : _name(name), _topic(""), _key(""), _inviteOnly(false), _topicRestricted(false), _userLimit(-1)
@@ -93,6 +95,8 @@ void Channel::removeOperator(IClient* client)
 
 bool Channel::applyMode(char mode, bool set, const std::string& param, IClient* setter)
 {
+	if (!isOperator(setter))
+        return false;
 
 	std::map<char, IChannelMode*>::iterator it = _modes.find(mode);
 	
@@ -249,3 +253,16 @@ size_t Channel::getMemberCount() const {return _members.size();}
 bool Channel::isInviteOnly() const {return _inviteOnly;}
 bool Channel::isTopicRestricted() const {return _topicRestricted;}
 int Channel::getUserLimit() const {return _userLimit;}
+
+
+IClient* Channel::getMemberByNickname(const std::string& nickname)
+{
+    std::set<IClient*>::iterator it;
+
+    for (it = _members.begin(); it != _members.end(); ++it) {
+        IClient* member = *it;
+		if (member->getNickname() == nickname)
+			return (member);
+	}
+	return NULL;
+}
