@@ -8,6 +8,7 @@
 #include "modes/OperatorMode.hpp"
 #include "modes/TopicRestrictedMode.hpp"
 #include "modes/UserLimitMode.hpp"
+#include "network/MessageBuffer.hpp"
 #include  <cstdlib>
 #include <string>
 #include <sstream>

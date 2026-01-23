@@ -7,17 +7,21 @@ INC_DIR = ./incs
 OBJ_DIR = ./objs
 TEST_DIR = ./tests
 
+
 INCLUDES = -I$(INC_DIR) \
 			-I$(INC_DIR)/core \
-			-I$(INC_DIR)/network
+			-I$(INC_DIR)/network \
+			-I$(INC_DIR)/commands \
 
 FLAGS = -Wall -Wextra -Werror -std=c++98 $(INCLUDES)
 
 SRCS = $(SRCS_DIR)/main.cpp \
+		$(SRCS_DIR)/core/Config.cpp \
 		$(SRCS_DIR)/core/Server.cpp \
 		$(SRCS_DIR)/core/Client.cpp \
 		$(SRCS_DIR)/core/Channel.cpp \
 		$(SRCS_DIR)/network/PollSocketManager.cpp \
+		$(SRCS_DIR)/network/ISocketManager.cpp \
 		$(SRCS_DIR)/network/MessageBuffer.cpp \
 		$(SRCS_DIR)/commands/ACommand.cpp \
 		$(SRCS_DIR)/commands/CommandFactory.cpp \
@@ -49,7 +53,7 @@ $(NAME): $(OBJ)
 	$(CXX) $(FLAGS) -o $(NAME) $(OBJ)
 
 $(OBJ_DIR)/%.o: $(SRCS_DIR)/%.cpp
-	@mkdir -p $(dir $@)
+	@mkdir -p $(dir $@) 
 	$(CXX) $(FLAGS) -c $< -o $@
 
 test:

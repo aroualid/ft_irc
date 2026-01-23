@@ -1,7 +1,7 @@
 #pragma once
 
-#include "MessageBuffer.hpp"
 #include "core/IClient.hpp"
+#include "mocks/MessageBuffer.hpp"
 #include <set>
 #include <string>
 
@@ -15,7 +15,7 @@ private:
 	std::string m_hostname;
 	bool m_passwordProvided;
 	bool m_registered;
-	MessageBuffer m_buffer;
+	MessageBufferMock m_buffer;
 	std::set< std::string > m_channels;
 
 public:
