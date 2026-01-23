@@ -70,7 +70,7 @@ Test(PartCommand, part_with_message)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	IChannel *channel = server.createChannel("#test", &client);
+	IChannel* channel = server.createChannel("#test", &client);
 	client.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
@@ -130,7 +130,7 @@ Test(PartCommand, part_channel_not_on)
 	bob.setUsername("bob");
 
 	// Bob creates and joins #test
-	IChannel *channel = server.createChannel("#test", &bob);
+	IChannel* channel = server.createChannel("#test", &bob);
 	bob.joinChannel(channel);
 
 	// Alice tries to leave it (but she's not in it)
@@ -322,7 +322,7 @@ Test(PartCommand, part_with_prefix_in_broadcast)
 	alice.setNickname("alice");
 	alice.setUsername("alice_user");
 
-	IChannel *channel = server.createChannel("#test", &alice);
+	IChannel* channel = server.createChannel("#test", &alice);
 	alice.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
@@ -350,7 +350,7 @@ Test(PartCommand, part_ampersand_channel)
 	client.setUsername("alice");
 
 	// Join local channel with & prefix
-	IChannel *channel = server.createChannel("&local", &client);
+	IChannel* channel = server.createChannel("&local", &client);
 	client.joinChannel(channel);
 
 	cr_assert(client.isInChannel("&local"));
@@ -376,7 +376,7 @@ Test(PartCommand, part_empty_message_parameter)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	IChannel *channel = server.createChannel("#test", &client);
+	IChannel* channel = server.createChannel("#test", &client);
 	client.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
@@ -402,7 +402,7 @@ Test(PartCommand, part_channel_name_case_sensitive)
 	client.setUsername("alice");
 
 	// Create #Test (capital T)
-	IChannel *channel = server.createChannel("#Test", &client);
+	IChannel* channel = server.createChannel("#Test", &client);
 	client.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
@@ -464,11 +464,11 @@ Test(PartCommand, multiple_channels_in_client_list)
 	client.setUsername("alice");
 
 	// Join multiple channels
-	IChannel *channel1 = server.createChannel("#test1", &client);
+	IChannel* channel1 = server.createChannel("#test1", &client);
 	client.joinChannel(channel1);
-	IChannel *channel2 = server.createChannel("#test2", &client);
+	IChannel* channel2 = server.createChannel("#test2", &client);
 	client.joinChannel(channel2);
-	IChannel *channel3 = server.createChannel("#test3", &client);
+	IChannel* channel3 = server.createChannel("#test3", &client);
 	client.joinChannel(channel3);
 
 	cr_assert(client.isInChannel("#test1"));

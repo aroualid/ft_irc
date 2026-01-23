@@ -1,6 +1,6 @@
 #include "core/Channel.hpp"
-#include "core/IClient.hpp"
 #include "core/Client.hpp"
+#include "core/IClient.hpp"
 #include "core/IMessageBuffer.hpp"
 #include "modes/IChannelMode.hpp"
 #include "modes/InviteOnlyMode.hpp"
@@ -9,31 +9,34 @@
 #include "modes/TopicRestrictedMode.hpp"
 #include "modes/UserLimitMode.hpp"
 #include "network/MessageBuffer.hpp"
-#include  <cstdlib>
-#include <string>
+#include <cstdlib>
 #include <sstream>
-#include <vector>
+#include <string>
 #include <sys/socket.h>
+#include <vector>
 
-Channel::Channel(const std::string& name) : _name(name), _topic(""), _key(""), _inviteOnly(false), _topicRestricted(false), _userLimit(-1)
+Channel::Channel(const std::string& name)
+	: _name(name), _topic(""), _key(""), _inviteOnly(false), _topicRestricted(false), _userLimit(-1)
 {
 	_modes['i'] = new InviteOnlyMode();
-    _modes['k'] = new KeyMode();
-    _modes['o'] = new OperatorMode();
-    _modes['t'] = new TopicRestrictedMode();
-    _modes['l'] = new UserLimitMode();
+	_modes['k'] = new KeyMode();
+	_modes['o'] = new OperatorMode();
+	_modes['t'] = new TopicRestrictedMode();
+	_modes['l'] = new UserLimitMode();
 }
 
-Channel::~Channel() {
-    _members.clear();
-    _operators.clear();
-    _invited.clear();
-	std::map<char, IChannelMode*>::iterator it = _modes.begin();
-    while (it != _modes.end()) {
-        delete it->second;
-        ++it;
-    }
-    _modes.clear();
+Channel::~Channel()
+{
+	_members.clear();
+	_operators.clear();
+	_invited.clear();
+	std::map< char, IChannelMode* >::iterator it = _modes.begin();
+	while (it != _modes.end())
+	{
+		delete it->second;
+		++it;
+	}
+	_modes.clear();
 }
 
 bool Channel::addMember(IClient* client, const std::string& key)
@@ -47,14 +50,14 @@ bool Channel::addMember(IClient* client, const std::string& key)
 	if (_inviteOnly == true)
 	{
 		if (_invited.find(client) == _invited.end())
-            return false;
+			return false;
 	}
 	_members.insert(client);
 	_invited.erase(client);
 	if (_members.size() == 1)
 	{
-		_operators.insert(client);	
-	}		
+		_operators.insert(client);
+	}
 	return true;
 }
 
@@ -78,8 +81,9 @@ bool Channel::isOperator(IClient* client) const
 	return (_operators.find(client) != _operators.end());
 }
 
-bool Channel::hasMember(IClient* client) const {
-    return _members.find(client) != _members.end();
+bool Channel::hasMember(IClient* client) const
+{
+	return _members.find(client) != _members.end();
 }
 
 void Channel::addOperator(IClient* client)
@@ -97,32 +101,31 @@ void Channel::removeOperator(IClient* client)
 bool Channel::applyMode(char mode, bool set, const std::string& param, IClient* setter)
 {
 	if (!isOperator(setter))
-        return false;
+		return false;
 
-	std::map<char, IChannelMode*>::iterator it = _modes.find(mode);
-	
-	if (it == _modes.end()) 
-	{
-        return false; 
-    }
+	std::map< char, IChannelMode* >::iterator it = _modes.find(mode);
 
-	IChannelMode* modeHandler = it->second;
-
-	if (set && modeHandler->requiresParamToSet() && param.empty()) 
+	if (it == _modes.end())
 	{
 		return false;
 	}
 
-	if (!set && modeHandler->requiresParamToUnset() && param.empty()) 
+	IChannelMode* modeHandler = it->second;
+
+	if (set && modeHandler->requiresParamToSet() && param.empty())
+	{
+		return false;
+	}
+
+	if (!set && modeHandler->requiresParamToUnset() && param.empty())
 	{
 		return false;
 	}
 
 	return modeHandler->apply(this, set, param, setter);
-
 }
 /*	if (!isOperator(setter))
-        return false;
+		return false;
 	if (set == true)
 	{
 		switch (mode)
@@ -138,7 +141,7 @@ bool Channel::applyMode(char mode, bool set, const std::string& param, IClient* 
 					return false;
 				_key = param;
 				return true;
-			case 'o': 
+			case 'o':
 				if (hasMember(setter) == false)
 					return false;
 				addOperator(setter);
@@ -164,7 +167,7 @@ bool Channel::applyMode(char mode, bool set, const std::string& param, IClient* 
 			case 'k':
 				_key = "";
 				return true;
-			case 'o': 
+			case 'o':
 				if (hasMember(setter) == false)
 					return false;
 				removeOperator(setter);
@@ -185,7 +188,7 @@ std::string Channel::getModeString() const
 		return (modes);
 	modes = "+";
 	if (_inviteOnly)
-		modes += "i"; 
+		modes += "i";
 	if (_topicRestricted)
 		modes += "t";
 	if (!_key.empty())
@@ -203,36 +206,40 @@ std::string Channel::getModeString() const
 	}
 
 	return modes;
-
 }
 
-void Channel::broadcast(const std::string& message, IClient* exclude) {
-    std::set<IClient*>::iterator it;
-    
-    for (it = _members.begin(); it != _members.end(); ++it) {
-        IClient* member = *it;
-        
-        if (member == exclude)
-            continue;
+void Channel::broadcast(const std::string& message, IClient* exclude)
+{
+	std::set< IClient* >::iterator it;
+
+	for (it = _members.begin(); it != _members.end(); ++it)
+	{
+		IClient* member = *it;
+
+		if (member == exclude)
+			continue;
 		member->getBuffer().appendWrite(message);
-    }
+	}
 }
 
-std::string Channel::getMemberList() const {
-    std::string list = "";
-    std::set<IClient*>::iterator it;
+std::string Channel::getMemberList() const
+{
+	std::string list = "";
+	std::set< IClient* >::iterator it;
 
-    for (it = _members.begin(); it != _members.end(); ++it) {
-        IClient* member = *it;
-        
-        if (it != _members.begin()) list += " ";
-        
-        if (isOperator(member))
-            list += "@";
-        
-        list += member->getNickname();
-    }
-    return list;
+	for (it = _members.begin(); it != _members.end(); ++it)
+	{
+		IClient* member = *it;
+
+		if (it != _members.begin())
+			list += " ";
+
+		if (isOperator(member))
+			list += "@";
+
+		list += member->getNickname();
+	}
+	return list;
 }
 
 bool Channel::isEmpty() const
@@ -240,28 +247,63 @@ bool Channel::isEmpty() const
 	return _members.empty();
 }
 
-void Channel::setTopic(const std::string& topic) {_topic = topic;}
-void Channel::setKey(const std::string& key) {_key = key;}
-void Channel::setInviteOnly(bool inviteOnly) {_inviteOnly = inviteOnly;}
-void Channel::setTopicRestricted(bool restricted) {_topicRestricted = restricted ;}
-void Channel::setUserLimit(int limit) {_userLimit = limit;}
+void Channel::setTopic(const std::string& topic)
+{
+	_topic = topic;
+}
+void Channel::setKey(const std::string& key)
+{
+	_key = key;
+}
+void Channel::setInviteOnly(bool inviteOnly)
+{
+	_inviteOnly = inviteOnly;
+}
+void Channel::setTopicRestricted(bool restricted)
+{
+	_topicRestricted = restricted;
+}
+void Channel::setUserLimit(int limit)
+{
+	_userLimit = limit;
+}
 
-
-const std::string& Channel::getName() const {return _name;}
-const std::string& Channel::getTopic() const {return _topic;}
-const std::string& Channel::getKey() const {return _key;}
-size_t Channel::getMemberCount() const {return _members.size();}
-bool Channel::isInviteOnly() const {return _inviteOnly;}
-bool Channel::isTopicRestricted() const {return _topicRestricted;}
-int Channel::getUserLimit() const {return _userLimit;}
-
+const std::string& Channel::getName() const
+{
+	return _name;
+}
+const std::string& Channel::getTopic() const
+{
+	return _topic;
+}
+const std::string& Channel::getKey() const
+{
+	return _key;
+}
+size_t Channel::getMemberCount() const
+{
+	return _members.size();
+}
+bool Channel::isInviteOnly() const
+{
+	return _inviteOnly;
+}
+bool Channel::isTopicRestricted() const
+{
+	return _topicRestricted;
+}
+int Channel::getUserLimit() const
+{
+	return _userLimit;
+}
 
 IClient* Channel::getMemberByNickname(const std::string& nickname)
 {
-    std::set<IClient*>::iterator it;
+	std::set< IClient* >::iterator it;
 
-    for (it = _members.begin(); it != _members.end(); ++it) {
-        IClient* member = *it;
+	for (it = _members.begin(); it != _members.end(); ++it)
+	{
+		IClient* member = *it;
 		if (member->getNickname() == nickname)
 			return (member);
 	}

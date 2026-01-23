@@ -35,7 +35,8 @@ Test(NoticeCommand, requires_registration_silently_ignored)
 
 	// Bob should NOT have received the notice
 	const std::string& bob_buffer = bob.getBuffer().getWriteBuffer();
-	cr_assert(bob_buffer.find("NOTICE") == std::string::npos, "Bob should not receive notice from unregistered client");
+	cr_assert(bob_buffer.find("NOTICE") == std::string::npos,
+			  "Bob should not receive notice from unregistered client");
 	delete cmd;
 }
 

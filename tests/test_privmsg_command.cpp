@@ -38,7 +38,8 @@ Test(PrivmsgCommand, requires_registration)
 
 	// Bob should NOT have received the message
 	const std::string& bob_buffer = bob.getBuffer().getWriteBuffer();
-	cr_assert(bob_buffer.find("PRIVMSG") == std::string::npos, "Bob should not receive message from unregistered client");
+	cr_assert(bob_buffer.find("PRIVMSG") == std::string::npos,
+			  "Bob should not receive message from unregistered client");
 	delete cmd;
 }
 
@@ -220,7 +221,7 @@ Test(PrivmsgCommand, cannot_send_to_channel_not_member)
 	bob.setUsername("bob");
 
 	// Only alice joins the channel
-	IChannel *channel = server.createChannel("#test", &alice);
+	IChannel* channel = server.createChannel("#test", &alice);
 	alice.joinChannel(channel);
 
 	// Bob tries to send message to channel
@@ -348,7 +349,7 @@ Test(PrivmsgCommand, sender_not_in_broadcast)
 	alice.setUsername("alice");
 
 	// Alice creates and joins channel
-	IChannel *channel = server.createChannel("#test", &alice);
+	IChannel* channel = server.createChannel("#test", &alice);
 	alice.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);

@@ -1,8 +1,9 @@
-#include "modes/TopicRestrictedMode.hpp" 
+#include "modes/TopicRestrictedMode.hpp"
 
-bool TopicRestrictedMode::apply(IChannel* channel, bool set, const std::string& param, IClient* setter)
+bool TopicRestrictedMode::apply(IChannel* channel, bool set, const std::string& param,
+								IClient* setter)
 {
-    (void)param;
+	(void)param;
 	(void)setter;
 
 	channel->setTopicRestricted(set);
@@ -11,6 +12,6 @@ bool TopicRestrictedMode::apply(IChannel* channel, bool set, const std::string& 
 
 bool TopicRestrictedMode::validateParam(const std::string& param) const
 {
-    (void)param;
-    return true;
+	(void)param;
+	return true;
 }

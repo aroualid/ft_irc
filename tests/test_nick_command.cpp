@@ -1,10 +1,10 @@
-#include <criterion/criterion.h>
 #include "commands/ACommand.hpp"
 #include "commands/CommandFactory.hpp"
 #include "commands/CommandType.hpp"
 #include "mocks/Client.hpp"
 #include "mocks/Server.hpp"
 #include "protocol/Message.hpp"
+#include <criterion/criterion.h>
 
 TestSuite(NickCommand);
 
@@ -44,8 +44,7 @@ Test(NickCommand, accepts_valid_nickname_format)
 
 	cmd->execute(&client, msg);
 
-	cr_assert_str_eq(client.getNickname().c_str(), "Alice123",
-					 "Valid nickname should be accepted");
+	cr_assert_str_eq(client.getNickname().c_str(), "Alice123", "Valid nickname should be accepted");
 	delete cmd;
 }
 
@@ -84,7 +83,7 @@ Test(NickCommand, rejects_nickname_too_long)
 
 	Message msg;
 	msg.m_command = "NICK";
-	msg.m_params.push_back("ThisIsTooLong");  // More than 9 characters
+	msg.m_params.push_back("ThisIsTooLong"); // More than 9 characters
 
 	cmd->execute(&client, msg);
 
@@ -211,7 +210,7 @@ Test(NickCommand, accepts_special_chars_in_nickname)
 
 	Message msg;
 	msg.m_command = "NICK";
-	msg.m_params.push_back("alice[0]");  // Special chars allowed: - [ ] \ ` ^ { } |
+	msg.m_params.push_back("alice[0]"); // Special chars allowed: - [ ] \ ` ^ { } |
 
 	cmd->execute(&client, msg);
 

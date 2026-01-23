@@ -1,9 +1,9 @@
-#include "modes/KeyMode.hpp" 
+#include "modes/KeyMode.hpp"
 
 bool KeyMode::apply(IChannel* channel, bool set, const std::string& param, IClient* setter)
 {
 	(void)setter;
-	
+
 	if (set)
 	{
 		if (validateParam(param))
@@ -23,5 +23,5 @@ bool KeyMode::validateParam(const std::string& param) const
 		if (!isalnum(param[i]))
 			return false;
 	}
-    return true;
+	return true;
 }

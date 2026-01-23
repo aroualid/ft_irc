@@ -1,10 +1,10 @@
-#include <criterion/criterion.h>
 #include "commands/ACommand.hpp"
 #include "commands/CommandFactory.hpp"
 #include "commands/CommandType.hpp"
 #include "mocks/Client.hpp"
 #include "mocks/Server.hpp"
 #include "protocol/Message.hpp"
+#include <criterion/criterion.h>
 
 TestSuite(QuitCommand);
 
@@ -204,8 +204,7 @@ Test(QuitCommand, broadcasts_to_all_channels)
 	std::string bobBuffer = bob.getBuffer().getWriteBuffer();
 	std::string charlieBuffer = charlie.getBuffer().getWriteBuffer();
 
-	cr_assert(bobBuffer.find("QUIT") != std::string::npos,
-			  "Bob should receive QUIT from #test1");
+	cr_assert(bobBuffer.find("QUIT") != std::string::npos, "Bob should receive QUIT from #test1");
 	cr_assert(charlieBuffer.find("QUIT") != std::string::npos,
 			  "Charlie should receive QUIT from #test2");
 
@@ -226,7 +225,7 @@ Test(QuitCommand, empty_quit_message_uses_default)
 
 	Message msg;
 	msg.m_command = "QUIT";
-	msg.m_params.push_back("");  // Empty message
+	msg.m_params.push_back(""); // Empty message
 
 	cmd->execute(&client, msg);
 
@@ -277,9 +276,8 @@ Test(QuitCommand, no_numeric_replies)
 	// QUIT should not send any numeric replies to the quitting client
 	// The client just disconnects
 	std::string buffer = client.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("001") == std::string::npos &&
-			  buffer.find("002") == std::string::npos &&
-			  buffer.find("003") == std::string::npos,
+	cr_assert(buffer.find("001") == std::string::npos && buffer.find("002") == std::string::npos &&
+				  buffer.find("003") == std::string::npos,
 			  "QUIT should not send numeric replies to quitting client");
 
 	delete cmd;
@@ -331,7 +329,7 @@ Test(QuitCommand, quit_message_format)
 	joinCmd->execute(&bob, joinMsg);
 	delete joinCmd;
 
-	bob.getBuffer().getWriteBuffer();  // Clear buffer
+	bob.getBuffer().getWriteBuffer(); // Clear buffer
 
 	// Alice quits
 	ACommand* quitCmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
@@ -343,7 +341,7 @@ Test(QuitCommand, quit_message_format)
 	// Check format: :alice!alice@localhost QUIT :Bye!
 	std::string bobBuffer = bob.getBuffer().getWriteBuffer();
 	cr_assert(bobBuffer.find(":alice!alice@localhost") != std::string::npos ||
-			  bobBuffer.find(":alice!") != std::string::npos,
+				  bobBuffer.find(":alice!") != std::string::npos,
 			  "QUIT message should have proper prefix format");
 	cr_assert(bobBuffer.find("QUIT") != std::string::npos,
 			  "QUIT message should contain QUIT command");

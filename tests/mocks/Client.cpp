@@ -93,16 +93,16 @@ void ClientMock::leaveChannel(IChannel* channel)
 
 bool ClientMock::isInChannel(const std::string& channelName) const
 {
-	for (std::set<IChannel*>::const_iterator it = m_channels.begin(); it != m_channels.end(); ++it)
+	for (std::set< IChannel* >::const_iterator it = m_channels.begin(); it != m_channels.end();
+		 ++it)
 	{
 		if ((*it)->getName() == channelName)
 			return true;
 	}
 	return false;
-
 }
 
-const std::set< IChannel * >& ClientMock::getChannels() const
+const std::set< IChannel* >& ClientMock::getChannels() const
 {
 	return m_channels;
 }

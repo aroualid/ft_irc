@@ -59,8 +59,8 @@ REGISTER_COMMAND(MockCommand2, irc::MOCK2, "MOCK2");
 /*
 class NotACommand {
 public:
-    NotACommand() {}
-    // This class does not inherit from ACommand and lacks a 'create' method.
+	NotACommand() {}
+	// This class does not inherit from ACommand and lacks a 'create' method.
 };
 REGISTER_COMMAND(NotACommand, "FAIL");
 */

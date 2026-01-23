@@ -1,10 +1,10 @@
-#include "modes/OperatorMode.hpp" 
+#include "modes/OperatorMode.hpp"
 #include "core/IChannel.hpp"
 
 bool OperatorMode::apply(IChannel* channel, bool set, const std::string& param, IClient* setter)
 {
-	(void) setter;
-	IClient *client = channel->getMemberByNickname(param);
+	(void)setter;
+	IClient* client = channel->getMemberByNickname(param);
 
 	if (channel->hasMember(client))
 	{
@@ -30,6 +30,6 @@ bool OperatorMode::apply(IChannel* channel, bool set, const std::string& param, 
 
 bool OperatorMode::validateParam(const std::string& param) const
 {
-    (void)param;
-    return true;
+	(void)param;
+	return true;
 }

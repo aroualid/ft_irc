@@ -1,10 +1,10 @@
-#include <criterion/criterion.h>
 #include "commands/ACommand.hpp"
 #include "commands/CommandFactory.hpp"
 #include "commands/CommandType.hpp"
 #include "mocks/Client.hpp"
 #include "mocks/Server.hpp"
 #include "protocol/Message.hpp"
+#include <criterion/criterion.h>
 
 TestSuite(PassCommand);
 
@@ -41,7 +41,8 @@ Test(PassCommand, rejects_wrong_password)
 
 	cmd->execute(&client, msg);
 
-	cr_assert_not(client.isPasswordProvided(), "Client should not be authenticated with wrong password");
+	cr_assert_not(client.isPasswordProvided(),
+				  "Client should not be authenticated with wrong password");
 	delete cmd;
 }
 
@@ -69,7 +70,8 @@ Test(PassCommand, multiple_pass_only_last_counts)
 	msg3.m_params.push_back("finalpass");
 	cmd->execute(&client, msg3);
 
-	cr_assert(client.isPasswordProvided(), "Client should be authenticated after final correct password");
+	cr_assert(client.isPasswordProvided(),
+			  "Client should be authenticated after final correct password");
 	delete cmd;
 }
 
