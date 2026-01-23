@@ -1,20 +1,39 @@
-#include "../../incs/core/Channel.hpp"
+#include "core/Channel.hpp"
 #include "core/IClient.hpp"
+#include "core/Client.hpp"
 #include "core/IMessageBuffer.hpp"
+#include "modes/IChannelMode.hpp"
+#include "modes/InviteOnlyMode.hpp"
+#include "modes/KeyMode.hpp"
+#include "modes/OperatorMode.hpp"
+#include "modes/TopicRestrictedMode.hpp"
+#include "modes/UserLimitMode.hpp"
 #include "network/MessageBuffer.hpp"
 #include  <cstdlib>
 #include <string>
 #include <sstream>
+#include <vector>
 #include <sys/socket.h>
 
 Channel::Channel(const std::string& name) : _name(name), _topic(""), _key(""), _inviteOnly(false), _topicRestricted(false), _userLimit(-1)
 {
+	_modes['i'] = new InviteOnlyMode();
+    _modes['k'] = new KeyMode();
+    _modes['o'] = new OperatorMode();
+    _modes['t'] = new TopicRestrictedMode();
+    _modes['l'] = new UserLimitMode();
 }
 
 Channel::~Channel() {
     _members.clear();
     _operators.clear();
     _invited.clear();
+	std::map<char, IChannelMode*>::iterator it = _modes.begin();
+    while (it != _modes.end()) {
+        delete it->second;
+        ++it;
+    }
+    _modes.clear();
 }
 
 bool Channel::addMember(IClient* client, const std::string& key)
@@ -69,10 +88,40 @@ void Channel::addOperator(IClient* client)
 		_operators.insert(client);
 }
 
+void Channel::removeOperator(IClient* client)
+{
+	if (isOperator(client))
+		_operators.erase(client);
+}
 
 bool Channel::applyMode(char mode, bool set, const std::string& param, IClient* setter)
 {
 	if (!isOperator(setter))
+        return false;
+
+	std::map<char, IChannelMode*>::iterator it = _modes.find(mode);
+	
+	if (it == _modes.end()) 
+	{
+        return false; 
+    }
+
+	IChannelMode* modeHandler = it->second;
+
+	if (set && modeHandler->requiresParamToSet() && param.empty()) 
+	{
+		return false;
+	}
+
+	if (!set && modeHandler->requiresParamToUnset() && param.empty()) 
+	{
+		return false;
+	}
+
+	return modeHandler->apply(this, set, param, setter);
+
+}
+/*	if (!isOperator(setter))
         return false;
 	if (set == true)
 	{
@@ -118,7 +167,7 @@ bool Channel::applyMode(char mode, bool set, const std::string& param, IClient* 
 			case 'o': 
 				if (hasMember(setter) == false)
 					return false;
-				_operators.erase(setter);
+				removeOperator(setter);
 				return true;
 			case 'l':
 				_userLimit = -1;
@@ -127,7 +176,7 @@ bool Channel::applyMode(char mode, bool set, const std::string& param, IClient* 
 		}
 	}
 	return false;
-}
+}*/
 
 std::string Channel::getModeString() const
 {
@@ -205,3 +254,16 @@ size_t Channel::getMemberCount() const {return _members.size();}
 bool Channel::isInviteOnly() const {return _inviteOnly;}
 bool Channel::isTopicRestricted() const {return _topicRestricted;}
 int Channel::getUserLimit() const {return _userLimit;}
+
+
+IClient* Channel::getMemberByNickname(const std::string& nickname)
+{
+    std::set<IClient*>::iterator it;
+
+    for (it = _members.begin(); it != _members.end(); ++it) {
+        IClient* member = *it;
+		if (member->getNickname() == nickname)
+			return (member);
+	}
+	return NULL;
+}

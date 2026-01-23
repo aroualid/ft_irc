@@ -47,7 +47,12 @@ REQUIRED_SRCS = $(SRCS_DIR)/protocol/Message.cpp \
 				$(SRCS_DIR)/commands/PrivmsgCommand.cpp \
 				$(SRCS_DIR)/commands/NoticeCommand.cpp \
 				$(SRCS_DIR)/commands/QuitCommand.cpp \
-        $(SRCS_DIR)/core/Channel.cpp \
+        		$(SRCS_DIR)/core/Channel.cpp \
+				$(SRCS_DIR)/modes/InviteOnlyMode.cpp \
+				$(SRCS_DIR)/modes/TopicRestrictedMode.cpp \
+				$(SRCS_DIR)/modes/OperatorMode.cpp \
+				$(SRCS_DIR)/modes/KeyMode.cpp \
+				$(SRCS_DIR)/modes/UserLimitMode.cpp \
 				$(SRCS_DIR)/commands/PingCommand.cpp \
 				$(SRCS_DIR)/commands/PongCommand.cpp
 

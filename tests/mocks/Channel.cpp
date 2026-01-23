@@ -145,6 +145,12 @@ void ChannelMock::addOperator(IClient* client)
 	}
 }
 
+void ChannelMock::removeOperator(IClient* client)
+{
+	if (isOperator(client))
+		m_operators.erase(client);
+}
+
 std::string ChannelMock::getMemberList() const
 {
 	std::string list;
@@ -175,4 +181,16 @@ void ChannelMock::broadcast(const std::string& message, IClient* exclude)
 bool ChannelMock::isEmpty() const
 {
 	return m_members.empty();
+}
+
+IClient* ChannelMock::getMemberByNickname(const std::string& nickname)
+{
+    std::set<IClient*>::iterator it;
+
+    for (it = m_members.begin(); it != m_members.end(); ++it) {
+        IClient* member = *it;
+		if (member->getNickname() == nickname)
+			return (member);
+	}
+	return NULL;
 }

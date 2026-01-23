@@ -24,6 +24,7 @@ private:
     ClientState _state;
     bool		_passwordProvided;
 
+    //IMessageBuffer _buffer;
     MessageBuffer _buffer;
     std::set<std::string> _channels;
 
