@@ -1,8 +1,9 @@
 #pragma once
-#include "../ft_irc.hpp"
-#include "../core/IMessageBuffer.hpp"
-#include "IClient.hpp"
-#include "IChannel.hpp"
+
+#include "core/IClient.hpp"
+#include "core/IChannel.hpp"
+#include "network/MessageBuffer.hpp"
+
 class ClientState;
 
 class Client : public IClient{
@@ -12,17 +13,18 @@ private:
     std::string _username;
     std::string _realname;
     std::string _hostname;
-
-	enum ClientState {
+	
+    enum ClientState {
 	    HANDSHAKE,
 	    LOGIN,
 	    REGISTERED,
 	    DISCONNECTED
 	};
-    ClientState _state;
-    bool _passwordProvided;
 
-    IMessageBuffer _buffer;
+    ClientState _state;
+    bool		_passwordProvided;
+
+    MessageBuffer _buffer;
     std::set<std::string> _channels;
 
 

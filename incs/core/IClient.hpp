@@ -4,6 +4,7 @@
 #include <string>
 
 class IMessageBuffer;
+//class MessageBuffer;
 
 class IClient
 {
@@ -32,9 +33,12 @@ public:
 	virtual void leaveChannel(const std::string& channel) = 0;
 	virtual bool isInChannel(const std::string& channel) const = 0;
 	virtual const std::set< std::string >& getChannels() const = 0;
+	
 
 	virtual IMessageBuffer& getBuffer() = 0;
 	virtual const IMessageBuffer& getBuffer() const = 0;
+
+	// MessageBuffer& getBuffer();
 
 	virtual std::string getPrefix() const = 0;
 };

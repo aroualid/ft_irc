@@ -1,6 +1,7 @@
 #include "../../incs/core/Channel.hpp"
 #include "core/IClient.hpp"
 #include "core/IMessageBuffer.hpp"
+#include "network/MessageBuffer.hpp"
 #include  <cstdlib>
 #include <string>
 #include <sstream>
