@@ -254,7 +254,7 @@ void	Server::acceptNewClients()
 		setNonBlocking(clientFd);
 		m_sm->addSocket(clientFd, EPOLLIN);
 
-		m_clients[clientFd] = new Client(clientFd, "unknown");
+		m_clients[clientFd] = new Client(clientFd, "unknown", *this);
 		std::cout << "Client Accepted : " << clientFd << "\n";
 	}
 }
@@ -265,6 +265,11 @@ void	Server::handleDisconnections(int fd, unsigned int evt)
 	if (fd == m_listenFd)
 		throw std::runtime_error("Listening Socket disconnected\n");
 	disconnectClient(fd);
+}
+
+bool Server::requiresPassword() const
+{
+	return !m_cfg.getPassword().empty();
 }
 
 static int	createListeningSocket(int port) //fd that listens to all interfaces trying to bind
