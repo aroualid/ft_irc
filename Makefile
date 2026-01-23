@@ -88,4 +88,10 @@ re: fclean all
 format:
 	@find . -type f \( -name "*.cpp" -o -name "*.hpp" \) -exec clang-format -i {} +
 
-.PHONY: all clean fclean re format test test_run test_filter docker-test docker-test-shell docker-test-filter
+lint:
+	run-clang-tidy
+
+lint-fix:
+	run-clang-tidy -fix
+
+.PHONY: all clean fclean re format lint lint-fix test test_run test_filter docker-test docker-test-shell docker-test-filter

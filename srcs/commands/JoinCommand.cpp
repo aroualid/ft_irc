@@ -117,12 +117,12 @@ void JoinCommand::joinSingleChannel(IClient* client, const std::string& channelN
 		}
 	}
 
-	client->joinChannel(channelName);
+	client->joinChannel(channel);
 
 	Message joinMessage;
 	joinMessage.m_prefix = client->getPrefix();
 	joinMessage.m_command = getName();
-	joinMessage.m_params.push_back(channelName);
+	joinMessage.m_params.push_back(channel->getName());
 
 	std::string serialized = MessageParser::serialize(joinMessage);
 	channel->broadcast(serialized);

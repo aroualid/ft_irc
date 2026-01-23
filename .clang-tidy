@@ -1,0 +1,20 @@
+Checks: >
+  -*,
+  bugprone-*,
+  readability-*,
+  performance-*,
+  -modernize-*,
+  -readability-identifier-length,
+  -readability-implicit-bool-conversion,
+  -readability-braces-around-statements,
+  -readability-magic-numbers,
+  -readability-else-after-return,
+  -readability-redundant-string-init,
+  -readability-simplify-boolean-expr,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-narrowing-conversions,
+  -bugprone-branch-clone,
+  -readability-convert-member-functions-to-static
+
+HeaderFilterRegex: 'incs/.*'
+WarningsAsErrors: '*'

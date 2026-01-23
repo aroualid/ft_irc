@@ -1,11 +1,12 @@
 #pragma once
 
+#include "IChannel.hpp"
 #include "core/IClient.hpp"
 #include "mocks/MessageBuffer.hpp"
 #include <set>
 #include <string>
 
-class Client : public IClient
+class ClientMock : public IClient
 {
 private:
 	int m_fd;
@@ -16,11 +17,11 @@ private:
 	bool m_passwordProvided;
 	bool m_registered;
 	MessageBufferMock m_buffer;
-	std::set< std::string > m_channels;
+	std::set< IChannel * > m_channels;
 
 public:
-	Client(int fd, const std::string& hostname);
-	virtual ~Client();
+	ClientMock(int fd, const std::string& hostname);
+	virtual ~ClientMock();
 
 	int getFd() const;
 	const std::string& getNickname() const;
@@ -30,18 +31,17 @@ public:
 
 	bool isPasswordProvided() const;
 	bool isRegistered() const;
-	bool isAuthenticated() const;
 
 	void setNickname(const std::string& nick);
 	void setUsername(const std::string& user);
 	void setRealname(const std::string& real);
 	void setPasswordProvided(bool provided);
-	void updateRegistrationState();
+	void attemptRegistration();
 
-	void joinChannel(const std::string& channel);
-	void leaveChannel(const std::string& channel);
+	void joinChannel(IChannel *channel);
+	void leaveChannel(IChannel *channel);
 	bool isInChannel(const std::string& channel) const;
-	const std::set< std::string >& getChannels() const;
+	const std::set< IChannel * >& getChannels() const;
 
 	IMessageBuffer& getBuffer();
 	const IMessageBuffer& getBuffer() const;

@@ -25,6 +25,8 @@ void PassCommand::doExecute(IClient* client, const Message& message)
 
 	if (providedPass == m_server.getPassword())
 		client->setPasswordProvided(true);
+	else
+		client->setPasswordProvided(false);
 }
 
 ACommand* PassCommand::create(IServer& server)

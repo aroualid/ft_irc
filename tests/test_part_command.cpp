@@ -1,3 +1,5 @@
+#include "IChannel.hpp"
+#include "commands/ACommand.hpp"
 #include "commands/CommandFactory.hpp"
 #include "commands/PartCommand.hpp"
 #include "mocks/Channel.hpp"
@@ -6,17 +8,40 @@
 #include "protocol/Message.hpp"
 #include <criterion/criterion.h>
 
+Test(PartCommand, requires_registration)
+{
+	Server server(6667, "test123");
+	ClientMock client(3, "localhost");
+	// Client is NOT registered (no password)
+	client.setNickname("unregistered");
+	client.setUsername("unregistered");
+
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
+	Message msg;
+	msg.m_command = "PART";
+	msg.m_params.push_back("#test");
+
+	cmd->execute(&client, msg);
+
+	// Should receive ERR_NOTREGISTERED (451)
+	const std::string& buffer = client.getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("451") != std::string::npos, "Expected ERR_NOTREGISTERED (451)");
+	cr_assert(buffer.find("You have not registered") != std::string::npos);
+	delete cmd;
+}
+
 Test(PartCommand, successful_part_single_channel)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
 
 	// Join channel first
 	IChannel* channel = server.createChannel("#test", &client);
-	client.joinChannel("#test");
+	client.joinChannel(channel);
 
 	cr_assert(client.isInChannel("#test"));
 	cr_assert_eq(channel->getMemberCount(), 1);
@@ -40,13 +65,13 @@ Test(PartCommand, successful_part_single_channel)
 Test(PartCommand, part_with_message)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	server.createChannel("#test", &client);
-	client.joinChannel("#test");
+	IChannel *channel = server.createChannel("#test", &client);
+	client.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
@@ -70,7 +95,7 @@ Test(PartCommand, part_with_message)
 Test(PartCommand, part_nonexistent_channel)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -94,19 +119,19 @@ Test(PartCommand, part_nonexistent_channel)
 Test(PartCommand, part_channel_not_on)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
 	// Bob creates and joins #test
-	server.createChannel("#test", &bob);
-	bob.joinChannel("#test");
+	IChannel *channel = server.createChannel("#test", &bob);
+	bob.joinChannel(channel);
 
 	// Alice tries to leave it (but she's not in it)
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
@@ -128,7 +153,7 @@ Test(PartCommand, part_channel_not_on)
 Test(PartCommand, part_no_parameters)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -152,28 +177,28 @@ Test(PartCommand, part_no_parameters)
 Test(PartCommand, part_broadcasts_to_all_members)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
-	Client charlie(5, "localhost");
+	ClientMock charlie(5, "localhost");
 	charlie.setPasswordProvided(true);
 	charlie.setNickname("charlie");
 	charlie.setUsername("charlie");
 
 	// All join #test
 	IChannel* channel = server.createChannel("#test", &alice);
-	alice.joinChannel("#test");
+	alice.joinChannel(channel);
 	channel->addMember(&bob);
-	bob.joinChannel("#test");
+	bob.joinChannel(channel);
 	channel->addMember(&charlie);
-	charlie.joinChannel("#test");
+	charlie.joinChannel(channel);
 
 	cr_assert_eq(channel->getMemberCount(), 3);
 
@@ -209,21 +234,21 @@ Test(PartCommand, part_broadcasts_to_all_members)
 Test(PartCommand, last_member_parts_channel_deleted)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
 	// Both join
 	IChannel* channel = server.createChannel("#test", &alice);
-	alice.joinChannel("#test");
+	alice.joinChannel(channel);
 	channel->addMember(&bob);
-	bob.joinChannel("#test");
+	bob.joinChannel(channel);
 
 	cr_assert_eq(channel->getMemberCount(), 2);
 	cr_assert_not_null(server.getChannel("#test"));
@@ -255,21 +280,21 @@ Test(PartCommand, last_member_parts_channel_deleted)
 Test(PartCommand, part_removes_operator_status)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
 	// Alice creates channel (becomes operator)
 	IChannel* channel = server.createChannel("#test", &alice);
-	alice.joinChannel("#test");
+	alice.joinChannel(channel);
 	channel->addMember(&bob);
-	bob.joinChannel("#test");
+	bob.joinChannel(channel);
 
 	cr_assert(channel->isOperator(&alice));
 	cr_assert_not(channel->isOperator(&bob));
@@ -292,13 +317,13 @@ Test(PartCommand, part_removes_operator_status)
 Test(PartCommand, part_with_prefix_in_broadcast)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice_user");
 
-	server.createChannel("#test", &alice);
-	alice.joinChannel("#test");
+	IChannel *channel = server.createChannel("#test", &alice);
+	alice.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
@@ -319,14 +344,14 @@ Test(PartCommand, part_with_prefix_in_broadcast)
 Test(PartCommand, part_ampersand_channel)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
 
 	// Join local channel with & prefix
-	server.createChannel("&local", &client);
-	client.joinChannel("&local");
+	IChannel *channel = server.createChannel("&local", &client);
+	client.joinChannel(channel);
 
 	cr_assert(client.isInChannel("&local"));
 
@@ -346,13 +371,13 @@ Test(PartCommand, part_ampersand_channel)
 Test(PartCommand, part_empty_message_parameter)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	server.createChannel("#test", &client);
-	client.joinChannel("#test");
+	IChannel *channel = server.createChannel("#test", &client);
+	client.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
@@ -371,14 +396,14 @@ Test(PartCommand, part_empty_message_parameter)
 Test(PartCommand, part_channel_name_case_sensitive)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
 
 	// Create #Test (capital T)
-	server.createChannel("#Test", &client);
-	client.joinChannel("#Test");
+	IChannel *channel = server.createChannel("#Test", &client);
+	client.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
@@ -395,21 +420,21 @@ Test(PartCommand, part_channel_name_case_sensitive)
 Test(PartCommand, operator_parts_doesnt_transfer_ops)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
 	// Alice creates channel (becomes operator), bob joins
 	IChannel* channel = server.createChannel("#test", &alice);
-	alice.joinChannel("#test");
+	alice.joinChannel(channel);
 	channel->addMember(&bob);
-	bob.joinChannel("#test");
+	bob.joinChannel(channel);
 
 	cr_assert(channel->isOperator(&alice));
 	cr_assert_not(channel->isOperator(&bob));
@@ -433,18 +458,18 @@ Test(PartCommand, operator_parts_doesnt_transfer_ops)
 Test(PartCommand, multiple_channels_in_client_list)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
 
 	// Join multiple channels
-	server.createChannel("#test1", &client);
-	client.joinChannel("#test1");
-	server.createChannel("#test2", &client);
-	client.joinChannel("#test2");
-	server.createChannel("#test3", &client);
-	client.joinChannel("#test3");
+	IChannel *channel1 = server.createChannel("#test1", &client);
+	client.joinChannel(channel1);
+	IChannel *channel2 = server.createChannel("#test2", &client);
+	client.joinChannel(channel2);
+	IChannel *channel3 = server.createChannel("#test3", &client);
+	client.joinChannel(channel3);
 
 	cr_assert(client.isInChannel("#test1"));
 	cr_assert(client.isInChannel("#test2"));

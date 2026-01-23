@@ -78,6 +78,14 @@ void ACommand::execute(IClient* client, const Message& message)
 	if (!client)
 		return;
 
+	if (requiresRegistration() && !client->isRegistered())
+	{
+		std::string nick = client->getNickname().empty() ? "*" : client->getNickname();
+		NumericReply reply = NumericReply::notRegistered(nick);
+		sendReply(client, reply);
+		return;
+	}
+
 	if (!validateParamCount(client, message, minParams()))
 		return;
 

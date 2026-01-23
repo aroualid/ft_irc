@@ -21,7 +21,7 @@ QuitCommand::~QuitCommand()
 {
 }
 
-void QuitCommand::broadcastQuitToChannels(IClient* client, const std::string& quitMessage)
+void QuitCommand::broadcastQuitToChannels(IClient* client, const std::string& quitMessage) const
 {
 	Message quitMsg;
 	quitMsg.m_prefix = client->getPrefix();
@@ -34,13 +34,9 @@ void QuitCommand::broadcastQuitToChannels(IClient* client, const std::string& qu
 
 	std::set< IClient* > notifiedClients;
 
-	const std::set< std::string >& channels = client->getChannels();
-	for (std::set< std::string >::const_iterator it = channels.begin(); it != channels.end(); ++it)
-	{
-		IChannel* channel = m_server.getChannel(*it);
-		if (channel)
-			channel->broadcast(serialized, client);
-	}
+	const std::set< IChannel* >& channels = client->getChannels();
+	for (std::set< IChannel* >::const_iterator it = channels.begin(); it != channels.end(); ++it)
+		(*it)->broadcast(serialized, client);
 }
 
 void QuitCommand::doExecute(IClient* client, const Message& message)
@@ -54,18 +50,16 @@ void QuitCommand::doExecute(IClient* client, const Message& message)
 
 	broadcastQuitToChannels(client, quitMessage);
 
-	const std::set< std::string >& channels = client->getChannels();
-	std::set< std::string > channelsCopy = channels;
+	const std::set< IChannel* >& channels = client->getChannels();
+	std::set< IChannel* > channelsCopy = channels;
 
-	for (std::set< std::string >::const_iterator it = channelsCopy.begin();
-		 it != channelsCopy.end(); ++it)
+	for (std::set< IChannel* >::const_iterator it = channelsCopy.begin(); it != channelsCopy.end();
+		 ++it)
 	{
-		IChannel* channel = m_server.getChannel(*it);
-		if (channel)
 		{
-			channel->removeMember(client);
+			(*it)->removeMember(client);
 			client->leaveChannel(*it);
-			m_server.deleteChannelIfEmpty(channel);
+			m_server.deleteChannelIfEmpty(*it);
 		}
 	}
 }

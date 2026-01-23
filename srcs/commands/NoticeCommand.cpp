@@ -20,6 +20,9 @@ void NoticeCommand::execute(IClient* client, const Message& message)
 	if (!client || message.m_params.size() < minParams())
 		return;
 
+	if (requiresRegistration() && !client->isRegistered())
+		return;
+
 	doExecute(client, message);
 }
 

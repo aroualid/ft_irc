@@ -1,120 +1,123 @@
 #include "Client.hpp"
+#include "IChannel.hpp"
 #include <iostream>
 
-Client::Client(int fd, const std::string& hostname)
+ClientMock::ClientMock(int fd, const std::string& hostname)
 	: m_fd(fd), m_nickname(""), m_username(""), m_realname(""), m_hostname(hostname),
-	  m_passwordProvided(false), m_registered(false), m_buffer(), m_channels()
+	  m_passwordProvided(false), m_registered(false)
 {
-	std::cout << "[MOCK] Client created: fd=" << fd << " host=" << hostname << std::endl;
+	std::cout << "[MOCK] ClientMock created: fd=" << fd << " host=" << hostname << '\n';
 }
 
-Client::~Client()
+ClientMock::~ClientMock()
 {
-	std::cout << "[MOCK] Client destroyed: fd=" << m_fd << std::endl;
+	std::cout << "[MOCK] ClientMock destroyed: fd=" << m_fd << '\n';
 }
 
-int Client::getFd() const
+int ClientMock::getFd() const
 {
 	return m_fd;
 }
-const std::string& Client::getNickname() const
+const std::string& ClientMock::getNickname() const
 {
 	return m_nickname;
 }
-const std::string& Client::getUsername() const
+const std::string& ClientMock::getUsername() const
 {
 	return m_username;
 }
-const std::string& Client::getRealname() const
+const std::string& ClientMock::getRealname() const
 {
 	return m_realname;
 }
-const std::string& Client::getHostname() const
+const std::string& ClientMock::getHostname() const
 {
 	return m_hostname;
 }
 
-bool Client::isPasswordProvided() const
+bool ClientMock::isPasswordProvided() const
 {
 	return m_passwordProvided;
 }
-bool Client::isRegistered() const
+bool ClientMock::isRegistered() const
 {
 	return m_registered;
 }
-bool Client::isAuthenticated() const
-{
-	return m_passwordProvided;
-}
 
-void Client::setNickname(const std::string& nick)
+void ClientMock::setNickname(const std::string& nick)
 {
 	m_nickname = nick;
-	std::cout << "[MOCK] Nickname set to: " << nick << std::endl;
-	updateRegistrationState();
+	std::cout << "[MOCK] Nickname set to: " << nick << '\n';
+	attemptRegistration();
 }
 
-void Client::setUsername(const std::string& user)
+void ClientMock::setUsername(const std::string& user)
 {
 	m_username = user;
-	std::cout << "[MOCK] Username set to: " << user << std::endl;
-	updateRegistrationState();
+	std::cout << "[MOCK] Username set to: " << user << '\n';
+	attemptRegistration();
 }
 
-void Client::setRealname(const std::string& real)
+void ClientMock::setRealname(const std::string& real)
 {
 	m_realname = real;
-	std::cout << "[MOCK] Realname set to: " << real << std::endl;
+	std::cout << "[MOCK] Realname set to: " << real << '\n';
 }
 
-void Client::setPasswordProvided(bool provided)
+void ClientMock::setPasswordProvided(bool provided)
 {
 	m_passwordProvided = provided;
-	std::cout << "[MOCK] Password provided: " << (provided ? "YES" : "NO") << std::endl;
-	updateRegistrationState();
+	std::cout << "[MOCK] Password provided: " << (provided ? "YES" : "NO") << '\n';
+	attemptRegistration();
 }
 
-void Client::updateRegistrationState()
+void ClientMock::attemptRegistration()
 {
 	bool wasRegistered = m_registered;
 	m_registered = m_passwordProvided && !m_nickname.empty() && !m_username.empty();
 	if (m_registered && !wasRegistered)
-		std::cout << "[MOCK] Client is now REGISTERED!" << std::endl;
+		std::cout << "[MOCK] ClientMock is now REGISTERED!" << '\n';
 }
 
-void Client::joinChannel(const std::string& channel)
+void ClientMock::joinChannel(IChannel* channel)
 {
 	m_channels.insert(channel);
-	std::cout << "[MOCK] Client joined channel: " << channel << std::endl;
+	std::cout << "[MOCK] ClientMock joined channel: " << channel << '\n';
 }
 
-void Client::leaveChannel(const std::string& channel)
+void ClientMock::leaveChannel(IChannel* channel)
 {
 	m_channels.erase(channel);
-	std::cout << "[MOCK] Client left channel: " << channel << std::endl;
+	std::cout << "[MOCK] ClientMock left channel: " << channel << '\n';
 }
 
-bool Client::isInChannel(const std::string& channel) const
+bool ClientMock::isInChannel(const std::string& channelName) const
 {
-	return m_channels.find(channel) != m_channels.end();
+	for (std::set<IChannel*>::const_iterator it = m_channels.begin(); it != m_channels.end(); ++it)
+	{
+		if ((*it)->getName() == channelName)
+			return true;
+	}
+	return false;
+
 }
 
-const std::set< std::string >& Client::getChannels() const
+const std::set< IChannel * >& ClientMock::getChannels() const
 {
 	return m_channels;
 }
 
-IMessageBuffer& Client::getBuffer()
+IMessageBuffer& ClientMock::getBuffer()
 {
 	return m_buffer;
 }
 
-const IMessageBuffer& Client::getBuffer() const
+const IMessageBuffer& ClientMock::getBuffer() const
 {
 	return m_buffer;
 }
 
-std::string Client::getPrefix() const
+std::string ClientMock::getPrefix() const
 {
 	if (m_nickname.empty())
 		return m_hostname;

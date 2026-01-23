@@ -9,7 +9,7 @@ class QuitCommand : public ACommand
 private:
 	QuitCommand(IServer& server);
 
-	void broadcastQuitToChannels(IClient* client, const std::string& quitMessage);
+	void broadcastQuitToChannels(IClient* client, const std::string& quitMessage) const;
 
 public:
 	virtual ~QuitCommand();

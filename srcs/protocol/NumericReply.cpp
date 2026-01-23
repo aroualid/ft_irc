@@ -142,3 +142,8 @@ NumericReply NumericReply::noOrigin(const std::string& nick)
 	std::string message = ":No origin specified";
 	return NumericReply(409, nick, message);
 }
+
+NumericReply NumericReply::notRegistered(const std::string& nick)
+{
+	return NumericReply(451, nick.empty() ? "*" : nick, ":You have not registered");
+}

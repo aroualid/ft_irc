@@ -6,15 +6,48 @@
 #include "protocol/Message.hpp"
 #include <criterion/criterion.h>
 
+Test(NoticeCommand, requires_registration_silently_ignored)
+{
+	Server server(6667, "test123");
+	ClientMock sender(3, "localhost");
+	// Sender is NOT registered (no password)
+	sender.setNickname("unregistered");
+	sender.setUsername("unregistered");
+
+	ClientMock bob(4, "localhost");
+	bob.setPasswordProvided(true);
+	bob.setNickname("bob");
+	bob.setUsername("bob");
+	server.registerClient("bob", &bob);
+
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
+	Message msg;
+	msg.m_command = "NOTICE";
+	msg.m_params.push_back("bob");
+	msg.m_params.push_back("Hello!");
+
+	cmd->execute(&sender, msg);
+
+	// NOTICE never sends error replies per RFC - sender should receive NOTHING
+	const std::string& sender_buffer = sender.getBuffer().getWriteBuffer();
+	cr_assert(sender_buffer.empty(), "NOTICE should not send any error to unregistered client");
+
+	// Bob should NOT have received the notice
+	const std::string& bob_buffer = bob.getBuffer().getWriteBuffer();
+	cr_assert(bob_buffer.find("NOTICE") == std::string::npos, "Bob should not receive notice from unregistered client");
+	delete cmd;
+}
+
 Test(NoticeCommand, send_to_user)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -43,21 +76,21 @@ Test(NoticeCommand, send_to_user)
 Test(NoticeCommand, send_to_channel)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
 	// Both join channel
 	IChannel* channel = server.createChannel("#test", &alice);
-	alice.joinChannel("#test");
+	alice.joinChannel(channel);
 	channel->addMember(&bob);
-	bob.joinChannel("#test");
+	bob.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
@@ -79,7 +112,7 @@ Test(NoticeCommand, send_to_channel)
 Test(NoticeCommand, no_parameters_no_error)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -101,7 +134,7 @@ Test(NoticeCommand, no_parameters_no_error)
 Test(NoticeCommand, no_text_no_error)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -124,7 +157,7 @@ Test(NoticeCommand, no_text_no_error)
 Test(NoticeCommand, no_such_nick_no_error)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -147,7 +180,7 @@ Test(NoticeCommand, no_such_nick_no_error)
 Test(NoticeCommand, no_such_channel_no_error)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -170,19 +203,20 @@ Test(NoticeCommand, no_such_channel_no_error)
 Test(NoticeCommand, cannot_send_to_channel_no_error)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
 	// Only alice joins the channel
-	server.createChannel("#test", &alice);
-	alice.joinChannel("#test");
+	IChannel* channel = server.createChannel("#test", &alice);
+	(void)channel;
+	alice.joinChannel(channel);
 
 	// Bob tries to send notice to channel
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
@@ -203,17 +237,17 @@ Test(NoticeCommand, cannot_send_to_channel_no_error)
 Test(NoticeCommand, multiple_targets)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
-	Client charlie(5, "localhost");
+	ClientMock charlie(5, "localhost");
 	charlie.setPasswordProvided(true);
 	charlie.setNickname("charlie");
 	charlie.setUsername("charlie");
@@ -243,12 +277,12 @@ Test(NoticeCommand, multiple_targets)
 Test(NoticeCommand, mixed_user_and_channel_targets)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -258,9 +292,9 @@ Test(NoticeCommand, mixed_user_and_channel_targets)
 
 	// Create channel with both members
 	IChannel* channel = server.createChannel("#test", &alice);
-	alice.joinChannel("#test");
+	alice.joinChannel(channel);
 	channel->addMember(&bob);
-	bob.joinChannel("#test");
+	bob.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
@@ -280,14 +314,14 @@ Test(NoticeCommand, mixed_user_and_channel_targets)
 Test(NoticeCommand, sender_not_in_broadcast)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
 	// Alice creates and joins channel
-	server.createChannel("#test", &alice);
-	alice.joinChannel("#test");
+	IChannel* channel = server.createChannel("#test", &alice);
+	alice.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
@@ -305,12 +339,12 @@ Test(NoticeCommand, sender_not_in_broadcast)
 Test(NoticeCommand, message_with_spaces)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -335,21 +369,21 @@ Test(NoticeCommand, message_with_spaces)
 Test(NoticeCommand, ampersand_channel_prefix)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
 	// Create channel with & prefix
 	IChannel* channel = server.createChannel("&local", &alice);
-	alice.joinChannel("&local");
+	alice.joinChannel(channel);
 	channel->addMember(&bob);
-	bob.joinChannel("&local");
+	bob.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
@@ -369,12 +403,12 @@ Test(NoticeCommand, ampersand_channel_prefix)
 Test(NoticeCommand, empty_message_text)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -401,12 +435,12 @@ Test(NoticeCommand, empty_message_text)
 Test(NoticeCommand, prefix_format)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice_user");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -432,28 +466,28 @@ Test(NoticeCommand, prefix_format)
 Test(NoticeCommand, multiple_members_all_receive)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
-	Client charlie(5, "localhost");
+	ClientMock charlie(5, "localhost");
 	charlie.setPasswordProvided(true);
 	charlie.setNickname("charlie");
 	charlie.setUsername("charlie");
 
 	// All join channel
 	IChannel* channel = server.createChannel("#test", &alice);
-	alice.joinChannel("#test");
+	alice.joinChannel(channel);
 	channel->addMember(&bob);
-	bob.joinChannel("#test");
+	bob.joinChannel(channel);
 	channel->addMember(&charlie);
-	charlie.joinChannel("#test");
+	charlie.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
@@ -478,7 +512,7 @@ Test(NoticeCommand, no_automatic_replies)
 	// This test verifies that NOTICE doesn't send errors
 	// which prevents infinite loops with auto-responders
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
@@ -504,7 +538,7 @@ Test(NoticeCommand, no_automatic_replies)
 Test(NoticeCommand, empty_target)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -527,7 +561,7 @@ Test(NoticeCommand, empty_target)
 Test(NoticeCommand, silently_fails_on_invalid_targets)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");

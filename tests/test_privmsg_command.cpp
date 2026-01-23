@@ -1,3 +1,5 @@
+#include "IChannel.hpp"
+#include "commands/ACommand.hpp"
 #include "commands/CommandFactory.hpp"
 #include "commands/PrivmsgCommand.hpp"
 #include "mocks/Channel.hpp"
@@ -6,15 +8,49 @@
 #include "protocol/Message.hpp"
 #include <criterion/criterion.h>
 
+Test(PrivmsgCommand, requires_registration)
+{
+	Server server(6667, "test123");
+	ClientMock sender(3, "localhost");
+	// Sender is NOT registered (no password)
+	sender.setNickname("unregistered");
+	sender.setUsername("unregistered");
+
+	ClientMock bob(4, "localhost");
+	bob.setPasswordProvided(true);
+	bob.setNickname("bob");
+	bob.setUsername("bob");
+	server.registerClient("bob", &bob);
+
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
+	Message msg;
+	msg.m_command = "PRIVMSG";
+	msg.m_params.push_back("bob");
+	msg.m_params.push_back("Hello!");
+
+	cmd->execute(&sender, msg);
+
+	// Sender should receive ERR_NOTREGISTERED (451)
+	const std::string& sender_buffer = sender.getBuffer().getWriteBuffer();
+	cr_assert(sender_buffer.find("451") != std::string::npos, "Expected ERR_NOTREGISTERED (451)");
+	cr_assert(sender_buffer.find("You have not registered") != std::string::npos);
+
+	// Bob should NOT have received the message
+	const std::string& bob_buffer = bob.getBuffer().getWriteBuffer();
+	cr_assert(bob_buffer.find("PRIVMSG") == std::string::npos, "Bob should not receive message from unregistered client");
+	delete cmd;
+}
+
 Test(PrivmsgCommand, send_to_user)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -43,21 +79,21 @@ Test(PrivmsgCommand, send_to_user)
 Test(PrivmsgCommand, send_to_channel)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
 	// Both join channel
 	IChannel* channel = server.createChannel("#test", &alice);
-	alice.joinChannel("#test");
+	alice.joinChannel(channel);
 	channel->addMember(&bob);
-	bob.joinChannel("#test");
+	bob.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
@@ -79,7 +115,7 @@ Test(PrivmsgCommand, send_to_channel)
 Test(PrivmsgCommand, no_recipient)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -102,7 +138,7 @@ Test(PrivmsgCommand, no_recipient)
 Test(PrivmsgCommand, no_text_to_send)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -125,7 +161,7 @@ Test(PrivmsgCommand, no_text_to_send)
 Test(PrivmsgCommand, no_such_nick)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -149,7 +185,7 @@ Test(PrivmsgCommand, no_such_nick)
 Test(PrivmsgCommand, no_such_channel)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -173,19 +209,19 @@ Test(PrivmsgCommand, no_such_channel)
 Test(PrivmsgCommand, cannot_send_to_channel_not_member)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
 	// Only alice joins the channel
-	server.createChannel("#test", &alice);
-	alice.joinChannel("#test");
+	IChannel *channel = server.createChannel("#test", &alice);
+	alice.joinChannel(channel);
 
 	// Bob tries to send message to channel
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
@@ -207,17 +243,17 @@ Test(PrivmsgCommand, cannot_send_to_channel_not_member)
 Test(PrivmsgCommand, multiple_targets)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
-	Client charlie(5, "localhost");
+	ClientMock charlie(5, "localhost");
 	charlie.setPasswordProvided(true);
 	charlie.setNickname("charlie");
 	charlie.setUsername("charlie");
@@ -247,12 +283,12 @@ Test(PrivmsgCommand, multiple_targets)
 Test(PrivmsgCommand, mixed_user_and_channel_targets)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -262,9 +298,9 @@ Test(PrivmsgCommand, mixed_user_and_channel_targets)
 
 	// Create channel with both members
 	IChannel* channel = server.createChannel("#test", &alice);
-	alice.joinChannel("#test");
+	alice.joinChannel(channel);
 	channel->addMember(&bob);
-	bob.joinChannel("#test");
+	bob.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
@@ -284,7 +320,7 @@ Test(PrivmsgCommand, mixed_user_and_channel_targets)
 Test(PrivmsgCommand, empty_target)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -306,14 +342,14 @@ Test(PrivmsgCommand, empty_target)
 Test(PrivmsgCommand, sender_not_in_broadcast)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
 	// Alice creates and joins channel
-	server.createChannel("#test", &alice);
-	alice.joinChannel("#test");
+	IChannel *channel = server.createChannel("#test", &alice);
+	alice.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
@@ -333,12 +369,12 @@ Test(PrivmsgCommand, sender_not_in_broadcast)
 Test(PrivmsgCommand, message_with_spaces)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -363,21 +399,21 @@ Test(PrivmsgCommand, message_with_spaces)
 Test(PrivmsgCommand, ampersand_channel_prefix)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
 	// Create channel with & prefix
 	IChannel* channel = server.createChannel("&local", &alice);
-	alice.joinChannel("&local");
+	alice.joinChannel(channel);
 	channel->addMember(&bob);
-	bob.joinChannel("&local");
+	bob.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
@@ -397,12 +433,12 @@ Test(PrivmsgCommand, ampersand_channel_prefix)
 Test(PrivmsgCommand, empty_message_text)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -429,12 +465,12 @@ Test(PrivmsgCommand, empty_message_text)
 Test(PrivmsgCommand, prefix_format)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice_user");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -460,28 +496,28 @@ Test(PrivmsgCommand, prefix_format)
 Test(PrivmsgCommand, multiple_members_all_receive)
 {
 	Server server(6667, "test123");
-	Client alice(3, "localhost");
+	ClientMock alice(3, "localhost");
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	Client bob(4, "localhost");
+	ClientMock bob(4, "localhost");
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
-	Client charlie(5, "localhost");
+	ClientMock charlie(5, "localhost");
 	charlie.setPasswordProvided(true);
 	charlie.setNickname("charlie");
 	charlie.setUsername("charlie");
 
 	// All join channel
 	IChannel* channel = server.createChannel("#test", &alice);
-	alice.joinChannel("#test");
+	alice.joinChannel(channel);
 	channel->addMember(&bob);
-	bob.joinChannel("#test");
+	bob.joinChannel(channel);
 	channel->addMember(&charlie);
-	charlie.joinChannel("#test");
+	charlie.joinChannel(channel);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");

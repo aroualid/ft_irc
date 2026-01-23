@@ -6,10 +6,63 @@
 #include "protocol/Message.hpp"
 #include <criterion/criterion.h>
 
+Test(JoinCommand, requires_registration)
+{
+	Server server(6667, "test123");
+	ClientMock client(3, "localhost");
+	// ClientMock is NOT registered (no password, no username)
+	client.setNickname("unregistered");
+
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
+	Message msg;
+	msg.m_command = "JOIN";
+	msg.m_params.push_back("#test");
+
+	cmd->execute(&client, msg);
+
+	// Should receive ERR_NOTREGISTERED (451)
+	const std::string& buffer = client.getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("451") != std::string::npos, "Expected ERR_NOTREGISTERED (451)");
+	cr_assert(buffer.find("You have not registered") != std::string::npos);
+
+	// ClientMock should NOT have joined the channel
+	cr_assert_not(client.isInChannel("#test"));
+	cr_assert_eq(server.getChannelCount(), 0);
+	delete cmd;
+}
+
+Test(JoinCommand, requires_registration_no_password)
+{
+	Server server(6667, "test123");
+	ClientMock client(3, "localhost");
+	// Has nickname and username but NOT password
+	client.setNickname("alice");
+	client.setUsername("alice");
+	// client.setPasswordProvided(true); // intentionally not set
+
+	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	cr_assert_not_null(cmd, "Factory failed to create JOIN command. Is it registered?");
+	Message msg;
+	msg.m_command = "JOIN";
+	msg.m_params.push_back("#test");
+
+	cmd->execute(&client, msg);
+
+	// Should receive ERR_NOTREGISTERED (451)
+	const std::string& buffer = client.getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("451") != std::string::npos, "Expected ERR_NOTREGISTERED (451)");
+
+	// ClientMock should NOT have joined the channel
+	cr_assert_not(client.isInChannel("#test"));
+	cr_assert_eq(server.getChannelCount(), 0);
+	delete cmd;
+}
+
 Test(JoinCommand, single_channel_join)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -36,7 +89,7 @@ Test(JoinCommand, single_channel_join)
 Test(JoinCommand, multiple_channels_join)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -59,12 +112,12 @@ Test(JoinCommand, multiple_channels_join)
 Test(JoinCommand, channel_with_key)
 {
 	Server server(6667, "test123");
-	Client client1(3, "localhost");
+	ClientMock client1(3, "localhost");
 	client1.setPasswordProvided(true);
 	client1.setNickname("alice");
 	client1.setUsername("alice");
 
-	Client client2(4, "localhost");
+	ClientMock client2(4, "localhost");
 	client2.setPasswordProvided(true);
 	client2.setNickname("bob");
 	client2.setUsername("bob");
@@ -95,12 +148,12 @@ Test(JoinCommand, channel_with_key)
 Test(JoinCommand, channel_with_wrong_key)
 {
 	Server server(6667, "test123");
-	Client client1(3, "localhost");
+	ClientMock client1(3, "localhost");
 	client1.setPasswordProvided(true);
 	client1.setNickname("alice");
 	client1.setUsername("alice");
 
-	Client client2(4, "localhost");
+	ClientMock client2(4, "localhost");
 	client2.setPasswordProvided(true);
 	client2.setNickname("bob");
 	client2.setUsername("bob");
@@ -130,7 +183,7 @@ Test(JoinCommand, channel_with_wrong_key)
 Test(JoinCommand, multiple_channels_with_keys)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -153,7 +206,7 @@ Test(JoinCommand, multiple_channels_with_keys)
 Test(JoinCommand, invalid_channel_name_no_prefix)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -174,7 +227,7 @@ Test(JoinCommand, invalid_channel_name_no_prefix)
 Test(JoinCommand, invalid_channel_name_with_space)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -195,7 +248,7 @@ Test(JoinCommand, invalid_channel_name_with_space)
 Test(JoinCommand, invalid_channel_name_too_long)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -219,7 +272,7 @@ Test(JoinCommand, invalid_channel_name_too_long)
 Test(JoinCommand, join_already_in_channel)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -241,12 +294,12 @@ Test(JoinCommand, join_already_in_channel)
 Test(JoinCommand, invite_only_channel_no_invite)
 {
 	Server server(6667, "test123");
-	Client client1(3, "localhost");
+	ClientMock client1(3, "localhost");
 	client1.setPasswordProvided(true);
 	client1.setNickname("alice");
 	client1.setUsername("alice");
 
-	Client client2(4, "localhost");
+	ClientMock client2(4, "localhost");
 	client2.setPasswordProvided(true);
 	client2.setNickname("bob");
 	client2.setUsername("bob");
@@ -274,12 +327,12 @@ Test(JoinCommand, invite_only_channel_no_invite)
 Test(JoinCommand, invite_only_channel_with_invite)
 {
 	Server server(6667, "test123");
-	Client client1(3, "localhost");
+	ClientMock client1(3, "localhost");
 	client1.setPasswordProvided(true);
 	client1.setNickname("alice");
 	client1.setUsername("alice");
 
-	Client client2(4, "localhost");
+	ClientMock client2(4, "localhost");
 	client2.setPasswordProvided(true);
 	client2.setNickname("bob");
 	client2.setUsername("bob");
@@ -308,12 +361,12 @@ Test(JoinCommand, invite_only_channel_with_invite)
 Test(JoinCommand, channel_full)
 {
 	Server server(6667, "test123");
-	Client client1(3, "localhost");
+	ClientMock client1(3, "localhost");
 	client1.setPasswordProvided(true);
 	client1.setNickname("alice");
 	client1.setUsername("alice");
 
-	Client client2(4, "localhost");
+	ClientMock client2(4, "localhost");
 	client2.setPasswordProvided(true);
 	client2.setNickname("bob");
 	client2.setUsername("bob");
@@ -341,7 +394,7 @@ Test(JoinCommand, channel_full)
 Test(JoinCommand, first_member_becomes_operator)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -362,7 +415,7 @@ Test(JoinCommand, first_member_becomes_operator)
 Test(JoinCommand, ampersand_channel_prefix)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -384,7 +437,7 @@ Test(JoinCommand, ampersand_channel_prefix)
 Test(JoinCommand, empty_channel_name)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -404,7 +457,7 @@ Test(JoinCommand, empty_channel_name)
 Test(JoinCommand, mixed_valid_invalid_channels)
 {
 	Server server(6667, "test123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");

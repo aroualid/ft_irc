@@ -1,19 +1,24 @@
 #include "core/Client.hpp"
-#include "core/IMessageBuffer.hpp"
+#include "core/IServer.hpp"
+#include "IChannel.hpp"
 
-Client::Client(int fd, const std::string &hostname)
-	:_fd(fd),
+Client::Client(int fd, const std::string& hostname, IServer &server)
+	: _fd(fd),
 	_nickname(""),
 	_username(""),
 	_realname(""),
 	_hostname(hostname),
-	_state(DISCONNECTED),
+	_state(HANDSHAKE),
 	_passwordProvided(false),
 	_buffer(),
+	_server(&server),
 	_channels()
-{}
+{
+}
 
-int	Client::getFd() const
+Client::~Client() {}
+
+int Client::getFd() const
 {
 	return _fd;
 }
@@ -23,8 +28,6 @@ const std::string& Client::getNickname() const
 	return (_nickname);
 }
 
-
-Client::~Client() {}
 const std::string& Client::getUsername() const
 {
 	return (_username);
@@ -45,11 +48,6 @@ bool Client::isPasswordProvided() const
 	return (_passwordProvided);
 }
 
-bool Client::isAuthenticated() const
-{
-	return (_passwordProvided);
-}
-
 bool Client::isRegistered() const
 {
 	return (_state == REGISTERED);
@@ -58,60 +56,69 @@ bool Client::isRegistered() const
 void Client::setNickname(const std::string& nick)
 {
 	_nickname = nick;
-	updateRegistrationState();
+	attemptRegistration();
 }
 
 void Client::setUsername(const std::string& user)
 {
 	_username = user;
-	updateRegistrationState();
+	attemptRegistration();
 }
 
 void Client::setRealname(const std::string& real)
 {
 	_realname = real;
-	updateRegistrationState();
 }
 
 void Client::setPasswordProvided(bool provided)
 {
 	_passwordProvided = provided;
-	updateRegistrationState();
+	attemptRegistration();
 }
 
-void Client::joinChannel(const std::string& channel) {
+void Client::joinChannel(IChannel *channel) {
     _channels.insert(channel);
 }
 
-void Client::leaveChannel(const std::string& channel) {
+void Client::leaveChannel(IChannel *channel) {
     _channels.erase(channel);
 }
 
-bool Client::isInChannel(const std::string& channel) const {
-    return _channels.find(channel) != _channels.end();
+bool Client::isInChannel(const std::string& channelName) const
+{
+	for (std::set<IChannel*>::const_iterator it = _channels.begin(); it != _channels.end(); ++it)
+	{
+		if ((*it)->getName() == channelName)
+			return true;
+	}
+	return false;
 }
 
-const std::set<std::string>& Client::getChannels() const {
+const std::set< IChannel *>& Client::getChannels() const {
 	return _channels;
 }
 
-void Client::updateRegistrationState()
+void Client::attemptRegistration()
 {
 	if (_state == REGISTERED)
 		return;
-	if (_passwordProvided && !_nickname.empty() && !_username.empty()) {
-        _state = REGISTERED;
-	}
+	if (_nickname.empty())
+		return;
+	if (_username.empty())
+		return;
+	if (_server->requiresPassword() && !_passwordProvided)
+		return;
+	_state = REGISTERED;
 }
 
 IMessageBuffer& Client::getBuffer()
 {
-	return (_buffer);
+	return _buffer;
 }
 
 const IMessageBuffer& Client::getBuffer() const
 {
-	return (_buffer);
+	return _buffer;
 }
 
 std::string Client::getPrefix() const

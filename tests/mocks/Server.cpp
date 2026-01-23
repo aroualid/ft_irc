@@ -16,6 +16,11 @@ Server::~Server()
 	std::cout << "[MOCK] Server destroyed" << std::endl;
 }
 
+bool Server::requiresPassword() const
+{
+	return (!m_password.empty());
+}
+
 int Server::getPort() const
 {
 	return m_port;

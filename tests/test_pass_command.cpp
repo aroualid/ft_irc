@@ -12,7 +12,7 @@ TestSuite(PassCommand);
 Test(PassCommand, sets_password_correctly)
 {
 	Server server(6667, "secret123");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PASS, server);
 	cr_assert_not_null(cmd, "Factory failed to create PASS command");
@@ -23,14 +23,14 @@ Test(PassCommand, sets_password_correctly)
 
 	cmd->execute(&client, msg);
 
-	cr_assert(client.isAuthenticated(), "Client should be authenticated after correct password");
+	cr_assert(client.isPasswordProvided(), "Client should be authenticated after correct password");
 	delete cmd;
 }
 
 Test(PassCommand, rejects_wrong_password)
 {
 	Server server(6667, "correctpass");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PASS, server);
 	cr_assert_not_null(cmd, "Factory failed to create PASS command");
@@ -41,7 +41,7 @@ Test(PassCommand, rejects_wrong_password)
 
 	cmd->execute(&client, msg);
 
-	cr_assert_not(client.isAuthenticated(), "Client should not be authenticated with wrong password");
+	cr_assert_not(client.isPasswordProvided(), "Client should not be authenticated with wrong password");
 	delete cmd;
 }
 
@@ -49,7 +49,7 @@ Test(PassCommand, rejects_wrong_password)
 Test(PassCommand, multiple_pass_only_last_counts)
 {
 	Server server(6667, "finalpass");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PASS, server);
 	cr_assert_not_null(cmd, "Factory failed to create PASS command");
@@ -69,7 +69,7 @@ Test(PassCommand, multiple_pass_only_last_counts)
 	msg3.m_params.push_back("finalpass");
 	cmd->execute(&client, msg3);
 
-	cr_assert(client.isAuthenticated(), "Client should be authenticated after final correct password");
+	cr_assert(client.isPasswordProvided(), "Client should be authenticated after final correct password");
 	delete cmd;
 }
 
@@ -77,7 +77,7 @@ Test(PassCommand, multiple_pass_only_last_counts)
 Test(PassCommand, error_if_already_registered)
 {
 	Server server(6667, "testpass");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -103,7 +103,7 @@ Test(PassCommand, error_if_already_registered)
 Test(PassCommand, error_if_no_parameters)
 {
 	Server server(6667, "testpass");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PASS, server);
 	cr_assert_not_null(cmd, "Factory failed to create PASS command");
@@ -118,7 +118,7 @@ Test(PassCommand, error_if_no_parameters)
 	std::string buffer = client.getBuffer().getWriteBuffer();
 	cr_assert(buffer.find("461") != std::string::npos,
 			  "Should send ERR_NEEDMOREPARAMS when no password provided");
-	cr_assert_not(client.isAuthenticated(), "Client should not be authenticated");
+	cr_assert_not(client.isPasswordProvided(), "Client should not be authenticated");
 	delete cmd;
 }
 
@@ -126,7 +126,7 @@ Test(PassCommand, error_if_no_parameters)
 Test(PassCommand, must_be_sent_before_registration)
 {
 	Server server(6667, "testpass");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 
 	// This test verifies PASS works when sent first
 	ACommand* passCmd = CommandFactory::getInstance()->createCommand(irc::PASS, server);
@@ -137,7 +137,7 @@ Test(PassCommand, must_be_sent_before_registration)
 	passMsg.m_params.push_back("testpass");
 	passCmd->execute(&client, passMsg);
 
-	cr_assert(client.isAuthenticated(), "PASS should work before registration");
+	cr_assert(client.isPasswordProvided(), "PASS should work before registration");
 	cr_assert_not(client.isRegistered(), "Client should not yet be registered");
 	delete passCmd;
 }

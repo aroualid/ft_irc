@@ -14,6 +14,7 @@ public:
 
 	virtual int getPort() const = 0;
 	virtual const std::string& getPassword() const = 0;
+	virtual bool requiresPassword() const = 0;
 
 	virtual IClient	*getClientByNickname(const std::string &nick) = 0;
 	virtual void	registerClient(const std::string &nick, IClient* client) = 0;

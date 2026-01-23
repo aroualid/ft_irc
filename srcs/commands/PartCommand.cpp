@@ -45,7 +45,7 @@ void PartCommand::doExecute(IClient* client, const Message& message)
 	channel->broadcast(serialized);
 
 	channel->removeMember(client);
-	client->leaveChannel(channelName);
+	client->leaveChannel(channel);
 
 	m_server.deleteChannelIfEmpty(channel);
 }

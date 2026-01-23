@@ -12,7 +12,7 @@ TestSuite(QuitCommand);
 Test(QuitCommand, basic_quit_no_message)
 {
 	Server server(6667, "testpass");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -36,7 +36,7 @@ Test(QuitCommand, basic_quit_no_message)
 Test(QuitCommand, quit_with_custom_message)
 {
 	Server server(6667, "testpass");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -58,7 +58,7 @@ Test(QuitCommand, quit_with_custom_message)
 Test(QuitCommand, quit_before_registration)
 {
 	Server server(6667, "testpass");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	// Not authenticated, not registered
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
@@ -79,7 +79,7 @@ Test(QuitCommand, quit_before_registration)
 Test(QuitCommand, quit_after_pass_only)
 {
 	Server server(6667, "testpass");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	// Has password but no nick/user
 
@@ -99,8 +99,8 @@ Test(QuitCommand, quit_after_pass_only)
 Test(QuitCommand, broadcasts_to_channels)
 {
 	Server server(6667, "testpass");
-	Client client1(3, "localhost");
-	Client client2(4, "localhost");
+	ClientMock client1(3, "localhost");
+	ClientMock client2(4, "localhost");
 
 	// Setup client1 (alice)
 	client1.setPasswordProvided(true);
@@ -152,9 +152,9 @@ Test(QuitCommand, broadcasts_to_channels)
 Test(QuitCommand, broadcasts_to_all_channels)
 {
 	Server server(6667, "testpass");
-	Client alice(3, "localhost");
-	Client bob(4, "localhost");
-	Client charlie(5, "localhost");
+	ClientMock alice(3, "localhost");
+	ClientMock bob(4, "localhost");
+	ClientMock charlie(5, "localhost");
 
 	// Setup clients
 	alice.setPasswordProvided(true);
@@ -216,7 +216,7 @@ Test(QuitCommand, broadcasts_to_all_channels)
 Test(QuitCommand, empty_quit_message_uses_default)
 {
 	Server server(6667, "testpass");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -238,7 +238,7 @@ Test(QuitCommand, empty_quit_message_uses_default)
 Test(QuitCommand, quit_message_with_spaces)
 {
 	Server server(6667, "testpass");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -260,7 +260,7 @@ Test(QuitCommand, quit_message_with_spaces)
 Test(QuitCommand, no_numeric_replies)
 {
 	Server server(6667, "testpass");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -289,7 +289,7 @@ Test(QuitCommand, no_numeric_replies)
 Test(QuitCommand, quit_without_channels)
 {
 	Server server(6667, "testpass");
-	Client client(3, "localhost");
+	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -311,8 +311,8 @@ Test(QuitCommand, quit_without_channels)
 Test(QuitCommand, quit_message_format)
 {
 	Server server(6667, "testpass");
-	Client alice(3, "localhost");
-	Client bob(4, "localhost");
+	ClientMock alice(3, "localhost");
+	ClientMock bob(4, "localhost");
 
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");

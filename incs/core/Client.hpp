@@ -4,6 +4,7 @@
 #include "core/IChannel.hpp"
 #include "network/MessageBuffer.hpp"
 
+class IServer;
 class ClientState;
 
 class Client : public IClient{
@@ -24,13 +25,13 @@ private:
     ClientState _state;
     bool		_passwordProvided;
 
-    //IMessageBuffer _buffer;
     MessageBuffer _buffer;
-    std::set<std::string> _channels;
+	IServer *_server;
+    std::set<IChannel *> _channels;
 
 
 public:
-    Client(int fd, const std::string& hostname);
+    Client(int fd, const std::string& hostname, IServer &server);
     ~Client();
 
     // Getters
@@ -42,7 +43,6 @@ public:
 
 
 	bool isPasswordProvided() const;
-    bool isAuthenticated() const;
     bool isRegistered() const;
 
     // State management
@@ -50,13 +50,13 @@ public:
     void setUsername(const std::string& user);
     void setRealname(const std::string& real);
     void setPasswordProvided(bool provided);
-    void updateRegistrationState();
+    void attemptRegistration();
 
     // Channel membership
-    void joinChannel(const std::string& channel);
-    void leaveChannel(const std::string& channel);
+    void joinChannel(IChannel *channel);
+    void leaveChannel(IChannel *channel);
     bool isInChannel(const std::string& channel) const;
-	const std::set< std::string >& getChannels() const;
+	const std::set< IChannel * >& getChannels() const;
     // Buffer access
     IMessageBuffer& getBuffer();
     const IMessageBuffer& getBuffer() const;
