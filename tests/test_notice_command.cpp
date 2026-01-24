@@ -9,12 +9,12 @@
 Test(NoticeCommand, requires_registration_silently_ignored)
 {
 	Server server(6667, "test123");
-	ClientMock sender(3, "localhost");
+	ClientMock sender(3, "localhost", server);
 	// Sender is NOT registered (no password)
 	sender.setNickname("unregistered");
 	sender.setUsername("unregistered");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -43,12 +43,12 @@ Test(NoticeCommand, requires_registration_silently_ignored)
 Test(NoticeCommand, send_to_user)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -77,12 +77,12 @@ Test(NoticeCommand, send_to_user)
 Test(NoticeCommand, send_to_channel)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -113,7 +113,7 @@ Test(NoticeCommand, send_to_channel)
 Test(NoticeCommand, no_parameters_no_error)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -135,7 +135,7 @@ Test(NoticeCommand, no_parameters_no_error)
 Test(NoticeCommand, no_text_no_error)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -158,7 +158,7 @@ Test(NoticeCommand, no_text_no_error)
 Test(NoticeCommand, no_such_nick_no_error)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -181,7 +181,7 @@ Test(NoticeCommand, no_such_nick_no_error)
 Test(NoticeCommand, no_such_channel_no_error)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -204,12 +204,12 @@ Test(NoticeCommand, no_such_channel_no_error)
 Test(NoticeCommand, cannot_send_to_channel_no_error)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -238,17 +238,17 @@ Test(NoticeCommand, cannot_send_to_channel_no_error)
 Test(NoticeCommand, multiple_targets)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
-	ClientMock charlie(5, "localhost");
+	ClientMock charlie(5, "localhost", server);
 	charlie.setPasswordProvided(true);
 	charlie.setNickname("charlie");
 	charlie.setUsername("charlie");
@@ -278,12 +278,12 @@ Test(NoticeCommand, multiple_targets)
 Test(NoticeCommand, mixed_user_and_channel_targets)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -315,7 +315,7 @@ Test(NoticeCommand, mixed_user_and_channel_targets)
 Test(NoticeCommand, sender_not_in_broadcast)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
@@ -340,12 +340,12 @@ Test(NoticeCommand, sender_not_in_broadcast)
 Test(NoticeCommand, message_with_spaces)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -370,12 +370,12 @@ Test(NoticeCommand, message_with_spaces)
 Test(NoticeCommand, ampersand_channel_prefix)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -404,12 +404,12 @@ Test(NoticeCommand, ampersand_channel_prefix)
 Test(NoticeCommand, empty_message_text)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -436,12 +436,12 @@ Test(NoticeCommand, empty_message_text)
 Test(NoticeCommand, prefix_format)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice_user");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -467,17 +467,17 @@ Test(NoticeCommand, prefix_format)
 Test(NoticeCommand, multiple_members_all_receive)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
-	ClientMock charlie(5, "localhost");
+	ClientMock charlie(5, "localhost", server);
 	charlie.setPasswordProvided(true);
 	charlie.setNickname("charlie");
 	charlie.setUsername("charlie");
@@ -513,7 +513,7 @@ Test(NoticeCommand, no_automatic_replies)
 	// This test verifies that NOTICE doesn't send errors
 	// which prevents infinite loops with auto-responders
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
@@ -539,7 +539,7 @@ Test(NoticeCommand, no_automatic_replies)
 Test(NoticeCommand, empty_target)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -562,7 +562,7 @@ Test(NoticeCommand, empty_target)
 Test(NoticeCommand, silently_fails_on_invalid_targets)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");

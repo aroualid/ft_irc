@@ -11,12 +11,12 @@
 Test(PrivmsgCommand, requires_registration)
 {
 	Server server(6667, "test123");
-	ClientMock sender(3, "localhost");
+	ClientMock sender(3, "localhost", server);
 	// Sender is NOT registered (no password)
 	sender.setNickname("unregistered");
 	sender.setUsername("unregistered");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -46,12 +46,12 @@ Test(PrivmsgCommand, requires_registration)
 Test(PrivmsgCommand, send_to_user)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -80,12 +80,12 @@ Test(PrivmsgCommand, send_to_user)
 Test(PrivmsgCommand, send_to_channel)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -116,7 +116,7 @@ Test(PrivmsgCommand, send_to_channel)
 Test(PrivmsgCommand, no_recipient)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -139,7 +139,7 @@ Test(PrivmsgCommand, no_recipient)
 Test(PrivmsgCommand, no_text_to_send)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -162,7 +162,7 @@ Test(PrivmsgCommand, no_text_to_send)
 Test(PrivmsgCommand, no_such_nick)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -186,7 +186,7 @@ Test(PrivmsgCommand, no_such_nick)
 Test(PrivmsgCommand, no_such_channel)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -210,12 +210,12 @@ Test(PrivmsgCommand, no_such_channel)
 Test(PrivmsgCommand, cannot_send_to_channel_not_member)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -244,17 +244,17 @@ Test(PrivmsgCommand, cannot_send_to_channel_not_member)
 Test(PrivmsgCommand, multiple_targets)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
-	ClientMock charlie(5, "localhost");
+	ClientMock charlie(5, "localhost", server);
 	charlie.setPasswordProvided(true);
 	charlie.setNickname("charlie");
 	charlie.setUsername("charlie");
@@ -284,12 +284,12 @@ Test(PrivmsgCommand, multiple_targets)
 Test(PrivmsgCommand, mixed_user_and_channel_targets)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -321,7 +321,7 @@ Test(PrivmsgCommand, mixed_user_and_channel_targets)
 Test(PrivmsgCommand, empty_target)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -343,7 +343,7 @@ Test(PrivmsgCommand, empty_target)
 Test(PrivmsgCommand, sender_not_in_broadcast)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
@@ -370,12 +370,12 @@ Test(PrivmsgCommand, sender_not_in_broadcast)
 Test(PrivmsgCommand, message_with_spaces)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -400,12 +400,12 @@ Test(PrivmsgCommand, message_with_spaces)
 Test(PrivmsgCommand, ampersand_channel_prefix)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -434,12 +434,12 @@ Test(PrivmsgCommand, ampersand_channel_prefix)
 Test(PrivmsgCommand, empty_message_text)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -466,12 +466,12 @@ Test(PrivmsgCommand, empty_message_text)
 Test(PrivmsgCommand, prefix_format)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice_user");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -497,17 +497,17 @@ Test(PrivmsgCommand, prefix_format)
 Test(PrivmsgCommand, multiple_members_all_receive)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
-	ClientMock charlie(5, "localhost");
+	ClientMock charlie(5, "localhost", server);
 	charlie.setPasswordProvided(true);
 	charlie.setNickname("charlie");
 	charlie.setUsername("charlie");

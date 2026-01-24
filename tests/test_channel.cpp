@@ -16,11 +16,12 @@ TestSuite(Channel);
 // addMember
 Test(Channel, newUser)
 {
+	Server server(6667, "testpass");
 	cr_log_info("Testing Channel addMember");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
-	ClientMock client2(4, "localhost");
+	ClientMock client1(3, "localhost", server);
+	ClientMock client2(4, "localhost", server);
 	canal.setKey("bonjour");
 	client1.setNickname(std::string("Didier"));
 	client2.setNickname(std::string("Didier"));
@@ -34,10 +35,11 @@ Test(Channel, newUser)
 
 Test(Channel, alreadyUser)
 {
+	Server server(6667, "testpass");
 	cr_log_info("Testing Channel addMember");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
+	ClientMock client1(3, "localhost", server);
 	canal.setKey("bonjour");
 	client1.setNickname(std::string("Didier"));
 	client1.setUsername(std::string("Didier"));
@@ -48,10 +50,11 @@ Test(Channel, alreadyUser)
 
 Test(Channel, falsePassword)
 {
+	Server server(6667, "testpass");
 	cr_log_info("Testing Channel addMember");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
+	ClientMock client1(3, "localhost", server);
 	canal.setKey("bonjour");
 	client1.setPasswordProvided(true);
 	client1.setNickname(std::string("Didier"));
@@ -61,10 +64,11 @@ Test(Channel, falsePassword)
 
 Test(Channel, goodPassword)
 {
+	Server server(6667, "testpass");
 	cr_log_info("Testing Channel addMember");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
+	ClientMock client1(3, "localhost", server);
 	canal.setKey("bonjour");
 	client1.setPasswordProvided(true);
 	client1.setNickname(std::string("Didier"));
@@ -74,13 +78,14 @@ Test(Channel, goodPassword)
 
 Test(Channel, noUserLimit)
 {
+	Server server(6667, "testpass");
 	cr_log_info("Testing Channel addMember");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
-	ClientMock client2(4, "localhost");
-	ClientMock client3(5, "localhost");
-	ClientMock client4(6, "localhost");
+	ClientMock client1(3, "localhost", server);
+	ClientMock client2(4, "localhost", server);
+	ClientMock client3(5, "localhost", server);
+	ClientMock client4(6, "localhost", server);
 	canal.setKey("bonjour");
 	client1.setPasswordProvided(true);
 	client2.setPasswordProvided(true);
@@ -102,13 +107,14 @@ Test(Channel, noUserLimit)
 
 Test(Channel, userLimitIsOn)
 {
+	Server server(6667, "testpass");
 	cr_log_info("Testing Channel addMember");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
-	ClientMock client2(4, "localhost");
-	ClientMock client3(5, "localhost");
-	ClientMock client4(6, "localhost");
+	ClientMock client1(3, "localhost", server);
+	ClientMock client2(4, "localhost", server);
+	ClientMock client3(5, "localhost", server);
+	ClientMock client4(6, "localhost", server);
 	canal.setKey("bonjour");
 	client1.setPasswordProvided(true);
 	client2.setPasswordProvided(true);
@@ -131,10 +137,11 @@ Test(Channel, userLimitIsOn)
 
 Test(Channel, userIsInvite)
 {
+	Server server(6667, "testpass");
 	cr_log_info("Testing Channel addMember");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
+	ClientMock client1(3, "localhost", server);
 	canal.setKey("bonjour");
 	client1.setPasswordProvided(true);
 	canal.setInviteOnly(true);
@@ -146,10 +153,11 @@ Test(Channel, userIsInvite)
 
 Test(Channel, userIsNoInvite)
 {
+	Server server(6667, "testpass");
 	cr_log_info("Testing Channel addMember");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
+	ClientMock client1(3, "localhost", server);
 	canal.setKey("bonjour");
 	client1.setPasswordProvided(true);
 	canal.setInviteOnly(true);
@@ -160,9 +168,10 @@ Test(Channel, userIsNoInvite)
 
 Test(Channel, HasUser)
 {
+	Server server(6667, "testpass");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
+	ClientMock client1(3, "localhost", server);
 	canal.setKey("bonjour");
 	client1.setPasswordProvided(true);
 	client1.setNickname(std::string("Didier"));
@@ -173,9 +182,10 @@ Test(Channel, HasUser)
 
 Test(Channel, HasRemoveUser)
 {
+	Server server(6667, "testpass");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
+	ClientMock client1(3, "localhost", server);
 	canal.setKey("bonjour");
 	client1.setPasswordProvided(true);
 	client1.setNickname(std::string("Didier"));
@@ -187,10 +197,11 @@ Test(Channel, HasRemoveUser)
 
 Test(Channel, applyModeNoOp)
 {
+	Server server(6667, "testpass");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
-	ClientMock client2(4, "localhost");
+	ClientMock client1(3, "localhost", server);
+	ClientMock client2(4, "localhost", server);
 	canal.setKey("bonjour");
 	canal.addMember(&client1, "bonjour");
 	canal.addMember(&client2, "bonjour");
@@ -199,10 +210,11 @@ Test(Channel, applyModeNoOp)
 
 Test(Channel, applyModeOp)
 {
+	Server server(6667, "testpass");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
-	ClientMock client2(4, "localhost");
+	ClientMock client1(3, "localhost", server);
+	ClientMock client2(4, "localhost", server);
 	canal.setKey("bonjour");
 	client1.setNickname(std::string("Didier"));
 	client1.setUsername(std::string("Didier"));
@@ -217,9 +229,10 @@ Test(Channel, applyModeOp)
 
 Test(Channel, applyFalseMode)
 {
+	Server server(6667, "testpass");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
+	ClientMock client1(3, "localhost", server);
 	canal.setKey("bonjour");
 	client1.setPasswordProvided(true);
 	client1.setNickname(std::string("Didier"));
@@ -231,9 +244,10 @@ Test(Channel, applyFalseMode)
 
 Test(Channel, applyModeWithoutParam)
 {
+	Server server(6667, "testpass");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
+	ClientMock client1(3, "localhost", server);
 	canal.setKey("bonjour");
 	client1.setNickname(std::string("Didier"));
 	client1.setUsername(std::string("Didier"));
@@ -245,9 +259,10 @@ Test(Channel, applyModeWithoutParam)
 
 Test(Channel, applyTrueMode)
 {
+	Server server(6667, "testpass");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
+	ClientMock client1(3, "localhost", server);
 	canal.setKey("bonjour");
 	client1.setNickname(std::string("Didier"));
 	client1.setPasswordProvided(true);
@@ -259,9 +274,10 @@ Test(Channel, applyTrueMode)
 
 Test(Channel, applyModeWithParam)
 {
+	Server server(6667, "testpass");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
+	ClientMock client1(3, "localhost", server);
 	client1.setNickname(std::string("Didier"));
 	client1.setPasswordProvided(true);
 	client1.setUsername(std::string("Didier"));
@@ -273,6 +289,7 @@ Test(Channel, applyModeWithParam)
 
 Test(Channel, getModeStringAll)
 {
+	Server server(6667, "testpass");
 	std::string feur = "didier";
 	Channel canal(feur);
 	canal.setInviteOnly(true);
@@ -284,6 +301,7 @@ Test(Channel, getModeStringAll)
 
 Test(Channel, getModeStringOneFalse)
 {
+	Server server(6667, "testpass");
 	std::string feur = "didier";
 	Channel canal(feur);
 	canal.setInviteOnly(true);
@@ -295,6 +313,7 @@ Test(Channel, getModeStringOneFalse)
 
 Test(Channel, getModeStringAllFalse)
 {
+	Server server(6667, "testpass");
 	std::string feur = "didier";
 	Channel canal(feur);
 	canal.setInviteOnly(false);
@@ -306,12 +325,13 @@ Test(Channel, getModeStringAllFalse)
 
 Test(Channel, getMemberListNoOp)
 {
+	Server server(6667, "testpass");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
-	ClientMock client2(4, "localhost");
-	ClientMock client3(5, "localhost");
-	ClientMock client4(6, "localhost");
+	ClientMock client1(3, "localhost", server);
+	ClientMock client2(4, "localhost", server);
+	ClientMock client3(5, "localhost", server);
+	ClientMock client4(6, "localhost", server);
 	canal.setKey("bonjour");
 	client1.setPasswordProvided(true);
 	client2.setPasswordProvided(true);
@@ -334,12 +354,13 @@ Test(Channel, getMemberListNoOp)
 
 Test(Channel, getMemberListOneOp)
 {
+	Server server(6667, "testpass");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
-	ClientMock client2(4, "localhost");
-	ClientMock client3(5, "localhost");
-	ClientMock client4(6, "localhost");
+	ClientMock client1(3, "localhost", server);
+	ClientMock client2(4, "localhost", server);
+	ClientMock client3(5, "localhost", server);
+	ClientMock client4(6, "localhost", server);
 	canal.setKey("bonjour");
 	client1.setPasswordProvided(true);
 	client2.setPasswordProvided(true);
@@ -363,12 +384,13 @@ Test(Channel, getMemberListOneOp)
 
 Test(Channel, isNotEmpty)
 {
+	Server server(6667, "testpass");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
-	ClientMock client2(4, "localhost");
-	ClientMock client3(5, "localhost");
-	ClientMock client4(6, "localhost");
+	ClientMock client1(3, "localhost", server);
+	ClientMock client2(4, "localhost", server);
+	ClientMock client3(5, "localhost", server);
+	ClientMock client4(6, "localhost", server);
 	client1.setPasswordProvided(true);
 	client2.setPasswordProvided(true);
 	client3.setPasswordProvided(true);
@@ -391,12 +413,13 @@ Test(Channel, isNotEmpty)
 
 Test(Channel, isEmpty)
 {
+	Server server(6667, "testpass");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
-	ClientMock client2(4, "localhost");
-	ClientMock client3(5, "localhost");
-	ClientMock client4(6, "localhost");
+	ClientMock client1(3, "localhost", server);
+	ClientMock client2(4, "localhost", server);
+	ClientMock client3(5, "localhost", server);
+	ClientMock client4(6, "localhost", server);
 	client1.setPasswordProvided(true);
 	client2.setPasswordProvided(true);
 	client3.setPasswordProvided(true);
@@ -414,12 +437,13 @@ Test(Channel, isEmpty)
 
 Test(Channel, broadcast)
 {
+	Server server(6667, "testpass");
 	std::string feur = "didier";
 	Channel canal(feur);
-	ClientMock client1(3, "localhost");
-	ClientMock client2(4, "localhost");
-	ClientMock client3(5, "localhost");
-	ClientMock client4(6, "localhost");
+	ClientMock client1(3, "localhost", server);
+	ClientMock client2(4, "localhost", server);
+	ClientMock client3(5, "localhost", server);
+	ClientMock client4(6, "localhost", server);
 	client1.setPasswordProvided(true);
 	client2.setPasswordProvided(true);
 	client3.setPasswordProvided(true);

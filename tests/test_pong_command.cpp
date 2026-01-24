@@ -11,7 +11,7 @@ TestSuite(PongCommand);
 Test(PongCommand, error_no_origin)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setNickname("alice");
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PONG, server);
@@ -35,7 +35,7 @@ Test(PongCommand, error_no_origin)
 Test(PongCommand, valid_pong_accepted)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -58,7 +58,7 @@ Test(PongCommand, valid_pong_accepted)
 Test(PongCommand, works_before_authentication)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	// Not authenticated, no nickname
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PONG, server);

@@ -11,7 +11,7 @@
 Test(PartCommand, requires_registration)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	// Client is NOT registered (no password)
 	client.setNickname("unregistered");
 	client.setUsername("unregistered");
@@ -34,7 +34,7 @@ Test(PartCommand, requires_registration)
 Test(PartCommand, successful_part_single_channel)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -65,7 +65,7 @@ Test(PartCommand, successful_part_single_channel)
 Test(PartCommand, part_with_message)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -95,7 +95,7 @@ Test(PartCommand, part_with_message)
 Test(PartCommand, part_nonexistent_channel)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -119,12 +119,12 @@ Test(PartCommand, part_nonexistent_channel)
 Test(PartCommand, part_channel_not_on)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -153,7 +153,7 @@ Test(PartCommand, part_channel_not_on)
 Test(PartCommand, part_no_parameters)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -177,17 +177,17 @@ Test(PartCommand, part_no_parameters)
 Test(PartCommand, part_broadcasts_to_all_members)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
 
-	ClientMock charlie(5, "localhost");
+	ClientMock charlie(5, "localhost", server);
 	charlie.setPasswordProvided(true);
 	charlie.setNickname("charlie");
 	charlie.setUsername("charlie");
@@ -234,12 +234,12 @@ Test(PartCommand, part_broadcasts_to_all_members)
 Test(PartCommand, last_member_parts_channel_deleted)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -280,12 +280,12 @@ Test(PartCommand, last_member_parts_channel_deleted)
 Test(PartCommand, part_removes_operator_status)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -317,7 +317,7 @@ Test(PartCommand, part_removes_operator_status)
 Test(PartCommand, part_with_prefix_in_broadcast)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice_user");
@@ -344,7 +344,7 @@ Test(PartCommand, part_with_prefix_in_broadcast)
 Test(PartCommand, part_ampersand_channel)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -371,7 +371,7 @@ Test(PartCommand, part_ampersand_channel)
 Test(PartCommand, part_empty_message_parameter)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -396,7 +396,7 @@ Test(PartCommand, part_empty_message_parameter)
 Test(PartCommand, part_channel_name_case_sensitive)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -420,12 +420,12 @@ Test(PartCommand, part_channel_name_case_sensitive)
 Test(PartCommand, operator_parts_doesnt_transfer_ops)
 {
 	Server server(6667, "test123");
-	ClientMock alice(3, "localhost");
+	ClientMock alice(3, "localhost", server);
 	alice.setPasswordProvided(true);
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ClientMock bob(4, "localhost");
+	ClientMock bob(4, "localhost", server);
 	bob.setPasswordProvided(true);
 	bob.setNickname("bob");
 	bob.setUsername("bob");
@@ -458,7 +458,7 @@ Test(PartCommand, operator_parts_doesnt_transfer_ops)
 Test(PartCommand, multiple_channels_in_client_list)
 {
 	Server server(6667, "test123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");

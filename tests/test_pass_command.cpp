@@ -12,7 +12,7 @@ TestSuite(PassCommand);
 Test(PassCommand, sets_password_correctly)
 {
 	Server server(6667, "secret123");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PASS, server);
 	cr_assert_not_null(cmd, "Factory failed to create PASS command");
@@ -30,7 +30,7 @@ Test(PassCommand, sets_password_correctly)
 Test(PassCommand, rejects_wrong_password)
 {
 	Server server(6667, "correctpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PASS, server);
 	cr_assert_not_null(cmd, "Factory failed to create PASS command");
@@ -50,7 +50,7 @@ Test(PassCommand, rejects_wrong_password)
 Test(PassCommand, multiple_pass_only_last_counts)
 {
 	Server server(6667, "finalpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PASS, server);
 	cr_assert_not_null(cmd, "Factory failed to create PASS command");
@@ -79,7 +79,7 @@ Test(PassCommand, multiple_pass_only_last_counts)
 Test(PassCommand, error_if_already_registered)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -105,7 +105,7 @@ Test(PassCommand, error_if_already_registered)
 Test(PassCommand, error_if_no_parameters)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 
 	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PASS, server);
 	cr_assert_not_null(cmd, "Factory failed to create PASS command");
@@ -128,7 +128,7 @@ Test(PassCommand, error_if_no_parameters)
 Test(PassCommand, must_be_sent_before_registration)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 
 	// This test verifies PASS works when sent first
 	ACommand* passCmd = CommandFactory::getInstance()->createCommand(irc::PASS, server);
