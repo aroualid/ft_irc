@@ -147,3 +147,16 @@ NumericReply NumericReply::notRegistered(const std::string& nick)
 {
 	return NumericReply(451, nick.empty() ? "*" : nick, ":You have not registered");
 }
+
+NumericReply NumericReply::userNotInChannel(const std::string& nick, const std::string& target,
+											const std::string& channel)
+{
+	std::string message = target + " " + channel + " :They aren't on that channel";
+	return NumericReply(441, nick, message);
+}
+
+NumericReply NumericReply::chanOpPrivsNeeded(const std::string& nick, const std::string& channel)
+{
+	std::string message = channel + " :You're not channel operator (boooo!)";
+	return NumericReply(482, nick, message);
+}

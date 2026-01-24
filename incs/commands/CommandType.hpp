@@ -26,6 +26,9 @@ enum CommandType
 	PING,
 	PONG,
 
+	// operator stuff
+	KICK,
+
 	// unknown/invalid
 	CMD_UNKNOWN
 };

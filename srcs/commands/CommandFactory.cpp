@@ -5,7 +5,6 @@
 #include <map>
 #include <new>
 
-
 CommandFactory::CommandFactory()
 {
 }
@@ -26,7 +25,7 @@ CommandFactory& CommandFactory::operator=(const CommandFactory& source)
 	return (*this);
 }
 
-CommandFactory &CommandFactory::getInstance()
+CommandFactory& CommandFactory::getInstance()
 {
 	static CommandFactory instance;
 	return (instance);

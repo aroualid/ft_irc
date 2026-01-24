@@ -37,8 +37,8 @@ template < typename BaseCommand, typename ConcreteCommand > struct IsDerivedFrom
 		CommandRegistrar_##CommandClass()                                                          \
 		{                                                                                          \
 			(void)sizeof(detail::IsDerivedFrom< ACommand, CommandClass >);                         \
-			CommandFactory::getInstance().registerCommandSpawner(CommandName, CommandType,        \
-																  &CommandClass::create);          \
+			CommandFactory::getInstance().registerCommandSpawner(CommandName, CommandType,         \
+																 &CommandClass::create);           \
 		}                                                                                          \
 	};                                                                                             \
 	static CommandRegistrar_##CommandClass g_registrar_##CommandClass;                             \

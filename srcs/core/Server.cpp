@@ -109,11 +109,11 @@ void Server::onIrcLine(int fd, const std::string& line)
 	Message msg = MessageParser::parse(line);
 	if (!msg.isValid())
 		return;
-	
-	ACommand	*cmd = CommandFactory::getInstance().createCommand(msg.m_command_type, *this);
+
+	ACommand* cmd = CommandFactory::getInstance().createCommand(msg.m_command_type, *this);
 	if (!cmd)
 	{
-		std::cout << "[DEBUG] Command not found: " <<  msg.m_command << ". Ignoring...\n";
+		std::cout << "[DEBUG] Command not found: " << msg.m_command << ". Ignoring...\n";
 		return;
 	}
 	std::cout << "[DEBUG] Running " << cmd->getName() << "\n";

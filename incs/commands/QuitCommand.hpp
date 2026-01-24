@@ -11,24 +11,22 @@ private:
 
 	void broadcastQuitToChannels(IClient* client, const std::string& quitMessage) const;
 
+	void doExecute(IClient* client, const Message& message);
+
 public:
 	virtual ~QuitCommand();
-
-	void doExecute(IClient* client, const Message& message);
 
 	bool requiresRegistration() const
 	{
 		return false;
 	}
-	bool requiresAuthentication() const
-	{
-		return false;
-	}
+
 	std::size_t minParams() const
 	{
 		return 0;
 	}
-	std::string getName() const
+
+	const char* getName() const
 	{
 		return "QUIT";
 	}

@@ -19,7 +19,7 @@ public:
 		(void)client;
 		(void)message;
 	}
-	std::string getName() const
+	const char* getName() const
 	{
 		return "MOCK";
 	}
@@ -43,7 +43,7 @@ public:
 		(void)client;
 		(void)message;
 	}
-	std::string getName() const
+	const char* getName() const
 	{
 		return "MOCK2";
 	}

@@ -23,7 +23,7 @@ private:
 	CommandFactory& operator=(const CommandFactory& source);
 
 public:
-	static CommandFactory &getInstance();
+	static CommandFactory& getInstance();
 
 	void registerCommandSpawner(const std::string& commandName, irc::CommandType type,
 								CommandSpawner spawner);
