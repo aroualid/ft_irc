@@ -1,9 +1,9 @@
 #include "commands/ACommand.hpp"
 #include "core/IChannel.hpp"
-#include "core/IMessageBuffer.hpp"
-#include "protocol/MessageParser.hpp"
-#include "network/MessageBuffer.hpp"
 #include "core/IClient.hpp"
+#include "core/IMessageBuffer.hpp"
+#include "network/MessageBuffer.hpp"
+#include "protocol/MessageParser.hpp"
 
 #include <vector>
 

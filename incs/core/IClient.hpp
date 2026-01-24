@@ -5,7 +5,7 @@
 #include <string>
 
 class IMessageBuffer;
-//class MessageBuffer;
+// class MessageBuffer;
 
 class IClient
 {
@@ -29,10 +29,10 @@ public:
 	virtual void setPasswordProvided(bool provided) = 0;
 	virtual void attemptRegistration() = 0;
 
-	virtual void joinChannel(IChannel *channel) = 0;
-	virtual void leaveChannel(IChannel *channel) = 0;
+	virtual void joinChannel(IChannel* channel) = 0;
+	virtual void leaveChannel(IChannel* channel) = 0;
 	virtual bool isInChannel(const std::string& channel) const = 0;
-	virtual const std::set< IChannel * >& getChannels() const = 0;
+	virtual const std::set< IChannel* >& getChannels() const = 0;
 
 	virtual IMessageBuffer& getBuffer() = 0;
 	virtual const IMessageBuffer& getBuffer() const = 0;

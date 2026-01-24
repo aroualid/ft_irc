@@ -1,22 +1,16 @@
 #include "core/Client.hpp"
-#include "core/IServer.hpp"
 #include "IChannel.hpp"
+#include "core/IServer.hpp"
 
-Client::Client(int fd, const std::string& hostname, IServer &server)
-	: _fd(fd),
-	_nickname(""),
-	_username(""),
-	_realname(""),
-	_hostname(hostname),
-	_state(HANDSHAKE),
-	_passwordProvided(false),
-	_buffer(),
-	_server(&server),
-	_channels()
+Client::Client(int fd, const std::string& hostname, IServer& server)
+	: _fd(fd), _nickname(""), _username(""), _realname(""), _hostname(hostname), _state(HANDSHAKE),
+	  _passwordProvided(false), _buffer(), _server(&server), _channels()
 {
 }
 
-Client::~Client() {}
+Client::~Client()
+{
+}
 
 int Client::getFd() const
 {
@@ -76,17 +70,19 @@ void Client::setPasswordProvided(bool provided)
 	attemptRegistration();
 }
 
-void Client::joinChannel(IChannel *channel) {
-    _channels.insert(channel);
+void Client::joinChannel(IChannel* channel)
+{
+	_channels.insert(channel);
 }
 
-void Client::leaveChannel(IChannel *channel) {
-    _channels.erase(channel);
+void Client::leaveChannel(IChannel* channel)
+{
+	_channels.erase(channel);
 }
 
 bool Client::isInChannel(const std::string& channelName) const
 {
-	for (std::set<IChannel*>::const_iterator it = _channels.begin(); it != _channels.end(); ++it)
+	for (std::set< IChannel* >::const_iterator it = _channels.begin(); it != _channels.end(); ++it)
 	{
 		if ((*it)->getName() == channelName)
 			return true;
@@ -94,7 +90,8 @@ bool Client::isInChannel(const std::string& channelName) const
 	return false;
 }
 
-const std::set< IChannel *>& Client::getChannels() const {
+const std::set< IChannel* >& Client::getChannels() const
+{
 	return _channels;
 }
 
@@ -123,11 +120,11 @@ const IMessageBuffer& Client::getBuffer() const
 
 std::string Client::getPrefix() const
 {
-    if (_nickname.empty())
-        return _hostname;
+	if (_nickname.empty())
+		return _hostname;
 
-    std::string prefix = _nickname;
-    if (!_username.empty())
-        prefix += "!" + _username + "@" + _hostname;
-    return prefix;
+	std::string prefix = _nickname;
+	if (!_username.empty())
+		prefix += "!" + _username + "@" + _hostname;
+	return prefix;
 }
