@@ -303,15 +303,3 @@ int Channel::getUserLimit() const
 	return _userLimit;
 }
 
-IClient* Channel::getMemberByNickname(const std::string& nickname)
-{
-	std::set< IClient* >::iterator it;
-
-	for (it = _members.begin(); it != _members.end(); ++it)
-	{
-		IClient* member = *it;
-		if (member->getNickname() == nickname)
-			return (member);
-	}
-	return NULL;
-}

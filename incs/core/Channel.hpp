@@ -57,5 +57,4 @@ public:
 	bool isInviteOnly() const;
 	bool isTopicRestricted() const;
 	int getUserLimit() const;
-	IClient* getMemberByNickname(const std::string& nick);
 };
