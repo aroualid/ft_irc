@@ -185,10 +185,11 @@ bool ChannelMock::isEmpty() const
 
 IClient* ChannelMock::getMemberByNickname(const std::string& nickname)
 {
-    std::set<IClient*>::iterator it;
+	std::set< IClient* >::iterator it;
 
-    for (it = m_members.begin(); it != m_members.end(); ++it) {
-        IClient* member = *it;
+	for (it = m_members.begin(); it != m_members.end(); ++it)
+	{
+		IClient* member = *it;
 		if (member->getNickname() == nickname)
 			return (member);
 	}

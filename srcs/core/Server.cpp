@@ -6,28 +6,27 @@
 #include "network/MessageBuffer.hpp"
 #include "network/PollSocketManager.hpp"
 
-#include "commands/CommandFactory.hpp"
 #include "commands/ACommand.hpp"
-#include "protocol/MessageParser.hpp"
+#include "commands/CommandFactory.hpp"
 #include "protocol/Message.hpp"
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+#include "protocol/MessageParser.hpp"
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int Server::getPort() const
 {
 	return m_cfg.getPort();
 }
 
-const std::string &Server::getPassword() const
+const std::string& Server::getPassword() const
 {
-    return m_cfg.getPassword();
+	return m_cfg.getPassword();
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//getClientByNickname
-//register
-//unregister
+// getClientByNickname
+// register
+// unregister
 
-
-void	Server::deleteChannelIfEmpty(IChannel *channel)
+void Server::deleteChannelIfEmpty(IChannel* channel)
 {
 	if (!channel)
 		return;
@@ -37,23 +36,22 @@ void	Server::deleteChannelIfEmpty(IChannel *channel)
 	delete channel;
 }
 
-IChannel	*Server::createChannel(const std::string &name, IClient *creator)
+IChannel* Server::createChannel(const std::string& name, IClient* creator)
 {
-	IChannel	*existing = getChannel(name);
+	IChannel* existing = getChannel(name);
 	if (existing)
 		return (existing);
-	
-	Channel *channel = new Channel(name);
+
+	Channel* channel = new Channel(name);
 	m_channels[name] = channel;
 
 	channel->addMember(creator, "");
 	return (channel);
 }
 
-
-IClient	*Server::getClientByNickname(const std::string &nick)
+IClient* Server::getClientByNickname(const std::string& nick)
 {
-	std::map<std::string, IClient*>::iterator it = m_clientsByNick.find(nick);
+	std::map< std::string, IClient* >::iterator it = m_clientsByNick.find(nick);
 	if (it != m_clientsByNick.end())
 	{
 		return (it->second);
@@ -61,7 +59,7 @@ IClient	*Server::getClientByNickname(const std::string &nick)
 	return (0);
 }
 
-void	Server::registerClient(const std::string &nick, IClient *client)
+void Server::registerClient(const std::string& nick, IClient* client)
 {
 	if (!nick.empty())
 	{
@@ -69,49 +67,50 @@ void	Server::registerClient(const std::string &nick, IClient *client)
 	}
 }
 
-void	Server::unregisterClient(const std::string &nick)
+void Server::unregisterClient(const std::string& nick)
 {
 	m_clientsByNick.erase(nick);
 }
 
-IChannel	*Server::getChannel(const std::string &name)
+IChannel* Server::getChannel(const std::string& name)
 {
-	std::map<std::string, IChannel*>::iterator it = m_channels.find(name); // returns name of the wanted channel
+	std::map< std::string, IChannel* >::iterator it =
+		m_channels.find(name); // returns name of the wanted channel
 	if (it != m_channels.end())
 		return (it->second);
-	return (0); //nullptr
+	return (0); // nullptr
 }
 
-size_t	Server::getChannelCount() const
+size_t Server::getChannelCount() const
 {
 	return (m_channels.size());
 }
 
-std::string	Server::getServerName() const
+std::string Server::getServerName() const
 {
-	return("ircserv");
+	return ("ircserv");
 }
 
-IClient	*Server::getClient(int fd)
+IClient* Server::getClient(int fd)
 {
-	std::map<int, IClient*>::iterator	it = m_clients.find(fd);
+	std::map< int, IClient* >::iterator it = m_clients.find(fd);
 	if (it == m_clients.end())
 		return (0);
 	return (it->second);
 }
 
-void Server::onIrcLine(int fd, const std::string &line)
+void Server::onIrcLine(int fd, const std::string& line)
 {
-	//std::cout << "fd=" << fd << " IRC line: [" << line << "]\n";
-	IClient	*client = getClient(fd);
+	// std::cout << "fd=" << fd << " IRC line: [" << line << "]\n";
+	IClient* client = getClient(fd);
 	if (!client)
 		return;
 
-	Message	msg = MessageParser::parse(line);
+	Message msg = MessageParser::parse(line);
 	if (!msg.isValid())
 		return;
-	
-	CommandFactory *factory = CommandFactory::getInstance();
+
+	CommandFactory* factory = CommandFactory::getInstance();
 	irc::CommandType type = factory->stringToCommandType(msg.m_command);
 	if (!factory->hasCommand(type))
 	{
@@ -119,41 +118,44 @@ void Server::onIrcLine(int fd, const std::string &line)
 		return;
 	}
 
-	ACommand	*cmd = factory->createCommand(type, *this);
+	ACommand* cmd = factory->createCommand(type, *this);
 	if (!cmd)
 		return;
 
 	cmd->execute(client, msg);
 	delete cmd;
 
-	// client->getBuffer().appendWrite(":ircserv NOTICE * :you said: " + line + "\r\n");  //:prefix COMMAND target (* is general, everyone) //DEBUG
-	// std::cout << "queued out=" << client->getBuffer().getWriteBuffer().size() << " bytes\n";
+	// client->getBuffer().appendWrite(":ircserv NOTICE * :you said: " + line + "\r\n");  //:prefix
+	// COMMAND target (* is general, everyone) //DEBUG std::cout << "queued out=" <<
+	// client->getBuffer().getWriteBuffer().size() << " bytes\n";
 	if (!client->getBuffer().getWriteBuffer().empty())
 	{
-		m_sm->modifySocket(fd, EPOLLIN| EPOLLOUT );
+		m_sm->modifySocket(fd, EPOLLIN | EPOLLOUT);
 		writeClientsData(fd);
 	}
-	//cmdHandle(fd, line);
+	// cmdHandle(fd, line);
 }
 
-static void	setNonBlocking(int fd)
+static void setNonBlocking(int fd)
 {
-	int	flags = fcntl(fd, F_GETFL, 0);
+	int flags = fcntl(fd, F_GETFL, 0);
 	if (flags == -1)
 		throw std::runtime_error("Function fcntl with command F_GETFL failed\n");
 	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
 		throw std::runtime_error("Function fcntl with command F_SETFL failed\n");
 }
 
-void	Server::disconnectClient(int fd)
+void Server::disconnectClient(int fd)
 {
-	try{
+	try
+	{
 		m_sm->removeSocket(fd);
-	} catch (...){ //catch any exception "..."
- 
+	}
+	catch (...)
+	{ // catch any exception "..."
 	}
 	close(fd);
-	std::map<int, IClient*>::iterator it = m_clients.find(fd);
+	std::map< int, IClient* >::iterator it = m_clients.find(fd);
 	if (it != m_clients.end())
 	{
 		delete it->second;
@@ -162,22 +164,22 @@ void	Server::disconnectClient(int fd)
 	std::cout << "Disconnected : " << fd << "\n";
 }
 
-void	Server::writeClientsData(int fd)
+void Server::writeClientsData(int fd)
 {
-	IClient *client = getClient(fd);
+	IClient* client = getClient(fd);
 	if (!client)
 	{
 		disconnectClient(fd);
-		return ;
+		return;
 	}
-	const std::string &out = client->getBuffer().getWriteBuffer();
+	const std::string& out = client->getBuffer().getWriteBuffer();
 	if (out.empty())
 	{
 		m_sm->modifySocket(fd, EPOLLIN);
 		return;
 	}
 
-	ssize_t	sent = send(fd, out.data(), out.size(), MSG_NOSIGNAL);
+	ssize_t sent = send(fd, out.data(), out.size(), MSG_NOSIGNAL);
 
 	if (sent > 0)
 	{
@@ -186,30 +188,29 @@ void	Server::writeClientsData(int fd)
 			m_sm->modifySocket(fd, EPOLLIN);
 		else
 			m_sm->modifySocket(fd, EPOLLIN | EPOLLOUT);
-
 	}
 
-	else if(sent == -1)
+	else if (sent == -1)
 	{
-		if (errno ==EAGAIN || errno == EWOULDBLOCK)
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
 			return;
 		disconnectClient(fd);
 	}
 }
 
-void	Server::readClientsData(int fd)
+void Server::readClientsData(int fd)
 {
-	IClient	*client = getClient(fd);
+	IClient* client = getClient(fd);
 	if (!client)
 	{
 		disconnectClient(fd);
-		return ;
+		return;
 	}
 
-	char	buffer[4096];
+	char buffer[4096];
 	while (true)
 	{
-		ssize_t	receiving = recv(fd, buffer, sizeof(buffer), 0);
+		ssize_t receiving = recv(fd, buffer, sizeof(buffer), 0);
 		if (receiving > 0)
 		{
 			client->getBuffer().appendRead(std::string(buffer, receiving));
@@ -228,23 +229,23 @@ void	Server::readClientsData(int fd)
 		else if (receiving == 0)
 		{
 			disconnectClient(fd);
-			return ;
+			return;
 		}
 		else
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				return ;
+				return;
 			disconnectClient(fd);
-			return ;
+			return;
 		}
 	}
 }
 
-void	Server::acceptNewClients()
+void Server::acceptNewClients()
 {
 	while (true)
 	{
-		int	clientFd = accept(m_listenFd, 0, 0);
+		int clientFd = accept(m_listenFd, 0, 0);
 		if (clientFd == -1)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -259,7 +260,7 @@ void	Server::acceptNewClients()
 	}
 }
 
-void	Server::handleDisconnections(int fd, unsigned int evt)
+void Server::handleDisconnections(int fd, unsigned int evt)
 {
 	std::cout << "handleDisconenctions loop ready to call\n" << fd << evt;
 	if (fd == m_listenFd)
@@ -272,100 +273,101 @@ bool Server::requiresPassword() const
 	return !m_cfg.getPassword().empty();
 }
 
-static int	createListeningSocket(int port) //fd that listens to all interfaces trying to bind
+static int createListeningSocket(int port) // fd that listens to all interfaces trying to bind
 {
 	std::stringstream ss;
 	ss << port;
 
 	std::string portStr = ss.str();
-	struct addrinfo		hints;
-	struct addrinfo		*res = 0;
+	struct addrinfo hints;
+	struct addrinfo* res = 0;
 
 	std::memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC; //indicates that getaddrinfo() should return socket addresses for any address family (either IPv4 or IPv6, for example)
-	hints.ai_socktype = SOCK_STREAM; //tcp 
-	hints.ai_flags = AI_PASSIVE; // for all interfaces to bind to server (host == NULL)
+	hints.ai_family = AF_UNSPEC; // indicates that getaddrinfo() should return socket addresses for
+								 // any address family (either IPv4 or IPv6, for example)
+	hints.ai_socktype = SOCK_STREAM; // tcp
+	hints.ai_flags = AI_PASSIVE;	 // for all interfaces to bind to server (host == NULL)
 
-	int	err = getaddrinfo(0, portStr.c_str(), &hints, &res);
+	int err = getaddrinfo(0, portStr.c_str(), &hints, &res);
 	if (err != 0)
 		throw std::runtime_error(std::string("getaddrinfo: ") + gai_strerror(err));
 
-	int	listenFd = -1; //listening fd not created yet
-	for (struct addrinfo *p = res; p != 0; p = p->ai_next)
+	int listenFd = -1; // listening fd not created yet
+	for (struct addrinfo* p = res; p != 0; p = p->ai_next)
 	{
-		listenFd= socket(p->ai_family, p->ai_socktype, p->ai_protocol); //creating the listening socket
+		listenFd =
+			socket(p->ai_family, p->ai_socktype, p->ai_protocol); // creating the listening socket
 		if (listenFd == -1)
 			continue;
-		int	yes = 1;
+		int yes = 1;
 		setsockopt(listenFd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)); //
-		if (bind(listenFd, p->ai_addr, p->ai_addrlen) == 0){
+		if (bind(listenFd, p->ai_addr, p->ai_addrlen) == 0)
+		{
 			if (listen(listenFd, 128) == 0)
 			{
 				freeaddrinfo(res);
-				return(listenFd);
+				return (listenFd);
 			}
 		}
-		close(listenFd); //useful ?
+		close(listenFd); // useful ?
 		listenFd = -1;
-
-		}
-		freeaddrinfo(res);
-		throw std::runtime_error("Failed to bind/listen on port : " + portStr);
+	}
+	freeaddrinfo(res);
+	throw std::runtime_error("Failed to bind/listen on port : " + portStr);
 }
 
-
-void	Server::run()
+void Server::run()
 {
 	std::cout << "Ready to run !\n";
 
-	m_listenFd = createListeningSocket(m_cfg.getPort()); //the "door" of the server irc
+	m_listenFd = createListeningSocket(m_cfg.getPort()); // the "door" of the server irc
 	std::cout << "Listening...\n";
 
-	m_sm = new PollSocketManager(); //THE Manager of the Sockets
+	m_sm = new PollSocketManager(); // THE Manager of the Sockets
 
 	setNonBlocking(m_listenFd);
 
-	m_sm->addSocket(m_listenFd, EPOLLIN); // pending incoming connexions : 
+	m_sm->addSocket(m_listenFd, EPOLLIN); // pending incoming connexions :
 
 	while (true)
 	{
-		int	n = m_sm->wait(-1); //waiting for incoming connexxions
-		const std::vector<epoll_event> &evts = m_sm->getEvents(); //vector getting events
+		int n = m_sm->wait(-1); // waiting for incoming connexxions
+		const std::vector< epoll_event >& evts = m_sm->getEvents(); // vector getting events
 
 		for (int i = 0; i < n; i++)
 		{
-			int				fd = evts[i].data.fd;
-			unsigned int	evt = evts[i].events;
+			int fd = evts[i].data.fd;
+			unsigned int evt = evts[i].events;
 
 			if (evt & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
 			{
 				handleDisconnections(fd, evt);
 				continue;
 			}
-			if (fd == m_listenFd && (evt & EPOLLIN)) //new connexions
+			if (fd == m_listenFd && (evt & EPOLLIN)) // new connexions
 			{
 				acceptNewClients();
 			}
 			else
 			{
-				if (evt & EPOLLIN) //clients sent data
+				if (evt & EPOLLIN) // clients sent data
 				{
 					readClientsData(fd);
 				}
 				if (evt & EPOLLOUT)
 					writeClientsData(fd);
-
 			}
 		}
 	}
 }
 
-
-Server::Server(const Config &cfg) : m_cfg(cfg), m_listenFd(-1), m_sm(0) {}
+Server::Server(const Config& cfg) : m_cfg(cfg), m_listenFd(-1), m_sm(0)
+{
+}
 
 Server::~Server()
 {
-	for(std::map<int, IClient*>::iterator it = m_clients.begin(); it != m_clients.end(); it++)
+	for (std::map< int, IClient* >::iterator it = m_clients.begin(); it != m_clients.end(); it++)
 	{
 		close(it->first);
 		delete (it->second);
@@ -374,5 +376,5 @@ Server::~Server()
 
 	if (m_listenFd != -1)
 		close(m_listenFd);
-	delete(m_sm);
+	delete (m_sm);
 }

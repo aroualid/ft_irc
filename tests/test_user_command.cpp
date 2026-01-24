@@ -1,10 +1,10 @@
-#include <criterion/criterion.h>
 #include "commands/ACommand.hpp"
 #include "commands/CommandFactory.hpp"
 #include "commands/CommandType.hpp"
 #include "mocks/Client.hpp"
 #include "mocks/Server.hpp"
 #include "protocol/Message.hpp"
+#include <criterion/criterion.h>
 
 TestSuite(UserCommand);
 
@@ -20,9 +20,9 @@ Test(UserCommand, sets_username_and_realname)
 
 	Message msg;
 	msg.m_command = "USER";
-	msg.m_params.push_back("alice");      // username
-	msg.m_params.push_back("hostname");   // hostname (ignored)
-	msg.m_params.push_back("servername"); // servername (ignored)
+	msg.m_params.push_back("alice");	   // username
+	msg.m_params.push_back("hostname");	   // hostname (ignored)
+	msg.m_params.push_back("servername");  // servername (ignored)
 	msg.m_params.push_back("Alice Smith"); // realname
 
 	cmd->execute(&client, msg);
@@ -155,7 +155,7 @@ Test(UserCommand, rejects_empty_username)
 
 	Message msg;
 	msg.m_command = "USER";
-	msg.m_params.push_back("");  // Empty username
+	msg.m_params.push_back(""); // Empty username
 	msg.m_params.push_back("hostname");
 	msg.m_params.push_back("servername");
 	msg.m_params.push_back("Alice Smith");
@@ -164,8 +164,7 @@ Test(UserCommand, rejects_empty_username)
 
 	// Should send ERR_NEEDMOREPARAMS (461)
 	std::string buffer = client.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("461") != std::string::npos,
-			  "Should send error when username is empty");
+	cr_assert(buffer.find("461") != std::string::npos, "Should send error when username is empty");
 	delete cmd;
 }
 
