@@ -12,6 +12,11 @@ Client::~Client()
 {
 }
 
+IServer* Client::getServer() const
+{
+	return _server;
+}
+
 int Client::getFd() const
 {
 	return _fd;

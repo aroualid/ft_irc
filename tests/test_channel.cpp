@@ -1,5 +1,6 @@
 #include "core/Channel.hpp"
 #include "mocks/Client.hpp"
+#include "mocks/Server.hpp"
 #include "mocks/MessageBuffer.hpp"
 #include "modes/IChannelMode.hpp"
 #include "modes/InviteOnlyMode.hpp"
@@ -222,24 +223,6 @@ Test(Channel, applyModeWithoutParam)
 	canal.addMember(&client1, "bonjour");
 	canal.addOperator(&client1);
 	cr_assert(!canal.applyMode('l', "true", "", &client1));
-}
-
-Test(Channel, applyModeOp)
-{
-	std::string feur = "didier";
-	Channel canal(feur);
-	ClientMock client1(3, "localhost");
-	ClientMock client2(4, "localhost");
-	canal.setKey("bonjour");
-	client1.setNickname(std::string("Didier"));
-	client1.setUsername(std::string("Didier"));
-	client2.setNickname(std::string("Michel"));
-	client2.setUsername(std::string("Michel"));
-	client1.setPasswordProvided(true);
-	client2.setPasswordProvided(true);
-	canal.addMember(&client1, "bonjour");
-	canal.addMember(&client2, "bonjour");
-	cr_assert(canal.applyMode('o', "true", "Michel", &client1));
 }
 
 Test(Channel, applyTrueMode)

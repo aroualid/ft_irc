@@ -126,3 +126,8 @@ std::string ClientMock::getPrefix() const
 		prefix += "!" + m_username + "@" + m_hostname;
 	return prefix;
 }
+
+IServer* ClientMock::getServer() const
+{
+	return m_server;
+}

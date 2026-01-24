@@ -1,10 +1,11 @@
 #include "modes/OperatorMode.hpp"
 #include "core/IChannel.hpp"
+#include "core/IServer.hpp"
 
 bool OperatorMode::apply(IChannel* channel, bool set, const std::string& param, IClient* setter)
 {
-	(void)setter;
-	IClient* client = channel->getMemberByNickname(param);
+	IServer* serv = setter->getServer();
+	IClient *client = serv->getClientByNickname(param);
 
 	if (channel->hasMember(client))
 	{
