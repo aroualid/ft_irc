@@ -46,7 +46,7 @@ void KickCommand::doExecute(IClient* client, const Message& message)
 		return;
 	}
 
-	IClient* target = channel->getMemberByNickname(targetNick);
+	IClient* target = m_server.getClientByNickname(targetNick);
 	if (!target || !channel->hasMember(target))
 	{
 		sendReply(client,

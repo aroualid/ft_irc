@@ -2,7 +2,7 @@
 #include "IChannel.hpp"
 #include <iostream>
 
-ClientMock::ClientMock(int fd, const std::string& hostname, IServer& server )
+ClientMock::ClientMock(int fd, const std::string& hostname, IServer& server)
 	: m_fd(fd), m_nickname(""), m_username(""), m_realname(""), m_hostname(hostname),
 	  m_passwordProvided(false), m_registered(false), m_server(&server)
 {
@@ -82,13 +82,13 @@ void ClientMock::attemptRegistration()
 void ClientMock::joinChannel(IChannel* channel)
 {
 	m_channels.insert(channel);
-	std::cout << "[MOCK] ClientMock joined channel: " << channel << '\n';
+	std::cout << "[MOCK] ClientMock joined channel: " << channel->getName() << '\n';
 }
 
 void ClientMock::leaveChannel(IChannel* channel)
 {
 	m_channels.erase(channel);
-	std::cout << "[MOCK] ClientMock left channel: " << channel << '\n';
+	std::cout << "[MOCK] ClientMock left channel: " << channel->getName() << '\n';
 }
 
 bool ClientMock::isInChannel(const std::string& channelName) const
