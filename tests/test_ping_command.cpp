@@ -13,7 +13,7 @@ Test(PingCommand, basic_ping_receives_pong)
 	Server server(6667, "testpass");
 	ClientMock client(3, "localhost");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PING, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PING, server);
 	cr_assert_not_null(cmd, "Factory failed to create PING command");
 
 	Message msg;
@@ -35,7 +35,7 @@ Test(PingCommand, error_no_origin)
 	ClientMock client(3, "localhost");
 	client.setNickname("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PING, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PING, server);
 
 	Message msg;
 	msg.m_command = "PING";
@@ -55,7 +55,7 @@ Test(PingCommand, works_before_authentication)
 	ClientMock client(3, "localhost");
 	// Not authenticated
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PING, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PING, server);
 
 	Message msg;
 	msg.m_command = "PING";

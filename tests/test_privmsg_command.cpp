@@ -22,7 +22,7 @@ Test(PrivmsgCommand, requires_registration)
 	bob.setUsername("bob");
 	server.registerClient("bob", &bob);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";
@@ -38,7 +38,8 @@ Test(PrivmsgCommand, requires_registration)
 
 	// Bob should NOT have received the message
 	const std::string& bob_buffer = bob.getBuffer().getWriteBuffer();
-	cr_assert(bob_buffer.find("PRIVMSG") == std::string::npos, "Bob should not receive message from unregistered client");
+	cr_assert(bob_buffer.find("PRIVMSG") == std::string::npos,
+			  "Bob should not receive message from unregistered client");
 	delete cmd;
 }
 
@@ -58,7 +59,7 @@ Test(PrivmsgCommand, send_to_user)
 	server.registerClient("alice", &alice);
 	server.registerClient("bob", &bob);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";
@@ -95,7 +96,7 @@ Test(PrivmsgCommand, send_to_channel)
 	channel->addMember(&bob);
 	bob.joinChannel(channel);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";
@@ -120,7 +121,7 @@ Test(PrivmsgCommand, no_recipient)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";
@@ -143,7 +144,7 @@ Test(PrivmsgCommand, no_text_to_send)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";
@@ -166,7 +167,7 @@ Test(PrivmsgCommand, no_such_nick)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";
@@ -190,7 +191,7 @@ Test(PrivmsgCommand, no_such_channel)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";
@@ -220,11 +221,11 @@ Test(PrivmsgCommand, cannot_send_to_channel_not_member)
 	bob.setUsername("bob");
 
 	// Only alice joins the channel
-	IChannel *channel = server.createChannel("#test", &alice);
+	IChannel* channel = server.createChannel("#test", &alice);
 	alice.joinChannel(channel);
 
 	// Bob tries to send message to channel
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";
@@ -262,7 +263,7 @@ Test(PrivmsgCommand, multiple_targets)
 	server.registerClient("bob", &bob);
 	server.registerClient("charlie", &charlie);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";
@@ -302,7 +303,7 @@ Test(PrivmsgCommand, mixed_user_and_channel_targets)
 	channel->addMember(&bob);
 	bob.joinChannel(channel);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";
@@ -325,7 +326,7 @@ Test(PrivmsgCommand, empty_target)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";
@@ -348,10 +349,10 @@ Test(PrivmsgCommand, sender_not_in_broadcast)
 	alice.setUsername("alice");
 
 	// Alice creates and joins channel
-	IChannel *channel = server.createChannel("#test", &alice);
+	IChannel* channel = server.createChannel("#test", &alice);
 	alice.joinChannel(channel);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";
@@ -382,7 +383,7 @@ Test(PrivmsgCommand, message_with_spaces)
 	server.registerClient("alice", &alice);
 	server.registerClient("bob", &bob);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";
@@ -415,7 +416,7 @@ Test(PrivmsgCommand, ampersand_channel_prefix)
 	channel->addMember(&bob);
 	bob.joinChannel(channel);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";
@@ -446,7 +447,7 @@ Test(PrivmsgCommand, empty_message_text)
 	server.registerClient("alice", &alice);
 	server.registerClient("bob", &bob);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";
@@ -478,7 +479,7 @@ Test(PrivmsgCommand, prefix_format)
 	server.registerClient("alice", &alice);
 	server.registerClient("bob", &bob);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";
@@ -519,7 +520,7 @@ Test(PrivmsgCommand, multiple_members_all_receive)
 	channel->addMember(&charlie);
 	charlie.joinChannel(channel);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PRIVMSG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PRIVMSG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PRIVMSG command. Is it registered?");
 	Message msg;
 	msg.m_command = "PRIVMSG";

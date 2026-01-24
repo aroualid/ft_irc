@@ -17,7 +17,7 @@ private:
 	bool m_passwordProvided;
 	bool m_registered;
 	MessageBufferMock m_buffer;
-	std::set< IChannel * > m_channels;
+	std::set< IChannel* > m_channels;
 
 public:
 	ClientMock(int fd, const std::string& hostname);
@@ -38,10 +38,10 @@ public:
 	void setPasswordProvided(bool provided);
 	void attemptRegistration();
 
-	void joinChannel(IChannel *channel);
-	void leaveChannel(IChannel *channel);
+	void joinChannel(IChannel* channel);
+	void leaveChannel(IChannel* channel);
 	bool isInChannel(const std::string& channel) const;
-	const std::set< IChannel * >& getChannels() const;
+	const std::set< IChannel* >& getChannels() const;
 
 	IMessageBuffer& getBuffer();
 	const IMessageBuffer& getBuffer() const;

@@ -20,7 +20,7 @@ Test(NoticeCommand, requires_registration_silently_ignored)
 	bob.setUsername("bob");
 	server.registerClient("bob", &bob);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -35,7 +35,8 @@ Test(NoticeCommand, requires_registration_silently_ignored)
 
 	// Bob should NOT have received the notice
 	const std::string& bob_buffer = bob.getBuffer().getWriteBuffer();
-	cr_assert(bob_buffer.find("NOTICE") == std::string::npos, "Bob should not receive notice from unregistered client");
+	cr_assert(bob_buffer.find("NOTICE") == std::string::npos,
+			  "Bob should not receive notice from unregistered client");
 	delete cmd;
 }
 
@@ -55,7 +56,7 @@ Test(NoticeCommand, send_to_user)
 	server.registerClient("alice", &alice);
 	server.registerClient("bob", &bob);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -92,7 +93,7 @@ Test(NoticeCommand, send_to_channel)
 	channel->addMember(&bob);
 	bob.joinChannel(channel);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -117,7 +118,7 @@ Test(NoticeCommand, no_parameters_no_error)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -139,7 +140,7 @@ Test(NoticeCommand, no_text_no_error)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -162,7 +163,7 @@ Test(NoticeCommand, no_such_nick_no_error)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -185,7 +186,7 @@ Test(NoticeCommand, no_such_channel_no_error)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -219,7 +220,7 @@ Test(NoticeCommand, cannot_send_to_channel_no_error)
 	alice.joinChannel(channel);
 
 	// Bob tries to send notice to channel
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -256,7 +257,7 @@ Test(NoticeCommand, multiple_targets)
 	server.registerClient("bob", &bob);
 	server.registerClient("charlie", &charlie);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -296,7 +297,7 @@ Test(NoticeCommand, mixed_user_and_channel_targets)
 	channel->addMember(&bob);
 	bob.joinChannel(channel);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -323,7 +324,7 @@ Test(NoticeCommand, sender_not_in_broadcast)
 	IChannel* channel = server.createChannel("#test", &alice);
 	alice.joinChannel(channel);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -352,7 +353,7 @@ Test(NoticeCommand, message_with_spaces)
 	server.registerClient("alice", &alice);
 	server.registerClient("bob", &bob);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -385,7 +386,7 @@ Test(NoticeCommand, ampersand_channel_prefix)
 	channel->addMember(&bob);
 	bob.joinChannel(channel);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -416,7 +417,7 @@ Test(NoticeCommand, empty_message_text)
 	server.registerClient("alice", &alice);
 	server.registerClient("bob", &bob);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -448,7 +449,7 @@ Test(NoticeCommand, prefix_format)
 	server.registerClient("alice", &alice);
 	server.registerClient("bob", &bob);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -489,7 +490,7 @@ Test(NoticeCommand, multiple_members_all_receive)
 	channel->addMember(&charlie);
 	charlie.joinChannel(channel);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -517,7 +518,7 @@ Test(NoticeCommand, no_automatic_replies)
 	alice.setNickname("alice");
 	alice.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -543,7 +544,7 @@ Test(NoticeCommand, empty_target)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";
@@ -566,7 +567,7 @@ Test(NoticeCommand, silently_fails_on_invalid_targets)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NOTICE, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NOTICE, server);
 	cr_assert_not_null(cmd, "Factory failed to create NOTICE command. Is it registered?");
 	Message msg;
 	msg.m_command = "NOTICE";

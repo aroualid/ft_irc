@@ -1,10 +1,10 @@
-#include <criterion/criterion.h>
 #include "commands/ACommand.hpp"
 #include "commands/CommandFactory.hpp"
 #include "commands/CommandType.hpp"
 #include "mocks/Client.hpp"
 #include "mocks/Server.hpp"
 #include "protocol/Message.hpp"
+#include <criterion/criterion.h>
 
 TestSuite(QuitCommand);
 
@@ -17,7 +17,7 @@ Test(QuitCommand, basic_quit_no_message)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	cr_assert_not_null(cmd, "Factory failed to create QUIT command");
 
 	Message msg;
@@ -41,7 +41,7 @@ Test(QuitCommand, quit_with_custom_message)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	cr_assert_not_null(cmd, "Factory failed to create QUIT command");
 
 	Message msg;
@@ -61,7 +61,7 @@ Test(QuitCommand, quit_before_registration)
 	ClientMock client(3, "localhost");
 	// Not authenticated, not registered
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	cr_assert_not_null(cmd, "Factory failed to create QUIT command");
 
 	Message msg;
@@ -83,7 +83,7 @@ Test(QuitCommand, quit_after_pass_only)
 	client.setPasswordProvided(true);
 	// Has password but no nick/user
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	cr_assert_not_null(cmd, "Factory failed to create QUIT command");
 
 	Message msg;
@@ -114,14 +114,14 @@ Test(QuitCommand, broadcasts_to_channels)
 
 	// Create channel and have both join
 	// (This test assumes channels work - they do from Milestone 2)
-	ACommand* joinCmd1 = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	ACommand* joinCmd1 = CommandFactory::getInstance().createCommand(irc::JOIN, server);
 	Message joinMsg;
 	joinMsg.m_command = "JOIN";
 	joinMsg.m_params.push_back("#test");
 	joinCmd1->execute(&client1, joinMsg);
 	delete joinCmd1;
 
-	ACommand* joinCmd2 = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	ACommand* joinCmd2 = CommandFactory::getInstance().createCommand(irc::JOIN, server);
 	joinCmd2->execute(&client2, joinMsg);
 	delete joinCmd2;
 
@@ -130,7 +130,7 @@ Test(QuitCommand, broadcasts_to_channels)
 	client2.getBuffer().getWriteBuffer();
 
 	// Alice quits
-	ACommand* quitCmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* quitCmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	Message quitMsg;
 	quitMsg.m_command = "QUIT";
 	quitMsg.m_params.push_back("Goodbye everyone!");
@@ -170,7 +170,7 @@ Test(QuitCommand, broadcasts_to_all_channels)
 	charlie.setUsername("charlie");
 
 	// Alice joins #test1 and #test2
-	ACommand* joinCmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	ACommand* joinCmd = CommandFactory::getInstance().createCommand(irc::JOIN, server);
 	Message join1;
 	join1.m_command = "JOIN";
 	join1.m_params.push_back("#test1");
@@ -194,7 +194,7 @@ Test(QuitCommand, broadcasts_to_all_channels)
 	charlie.getBuffer().getWriteBuffer();
 
 	// Alice quits
-	ACommand* quitCmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* quitCmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	Message quitMsg;
 	quitMsg.m_command = "QUIT";
 	quitMsg.m_params.push_back("Bye!");
@@ -204,8 +204,7 @@ Test(QuitCommand, broadcasts_to_all_channels)
 	std::string bobBuffer = bob.getBuffer().getWriteBuffer();
 	std::string charlieBuffer = charlie.getBuffer().getWriteBuffer();
 
-	cr_assert(bobBuffer.find("QUIT") != std::string::npos,
-			  "Bob should receive QUIT from #test1");
+	cr_assert(bobBuffer.find("QUIT") != std::string::npos, "Bob should receive QUIT from #test1");
 	cr_assert(charlieBuffer.find("QUIT") != std::string::npos,
 			  "Charlie should receive QUIT from #test2");
 
@@ -221,12 +220,12 @@ Test(QuitCommand, empty_quit_message_uses_default)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	cr_assert_not_null(cmd, "Factory failed to create QUIT command");
 
 	Message msg;
 	msg.m_command = "QUIT";
-	msg.m_params.push_back("");  // Empty message
+	msg.m_params.push_back(""); // Empty message
 
 	cmd->execute(&client, msg);
 
@@ -243,7 +242,7 @@ Test(QuitCommand, quit_message_with_spaces)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	cr_assert_not_null(cmd, "Factory failed to create QUIT command");
 
 	Message msg;
@@ -265,7 +264,7 @@ Test(QuitCommand, no_numeric_replies)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	cr_assert_not_null(cmd, "Factory failed to create QUIT command");
 
 	Message msg;
@@ -277,9 +276,8 @@ Test(QuitCommand, no_numeric_replies)
 	// QUIT should not send any numeric replies to the quitting client
 	// The client just disconnects
 	std::string buffer = client.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("001") == std::string::npos &&
-			  buffer.find("002") == std::string::npos &&
-			  buffer.find("003") == std::string::npos,
+	cr_assert(buffer.find("001") == std::string::npos && buffer.find("002") == std::string::npos &&
+				  buffer.find("003") == std::string::npos,
 			  "QUIT should not send numeric replies to quitting client");
 
 	delete cmd;
@@ -294,7 +292,7 @@ Test(QuitCommand, quit_without_channels)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	cr_assert_not_null(cmd, "Factory failed to create QUIT command");
 
 	Message msg;
@@ -323,7 +321,7 @@ Test(QuitCommand, quit_message_format)
 	bob.setUsername("bob");
 
 	// Both join same channel
-	ACommand* joinCmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	ACommand* joinCmd = CommandFactory::getInstance().createCommand(irc::JOIN, server);
 	Message joinMsg;
 	joinMsg.m_command = "JOIN";
 	joinMsg.m_params.push_back("#test");
@@ -331,10 +329,10 @@ Test(QuitCommand, quit_message_format)
 	joinCmd->execute(&bob, joinMsg);
 	delete joinCmd;
 
-	bob.getBuffer().getWriteBuffer();  // Clear buffer
+	bob.getBuffer().getWriteBuffer(); // Clear buffer
 
 	// Alice quits
-	ACommand* quitCmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* quitCmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	Message quitMsg;
 	quitMsg.m_command = "QUIT";
 	quitMsg.m_params.push_back("Bye!");
@@ -343,7 +341,7 @@ Test(QuitCommand, quit_message_format)
 	// Check format: :alice!alice@localhost QUIT :Bye!
 	std::string bobBuffer = bob.getBuffer().getWriteBuffer();
 	cr_assert(bobBuffer.find(":alice!alice@localhost") != std::string::npos ||
-			  bobBuffer.find(":alice!") != std::string::npos,
+				  bobBuffer.find(":alice!") != std::string::npos,
 			  "QUIT message should have proper prefix format");
 	cr_assert(bobBuffer.find("QUIT") != std::string::npos,
 			  "QUIT message should contain QUIT command");

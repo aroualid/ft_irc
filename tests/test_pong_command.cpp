@@ -14,7 +14,7 @@ Test(PongCommand, error_no_origin)
 	ClientMock client(3, "localhost");
 	client.setNickname("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PONG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PONG, server);
 	cr_assert_not_null(cmd, "Factory failed to create PONG command");
 
 	Message msg;
@@ -40,7 +40,7 @@ Test(PongCommand, valid_pong_accepted)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PONG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PONG, server);
 
 	Message msg;
 	msg.m_command = "PONG";
@@ -61,7 +61,7 @@ Test(PongCommand, works_before_authentication)
 	ClientMock client(3, "localhost");
 	// Not authenticated, no nickname
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PONG, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PONG, server);
 
 	Message msg;
 	msg.m_command = "PONG";
