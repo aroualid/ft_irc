@@ -1,5 +1,8 @@
 #pragma once
-#include "../ft_irc.hpp"
+
+#include <map>
+#include <set>
+#include <string>
 class IClient;
 class IChannel;
 class IChannelMode
