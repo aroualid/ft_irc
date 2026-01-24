@@ -23,7 +23,7 @@ private:
 
 
 public:
-	ClientMock(int fd, const std::string& hostname);
+	ClientMock(int fd, const std::string& hostname, IServer& server);
 	virtual ~ClientMock();
 
 	int getFd() const;

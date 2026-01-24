@@ -197,6 +197,24 @@ Test(Channel, applyModeNoOp)
 	cr_assert(!canal.applyMode('o', "true", "", &client2));
 }
 
+Test(Channel, applyModeOp)
+{
+	std::string feur = "didier";
+	Channel canal(feur);
+	ClientMock client1(3, "localhost");
+	ClientMock client2(4, "localhost");
+	canal.setKey("bonjour");
+	client1.setNickname(std::string("Didier"));
+	client1.setUsername(std::string("Didier"));
+	client2.setNickname(std::string("Michel"));
+	client2.setUsername(std::string("Michel"));
+	client1.setPasswordProvided(true);
+	client2.setPasswordProvided(true);
+	canal.addMember(&client1, "bonjour");
+	canal.addMember(&client2, "bonjour");
+	cr_assert(canal.applyMode('o', "true", "Michel", &client1));
+}
+
 Test(Channel, applyFalseMode)
 {
 	std::string feur = "didier";
