@@ -12,24 +12,22 @@ private:
 
 	JoinCommand(IServer& server);
 
+	void doExecute(IClient* client, const Message& message);
+
 public:
 	virtual ~JoinCommand();
-
-	void doExecute(IClient* client, const Message& message);
 
 	bool requiresRegistration() const
 	{
 		return true;
 	}
-	bool requiresAuthentication() const
-	{
-		return true;
-	}
+
 	std::size_t minParams() const
 	{
 		return 1;
 	}
-	std::string getName() const
+
+	const char* getName() const
 	{
 		return "JOIN";
 	}

@@ -47,6 +47,7 @@ REQUIRED_SRCS = $(SRCS_DIR)/protocol/Message.cpp \
 				$(SRCS_DIR)/commands/PrivmsgCommand.cpp \
 				$(SRCS_DIR)/commands/NoticeCommand.cpp \
 				$(SRCS_DIR)/commands/QuitCommand.cpp \
+				$(SRCS_DIR)/commands/KickCommand.cpp \
         		$(SRCS_DIR)/core/Channel.cpp \
 				$(SRCS_DIR)/modes/InviteOnlyMode.cpp \
 				$(SRCS_DIR)/modes/TopicRestrictedMode.cpp \
@@ -74,7 +75,8 @@ TEST_SRCS = test_irc_utils.cpp \
 			test_channel.cpp \
 			test_client.cpp \
 			test_ping_command.cpp \
-			test_pong_command.cpp
+			test_pong_command.cpp \
+			test_kick_command.cpp
 
 TEST_OBJ = $(TEST_SRCS:%.cpp=$(OBJ_DIR)/%.o)
 

@@ -1,33 +1,30 @@
 #pragma once
 
 #include "commands/ACommand.hpp"
+#include <cstddef>
 
-class PingCommand : public ACommand
+class KickCommand : public ACommand
 {
 private:
-	PingCommand(IServer& server);
-
+	KickCommand(IServer& server);
 	void doExecute(IClient* client, const Message& message);
 
 public:
-	virtual ~PingCommand();
-
-	void execute(IClient* client, const Message& message);
+	virtual ~KickCommand();
+	static ACommand* create(IServer& server);
 
 	bool requiresRegistration() const
 	{
-		return false;
+		return true;
 	}
 
 	std::size_t minParams() const
 	{
-		return 1;
+		return 2;
 	}
 
 	const char* getName() const
 	{
-		return "PING";
+		return "KICK";
 	}
-
-	static ACommand* create(IServer& server);
 };

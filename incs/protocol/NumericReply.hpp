@@ -38,4 +38,7 @@ public:
 	static NumericReply notOnChannel(const std::string& nick, const std::string& channel);
 	static NumericReply noOrigin(const std::string& nick);
 	static NumericReply notRegistered(const std::string& nick);
+	static NumericReply userNotInChannel(const std::string& nick, const std::string& target,
+										 const std::string& channel);
+	static NumericReply chanOpPrivsNeeded(const std::string& nick, const std::string& channel);
 };

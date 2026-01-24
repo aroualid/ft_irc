@@ -41,15 +41,10 @@ public:
 		return true;
 	};
 
-	virtual bool requiresAuthentication() const
-	{
-		return true;
-	};
-
 	virtual std::size_t minParams() const
 	{
 		return 0;
 	};
 
-	virtual std::string getName() const = 0;
+	virtual const char* getName() const = 0;
 };
