@@ -37,7 +37,7 @@ template < typename BaseCommand, typename ConcreteCommand > struct IsDerivedFrom
 		CommandRegistrar_##CommandClass()                                                          \
 		{                                                                                          \
 			(void)sizeof(detail::IsDerivedFrom< ACommand, CommandClass >);                         \
-			CommandFactory::getInstance()->registerCommandSpawner(CommandName, CommandType,        \
+			CommandFactory::getInstance().registerCommandSpawner(CommandName, CommandType,        \
 																  &CommandClass::create);          \
 		}                                                                                          \
 	};                                                                                             \

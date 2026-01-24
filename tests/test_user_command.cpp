@@ -15,7 +15,7 @@ Test(UserCommand, sets_username_and_realname)
 	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::USER, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
 	cr_assert_not_null(cmd, "Factory failed to create USER command");
 
 	Message msg;
@@ -39,7 +39,7 @@ Test(UserCommand, requires_four_parameters)
 	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::USER, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
 	cr_assert_not_null(cmd, "Factory failed to create USER command");
 
 	Message msg;
@@ -68,7 +68,7 @@ Test(UserCommand, error_if_already_registered)
 	client.setUsername("alice");
 	// Client is now registered
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::USER, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
 	cr_assert_not_null(cmd, "Factory failed to create USER command");
 
 	Message msg;
@@ -99,7 +99,7 @@ Test(UserCommand, sends_welcome_on_registration)
 	client.setNickname("alice");
 	// Now just need USER to complete registration
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::USER, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
 	cr_assert_not_null(cmd, "Factory failed to create USER command");
 
 	Message msg;
@@ -126,7 +126,7 @@ Test(UserCommand, realname_with_spaces)
 	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::USER, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
 	cr_assert_not_null(cmd, "Factory failed to create USER command");
 
 	Message msg;
@@ -150,7 +150,7 @@ Test(UserCommand, rejects_empty_username)
 	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::USER, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
 	cr_assert_not_null(cmd, "Factory failed to create USER command");
 
 	Message msg;
@@ -175,7 +175,7 @@ Test(UserCommand, requires_authentication)
 	ClientMock client(3, "localhost");
 	// No password provided
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::USER, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
 	cr_assert_not_null(cmd, "Factory failed to create USER command");
 
 	Message msg;
@@ -200,7 +200,7 @@ Test(UserCommand, complete_registration_flow)
 	ClientMock client(3, "localhost");
 
 	// Step 1: PASS
-	ACommand* passCmd = CommandFactory::getInstance()->createCommand(irc::PASS, server);
+	ACommand* passCmd = CommandFactory::getInstance().createCommand(irc::PASS, server);
 	Message passMsg;
 	passMsg.m_command = "PASS";
 	passMsg.m_params.push_back("secret");
@@ -210,7 +210,7 @@ Test(UserCommand, complete_registration_flow)
 	delete passCmd;
 
 	// Step 2: NICK
-	ACommand* nickCmd = CommandFactory::getInstance()->createCommand(irc::NICK, server);
+	ACommand* nickCmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
 	Message nickMsg;
 	nickMsg.m_command = "NICK";
 	nickMsg.m_params.push_back("alice");
@@ -220,7 +220,7 @@ Test(UserCommand, complete_registration_flow)
 	delete nickCmd;
 
 	// Step 3: USER (completes registration)
-	ACommand* userCmd = CommandFactory::getInstance()->createCommand(irc::USER, server);
+	ACommand* userCmd = CommandFactory::getInstance().createCommand(irc::USER, server);
 	Message userMsg;
 	userMsg.m_command = "USER";
 	userMsg.m_params.push_back("alice");
@@ -243,7 +243,7 @@ Test(UserCommand, registration_alternative_order)
 	ClientMock client(3, "localhost");
 
 	// Step 1: PASS
-	ACommand* passCmd = CommandFactory::getInstance()->createCommand(irc::PASS, server);
+	ACommand* passCmd = CommandFactory::getInstance().createCommand(irc::PASS, server);
 	Message passMsg;
 	passMsg.m_command = "PASS";
 	passMsg.m_params.push_back("secret");
@@ -251,7 +251,7 @@ Test(UserCommand, registration_alternative_order)
 	delete passCmd;
 
 	// Step 2: USER (before NICK)
-	ACommand* userCmd = CommandFactory::getInstance()->createCommand(irc::USER, server);
+	ACommand* userCmd = CommandFactory::getInstance().createCommand(irc::USER, server);
 	Message userMsg;
 	userMsg.m_command = "USER";
 	userMsg.m_params.push_back("alice");
@@ -263,7 +263,7 @@ Test(UserCommand, registration_alternative_order)
 	delete userCmd;
 
 	// Step 3: NICK (completes registration)
-	ACommand* nickCmd = CommandFactory::getInstance()->createCommand(irc::NICK, server);
+	ACommand* nickCmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
 	Message nickMsg;
 	nickMsg.m_command = "NICK";
 	nickMsg.m_params.push_back("alice");

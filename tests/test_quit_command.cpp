@@ -17,7 +17,7 @@ Test(QuitCommand, basic_quit_no_message)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	cr_assert_not_null(cmd, "Factory failed to create QUIT command");
 
 	Message msg;
@@ -41,7 +41,7 @@ Test(QuitCommand, quit_with_custom_message)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	cr_assert_not_null(cmd, "Factory failed to create QUIT command");
 
 	Message msg;
@@ -61,7 +61,7 @@ Test(QuitCommand, quit_before_registration)
 	ClientMock client(3, "localhost");
 	// Not authenticated, not registered
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	cr_assert_not_null(cmd, "Factory failed to create QUIT command");
 
 	Message msg;
@@ -83,7 +83,7 @@ Test(QuitCommand, quit_after_pass_only)
 	client.setPasswordProvided(true);
 	// Has password but no nick/user
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	cr_assert_not_null(cmd, "Factory failed to create QUIT command");
 
 	Message msg;
@@ -114,14 +114,14 @@ Test(QuitCommand, broadcasts_to_channels)
 
 	// Create channel and have both join
 	// (This test assumes channels work - they do from Milestone 2)
-	ACommand* joinCmd1 = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	ACommand* joinCmd1 = CommandFactory::getInstance().createCommand(irc::JOIN, server);
 	Message joinMsg;
 	joinMsg.m_command = "JOIN";
 	joinMsg.m_params.push_back("#test");
 	joinCmd1->execute(&client1, joinMsg);
 	delete joinCmd1;
 
-	ACommand* joinCmd2 = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	ACommand* joinCmd2 = CommandFactory::getInstance().createCommand(irc::JOIN, server);
 	joinCmd2->execute(&client2, joinMsg);
 	delete joinCmd2;
 
@@ -130,7 +130,7 @@ Test(QuitCommand, broadcasts_to_channels)
 	client2.getBuffer().getWriteBuffer();
 
 	// Alice quits
-	ACommand* quitCmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* quitCmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	Message quitMsg;
 	quitMsg.m_command = "QUIT";
 	quitMsg.m_params.push_back("Goodbye everyone!");
@@ -170,7 +170,7 @@ Test(QuitCommand, broadcasts_to_all_channels)
 	charlie.setUsername("charlie");
 
 	// Alice joins #test1 and #test2
-	ACommand* joinCmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	ACommand* joinCmd = CommandFactory::getInstance().createCommand(irc::JOIN, server);
 	Message join1;
 	join1.m_command = "JOIN";
 	join1.m_params.push_back("#test1");
@@ -194,7 +194,7 @@ Test(QuitCommand, broadcasts_to_all_channels)
 	charlie.getBuffer().getWriteBuffer();
 
 	// Alice quits
-	ACommand* quitCmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* quitCmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	Message quitMsg;
 	quitMsg.m_command = "QUIT";
 	quitMsg.m_params.push_back("Bye!");
@@ -220,7 +220,7 @@ Test(QuitCommand, empty_quit_message_uses_default)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	cr_assert_not_null(cmd, "Factory failed to create QUIT command");
 
 	Message msg;
@@ -242,7 +242,7 @@ Test(QuitCommand, quit_message_with_spaces)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	cr_assert_not_null(cmd, "Factory failed to create QUIT command");
 
 	Message msg;
@@ -264,7 +264,7 @@ Test(QuitCommand, no_numeric_replies)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	cr_assert_not_null(cmd, "Factory failed to create QUIT command");
 
 	Message msg;
@@ -292,7 +292,7 @@ Test(QuitCommand, quit_without_channels)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	cr_assert_not_null(cmd, "Factory failed to create QUIT command");
 
 	Message msg;
@@ -321,7 +321,7 @@ Test(QuitCommand, quit_message_format)
 	bob.setUsername("bob");
 
 	// Both join same channel
-	ACommand* joinCmd = CommandFactory::getInstance()->createCommand(irc::JOIN, server);
+	ACommand* joinCmd = CommandFactory::getInstance().createCommand(irc::JOIN, server);
 	Message joinMsg;
 	joinMsg.m_command = "JOIN";
 	joinMsg.m_params.push_back("#test");
@@ -332,7 +332,7 @@ Test(QuitCommand, quit_message_format)
 	bob.getBuffer().getWriteBuffer(); // Clear buffer
 
 	// Alice quits
-	ACommand* quitCmd = CommandFactory::getInstance()->createCommand(irc::QUIT, server);
+	ACommand* quitCmd = CommandFactory::getInstance().createCommand(irc::QUIT, server);
 	Message quitMsg;
 	quitMsg.m_command = "QUIT";
 	quitMsg.m_params.push_back("Bye!");

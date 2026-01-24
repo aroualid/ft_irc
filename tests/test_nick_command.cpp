@@ -15,7 +15,7 @@ Test(NickCommand, sets_nickname_correctly)
 	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NICK, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
 	cr_assert_not_null(cmd, "Factory failed to create NICK command");
 
 	Message msg;
@@ -35,7 +35,7 @@ Test(NickCommand, accepts_valid_nickname_format)
 	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NICK, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
 	cr_assert_not_null(cmd, "Factory failed to create NICK command");
 
 	Message msg;
@@ -55,7 +55,7 @@ Test(NickCommand, rejects_nickname_starting_with_number)
 	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NICK, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
 	cr_assert_not_null(cmd, "Factory failed to create NICK command");
 
 	Message msg;
@@ -78,7 +78,7 @@ Test(NickCommand, rejects_nickname_too_long)
 	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NICK, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
 	cr_assert_not_null(cmd, "Factory failed to create NICK command");
 
 	Message msg;
@@ -108,7 +108,7 @@ Test(NickCommand, rejects_nickname_in_use)
 	server.registerClient("alice", &client1);
 
 	// Client2 tries to take "alice"
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NICK, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
 	cr_assert_not_null(cmd, "Factory failed to create NICK command");
 
 	Message msg;
@@ -132,7 +132,7 @@ Test(NickCommand, error_if_no_parameters)
 	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NICK, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
 	cr_assert_not_null(cmd, "Factory failed to create NICK command");
 
 	Message msg;
@@ -158,7 +158,7 @@ Test(NickCommand, allows_nickname_change)
 	client.setUsername("alice");
 	// Client is now registered
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NICK, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
 	cr_assert_not_null(cmd, "Factory failed to create NICK command");
 
 	Message msg;
@@ -181,7 +181,7 @@ Test(NickCommand, sends_welcome_on_registration)
 	client.setUsername("alice");
 	// Now just need NICK to complete registration
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NICK, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
 	cr_assert_not_null(cmd, "Factory failed to create NICK command");
 
 	Message msg;
@@ -205,7 +205,7 @@ Test(NickCommand, accepts_special_chars_in_nickname)
 	ClientMock client(3, "localhost");
 	client.setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NICK, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
 	cr_assert_not_null(cmd, "Factory failed to create NICK command");
 
 	Message msg;
@@ -226,7 +226,7 @@ Test(NickCommand, requires_password_first)
 	ClientMock client(3, "localhost");
 	// No password provided
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::NICK, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
 	cr_assert_not_null(cmd, "Factory failed to create NICK command");
 
 	Message msg;

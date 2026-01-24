@@ -5,7 +5,6 @@
 #include <map>
 #include <new>
 
-CommandFactory* CommandFactory::s_instance = NULL;
 
 CommandFactory::CommandFactory()
 {
@@ -27,20 +26,10 @@ CommandFactory& CommandFactory::operator=(const CommandFactory& source)
 	return (*this);
 }
 
-CommandFactory* CommandFactory::getInstance()
+CommandFactory &CommandFactory::getInstance()
 {
-	if (s_instance == NULL)
-		s_instance = new (std::nothrow) CommandFactory();
-	return (s_instance);
-}
-
-void CommandFactory::destroyInstance()
-{
-	if (s_instance)
-	{
-		delete s_instance;
-		s_instance = NULL;
-	}
+	static CommandFactory instance;
+	return (instance);
 }
 
 void CommandFactory::registerCommandSpawner(const std::string& commandName, irc::CommandType type,

@@ -16,7 +16,7 @@ Test(PartCommand, requires_registration)
 	client.setNickname("unregistered");
 	client.setUsername("unregistered");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
@@ -47,7 +47,7 @@ Test(PartCommand, successful_part_single_channel)
 	cr_assert_eq(channel->getMemberCount(), 1);
 
 	// Now PART
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
@@ -73,7 +73,7 @@ Test(PartCommand, part_with_message)
 	IChannel* channel = server.createChannel("#test", &client);
 	client.joinChannel(channel);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
@@ -100,7 +100,7 @@ Test(PartCommand, part_nonexistent_channel)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
@@ -134,7 +134,7 @@ Test(PartCommand, part_channel_not_on)
 	bob.joinChannel(channel);
 
 	// Alice tries to leave it (but she's not in it)
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
@@ -158,7 +158,7 @@ Test(PartCommand, part_no_parameters)
 	client.setNickname("alice");
 	client.setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
@@ -203,7 +203,7 @@ Test(PartCommand, part_broadcasts_to_all_members)
 	cr_assert_eq(channel->getMemberCount(), 3);
 
 	// Alice leaves
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
@@ -254,7 +254,7 @@ Test(PartCommand, last_member_parts_channel_deleted)
 	cr_assert_not_null(server.getChannel("#test"));
 
 	// Alice leaves
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg1;
 	msg1.m_command = "PART";
@@ -300,7 +300,7 @@ Test(PartCommand, part_removes_operator_status)
 	cr_assert_not(channel->isOperator(&bob));
 
 	// Alice leaves
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
@@ -325,7 +325,7 @@ Test(PartCommand, part_with_prefix_in_broadcast)
 	IChannel* channel = server.createChannel("#test", &alice);
 	alice.joinChannel(channel);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
@@ -355,7 +355,7 @@ Test(PartCommand, part_ampersand_channel)
 
 	cr_assert(client.isInChannel("&local"));
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
@@ -379,7 +379,7 @@ Test(PartCommand, part_empty_message_parameter)
 	IChannel* channel = server.createChannel("#test", &client);
 	client.joinChannel(channel);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
@@ -405,7 +405,7 @@ Test(PartCommand, part_channel_name_case_sensitive)
 	IChannel* channel = server.createChannel("#Test", &client);
 	client.joinChannel(channel);
 
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
@@ -440,7 +440,7 @@ Test(PartCommand, operator_parts_doesnt_transfer_ops)
 	cr_assert_not(channel->isOperator(&bob));
 
 	// Alice parts
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
@@ -476,7 +476,7 @@ Test(PartCommand, multiple_channels_in_client_list)
 	cr_assert(client.isInChannel("#test3"));
 
 	// Part one channel
-	ACommand* cmd = CommandFactory::getInstance()->createCommand(irc::PART, server);
+	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PART, server);
 	cr_assert_not_null(cmd, "Factory failed to create PART command. Is it registered?");
 	Message msg;
 	msg.m_command = "PART";
