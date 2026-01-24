@@ -37,6 +37,7 @@ public:
 
 	void addInvite(IClient* client);
 	bool isInvited(IClient* client) const;
+	void removeInvite(IClient* client);
 
 	bool addMember(IClient* client, const std::string& key = "");
 	void removeMember(IClient* client);
@@ -49,5 +50,4 @@ public:
 	std::string getMemberList() const;
 	void broadcast(const std::string& message, IClient* exclude = NULL);
 	bool isEmpty() const;
-	IClient* getMemberByNickname(const std::string& nick);
 };

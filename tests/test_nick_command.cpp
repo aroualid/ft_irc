@@ -12,7 +12,7 @@ TestSuite(NickCommand);
 Test(NickCommand, sets_nickname_correctly)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 
 	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
@@ -32,7 +32,7 @@ Test(NickCommand, sets_nickname_correctly)
 Test(NickCommand, accepts_valid_nickname_format)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 
 	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
@@ -52,7 +52,7 @@ Test(NickCommand, accepts_valid_nickname_format)
 Test(NickCommand, rejects_nickname_starting_with_number)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 
 	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
@@ -75,7 +75,7 @@ Test(NickCommand, rejects_nickname_starting_with_number)
 Test(NickCommand, rejects_nickname_too_long)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 
 	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
@@ -98,8 +98,8 @@ Test(NickCommand, rejects_nickname_too_long)
 Test(NickCommand, rejects_nickname_in_use)
 {
 	Server server(6667, "testpass");
-	ClientMock client1(3, "localhost");
-	ClientMock client2(4, "localhost");
+	ClientMock client1(3, "localhost", server);
+	ClientMock client2(4, "localhost", server);
 	client1.setPasswordProvided(true);
 	client2.setPasswordProvided(true);
 
@@ -129,7 +129,7 @@ Test(NickCommand, rejects_nickname_in_use)
 Test(NickCommand, error_if_no_parameters)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 
 	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
@@ -152,7 +152,7 @@ Test(NickCommand, error_if_no_parameters)
 Test(NickCommand, allows_nickname_change)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -176,7 +176,7 @@ Test(NickCommand, allows_nickname_change)
 Test(NickCommand, sends_welcome_on_registration)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setUsername("alice");
 	// Now just need NICK to complete registration
@@ -202,7 +202,7 @@ Test(NickCommand, sends_welcome_on_registration)
 Test(NickCommand, accepts_special_chars_in_nickname)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 
 	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
@@ -223,7 +223,7 @@ Test(NickCommand, accepts_special_chars_in_nickname)
 Test(NickCommand, requires_password_first)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	// No password provided
 
 	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);

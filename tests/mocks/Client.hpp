@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IChannel.hpp"
+#include "core/IServer.hpp"
 #include "core/IClient.hpp"
 #include "mocks/MessageBuffer.hpp"
 #include <set>
@@ -18,9 +19,11 @@ private:
 	bool m_registered;
 	MessageBufferMock m_buffer;
 	std::set< IChannel* > m_channels;
+	IServer* m_server;
+
 
 public:
-	ClientMock(int fd, const std::string& hostname);
+	ClientMock(int fd, const std::string& hostname, IServer& server);
 	virtual ~ClientMock();
 
 	int getFd() const;
@@ -42,6 +45,7 @@ public:
 	void leaveChannel(IChannel* channel);
 	bool isInChannel(const std::string& channel) const;
 	const std::set< IChannel* >& getChannels() const;
+	IServer* getServer() const;
 
 	IMessageBuffer& getBuffer();
 	const IMessageBuffer& getBuffer() const;

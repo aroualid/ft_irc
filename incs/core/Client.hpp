@@ -2,9 +2,9 @@
 
 #include "core/IChannel.hpp"
 #include "core/IClient.hpp"
+#include "core/IServer.hpp"
 #include "network/MessageBuffer.hpp"
 
-class IServer;
 class ClientState;
 
 class Client : public IClient
@@ -41,6 +41,7 @@ public:
 	const std::string& getUsername() const;
 	const std::string& getRealname() const;
 	const std::string& getHostname() const;
+	IServer* getServer() const;
 
 	bool isPasswordProvided() const;
 	bool isRegistered() const;

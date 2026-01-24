@@ -2,9 +2,9 @@
 #include "IChannel.hpp"
 #include <iostream>
 
-ClientMock::ClientMock(int fd, const std::string& hostname)
+ClientMock::ClientMock(int fd, const std::string& hostname, IServer& server )
 	: m_fd(fd), m_nickname(""), m_username(""), m_realname(""), m_hostname(hostname),
-	  m_passwordProvided(false), m_registered(false)
+	  m_passwordProvided(false), m_registered(false), m_server(&server)
 {
 	std::cout << "[MOCK] ClientMock created: fd=" << fd << " host=" << hostname << '\n';
 }
@@ -125,4 +125,9 @@ std::string ClientMock::getPrefix() const
 	if (!m_username.empty())
 		prefix += "!" + m_username + "@" + m_hostname;
 	return prefix;
+}
+
+IServer* ClientMock::getServer() const
+{
+	return m_server;
 }

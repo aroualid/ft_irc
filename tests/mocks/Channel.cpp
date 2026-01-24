@@ -81,6 +81,12 @@ void ChannelMock::addInvite(IClient* client)
 	std::cout << "[MOCK] " << m_name << ": Added invite" << std::endl;
 }
 
+void ChannelMock::removeInvite(IClient* client)
+{
+	if (isInvited(client))
+		m_invited.erase(client);
+}
+
 bool ChannelMock::isInvited(IClient* client) const
 {
 	return m_invited.find(client) != m_invited.end();
@@ -183,15 +189,3 @@ bool ChannelMock::isEmpty() const
 	return m_members.empty();
 }
 
-IClient* ChannelMock::getMemberByNickname(const std::string& nickname)
-{
-	std::set< IClient* >::iterator it;
-
-	for (it = m_members.begin(); it != m_members.end(); ++it)
-	{
-		IClient* member = *it;
-		if (member->getNickname() == nickname)
-			return (member);
-	}
-	return NULL;
-}

@@ -12,7 +12,7 @@ TestSuite(UserCommand);
 Test(UserCommand, sets_username_and_realname)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 
 	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
@@ -36,7 +36,7 @@ Test(UserCommand, sets_username_and_realname)
 Test(UserCommand, requires_four_parameters)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 
 	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
@@ -62,7 +62,7 @@ Test(UserCommand, requires_four_parameters)
 Test(UserCommand, error_if_already_registered)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	client.setUsername("alice");
@@ -94,7 +94,7 @@ Test(UserCommand, error_if_already_registered)
 Test(UserCommand, sends_welcome_on_registration)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 	client.setNickname("alice");
 	// Now just need USER to complete registration
@@ -123,7 +123,7 @@ Test(UserCommand, sends_welcome_on_registration)
 Test(UserCommand, realname_with_spaces)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 
 	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
@@ -147,7 +147,7 @@ Test(UserCommand, realname_with_spaces)
 Test(UserCommand, rejects_empty_username)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	client.setPasswordProvided(true);
 
 	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
@@ -172,7 +172,7 @@ Test(UserCommand, rejects_empty_username)
 Test(UserCommand, requires_authentication)
 {
 	Server server(6667, "testpass");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 	// No password provided
 
 	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
@@ -197,7 +197,7 @@ Test(UserCommand, requires_authentication)
 Test(UserCommand, complete_registration_flow)
 {
 	Server server(6667, "secret");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 
 	// Step 1: PASS
 	ACommand* passCmd = CommandFactory::getInstance().createCommand(irc::PASS, server);
@@ -240,7 +240,7 @@ Test(UserCommand, complete_registration_flow)
 Test(UserCommand, registration_alternative_order)
 {
 	Server server(6667, "secret");
-	ClientMock client(3, "localhost");
+	ClientMock client(3, "localhost", server);
 
 	// Step 1: PASS
 	ACommand* passCmd = CommandFactory::getInstance().createCommand(irc::PASS, server);
