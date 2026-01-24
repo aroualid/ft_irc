@@ -111,18 +111,13 @@ void Server::onIrcLine(int fd, const std::string &line)
 	if (!msg.isValid())
 		return;
 	
-	CommandFactory *factory = CommandFactory::getInstance();
-	irc::CommandType type = factory->stringToCommandType(msg.m_command);
-	if (!factory->hasCommand(type))
+	ACommand	*cmd = CommandFactory::getInstance().createCommand(msg.m_command_type, *this);
+	if (!cmd)
 	{
-		std::cout << "DEBUG : unknown command ?\n";
+		std::cout << "[DEBUG] Command not found: " <<  msg.m_command << ". Ignoring...\n";
 		return;
 	}
-
-	ACommand	*cmd = factory->createCommand(type, *this);
-	if (!cmd)
-		return;
-
+	std::cout << "[DEBUG] Running " << cmd->getName() << "\n";
 	cmd->execute(client, msg);
 	delete cmd;
 

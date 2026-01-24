@@ -15,7 +15,6 @@ class CommandFactory
 private:
 	std::map< irc::CommandType, CommandSpawner > m_commandSpawners;
 	std::map< std::string, irc::CommandType > m_stringToType;
-	static CommandFactory* s_instance;
 
 	CommandFactory();
 	CommandFactory(const CommandFactory& source);
@@ -24,8 +23,7 @@ private:
 	CommandFactory& operator=(const CommandFactory& source);
 
 public:
-	static CommandFactory* getInstance();
-	static void destroyInstance();
+	static CommandFactory &getInstance();
 
 	void registerCommandSpawner(const std::string& commandName, irc::CommandType type,
 								CommandSpawner spawner);

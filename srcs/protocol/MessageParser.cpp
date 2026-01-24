@@ -38,7 +38,7 @@ Message MessageParser::parse(const std::string& raw)
 	for (size_t i = 0; i < message.m_command.size(); i++)
 		message.m_command[i] = std::toupper(static_cast< unsigned char >(message.m_command[i]));
 
-	message.m_command_type = CommandFactory::getInstance()->stringToCommandType(message.m_command);
+	message.m_command_type = CommandFactory::getInstance().stringToCommandType(message.m_command);
 
 	while (iss >> word)
 	{
