@@ -27,6 +27,7 @@ public:
 
 	virtual void addInvite(IClient* client) = 0;
 	virtual bool isInvited(IClient* client) const = 0;
+	virtual void removeInvite(IClient* client) = 0;
 
 	virtual bool addMember(IClient* client, const std::string& key = "") = 0;
 	virtual void removeMember(IClient* client) = 0;

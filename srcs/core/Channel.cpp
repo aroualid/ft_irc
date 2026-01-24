@@ -71,6 +71,12 @@ void Channel::addInvite(IClient* client)
 	_invited.insert(client);
 }
 
+void Channel::removeInvite(IClient* client)
+{
+	if (isInvited(client))
+		_invited.erase(client);
+}
+
 bool Channel::isInvited(IClient* client) const
 {
 	return (_invited.find(client) != _invited.end());
@@ -83,7 +89,7 @@ bool Channel::isOperator(IClient* client) const
 
 bool Channel::hasMember(IClient* client) const
 {
-	return _members.find(client) != _members.end();
+	return (_members.find(client) != _members.end());
 }
 
 void Channel::addOperator(IClient* client)

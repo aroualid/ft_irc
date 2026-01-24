@@ -224,6 +224,8 @@ Test(Channel, applyModeOp)
 	client2.setPasswordProvided(true);
 	canal.addMember(&client1, "bonjour");
 	canal.addMember(&client2, "bonjour");
+	server.registerClient(std::string("Didier"), &client1);
+	server.registerClient(std::string("Michel"), &client2);
 	cr_assert(canal.applyMode('o', "true", "Michel", &client1));
 }
 

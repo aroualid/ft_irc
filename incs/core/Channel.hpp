@@ -30,6 +30,7 @@ public:
 
 	void addInvite(IClient* client);
 	bool isInvited(IClient* client) const;
+	void removeInvite(IClient* client);
 	// Operator management
 	void addOperator(IClient* client);
 	bool isOperator(IClient* client) const;

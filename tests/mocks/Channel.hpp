@@ -37,6 +37,7 @@ public:
 
 	void addInvite(IClient* client);
 	bool isInvited(IClient* client) const;
+	void removeInvite(IClient* client);
 
 	bool addMember(IClient* client, const std::string& key = "");
 	void removeMember(IClient* client);
