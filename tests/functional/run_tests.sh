@@ -62,7 +62,8 @@ echo -e "$cmd\r"
 start_client() {
     local name="$1"
     mkfifo "$TMP_DIR/${name}_in" 2>/dev/null || true
-    tail -f "$TMP_DIR/${name}_in" | nc "$HOST" "$PORT" > "$TMP_DIR/${name}_out" 2>&1 &
+    # Use stdbuf for unbuffered output from nc
+    tail -f "$TMP_DIR/${name}_in" 2>/dev/null | stdbuf -o0 nc "$HOST" "$PORT" > "$TMP_DIR/${name}_out" 2>&1 &
     echo $! > "$TMP_DIR/${name}_pid"
     sleep 0.5
 }
@@ -141,8 +142,32 @@ assert_output_contains() {
     local name="$1"
     local pattern="$2"
     local msg="$3"
-    sleep 0.2
+    sleep 0.3
     assert_contains "$TMP_DIR/${name}_out" "$pattern" "$msg"
+}
+
+# Mark current position in client output (for checking only new output)
+mark_output_position() {
+    local name="$1"
+    wc -c < "$TMP_DIR/${name}_out" 2>/dev/null > "$TMP_DIR/${name}_pos" || echo 0 > "$TMP_DIR/${name}_pos"
+}
+
+# Check if new output (since mark) contains pattern
+assert_new_output_contains() {
+    local name="$1"
+    local pattern="$2"
+    local msg="$3"
+    local pos=$(cat "$TMP_DIR/${name}_pos" 2>/dev/null || echo 0)
+    sleep 0.3
+    if tail -c +$((pos + 1)) "$TMP_DIR/${name}_out" 2>/dev/null | grep -q "$pattern"; then
+        echo -e "  ${GREEN}✓${NC} $msg"
+        ((TESTS_PASSED++))
+        return 0
+    else
+        echo -e "  ${RED}✗${NC} $msg ${YELLOW}(expected: $pattern)${NC}"
+        ((TESTS_FAILED++))
+        return 1
+    fi
 }
 
 # Run a test
@@ -315,20 +340,19 @@ test_first_user_is_operator() {
 
 test_join_broadcast_to_members() {
     start_client "first"
-    register_client "first" "firstuser"
+    register_client "first" "firstusr"
     client_send "first" "JOIN #broadcast"
     sleep 0.2
 
-    # Clear first user's buffer
-    > "$TMP_DIR/first_out"
-    sleep 0.1
+    # Mark position to only check new output
+    mark_output_position "first"
 
     start_client "second"
-    register_client "second" "seconduser"
+    register_client "second" "secusr"
     client_send "second" "JOIN #broadcast"
     sleep 0.3
 
-    assert_output_contains "first" "JOIN.*#broadcast" "First user sees second user join"
+    assert_new_output_contains "first" "secusr.*JOIN\|JOIN.*secusr" "First user sees second user join"
 
     stop_client "first"
     stop_client "second"
@@ -350,14 +374,13 @@ test_privmsg_channel() {
     client_send "receiver" "JOIN #msgtest"
     sleep 0.2
 
-    # Clear output files to only capture the message
-    > "$TMP_DIR/receiver_out"
-    sleep 0.1
+    # Mark position to only check new output
+    mark_output_position "receiver"
 
     client_send "sender" "PRIVMSG #msgtest :Hello channel!"
     sleep 0.3
 
-    assert_output_contains "receiver" "Hello channel" "Receiver got channel message"
+    assert_new_output_contains "receiver" "Hello channel" "Receiver got channel message"
 
     stop_client "sender"
     stop_client "receiver"
@@ -371,14 +394,13 @@ test_privmsg_user() {
     register_client "bob" "bob"
     sleep 0.2
 
-    # Clear output
-    > "$TMP_DIR/bob_out"
-    sleep 0.1
+    # Mark position to only check new output
+    mark_output_position "bob"
 
     client_send "alice" "PRIVMSG bob :Hello Bob!"
     sleep 0.3
 
-    assert_output_contains "bob" "Hello Bob" "Bob received private message"
+    assert_new_output_contains "bob" "Hello Bob" "Bob received private message"
 
     stop_client "alice"
     stop_client "bob"
@@ -415,13 +437,12 @@ test_notice() {
     register_client "notified" "notified"
     sleep 0.2
 
-    > "$TMP_DIR/notified_out"
-    sleep 0.1
+    mark_output_position "notified"
 
     client_send "notifier" "NOTICE notified :This is a notice"
     sleep 0.3
 
-    assert_output_contains "notified" "This is a notice" "Notice received"
+    assert_new_output_contains "notified" "This is a notice" "Notice received"
 
     stop_client "notifier"
     stop_client "notified"
@@ -431,8 +452,8 @@ test_notice_no_error_on_nonexistent() {
     # NOTICE should NOT generate errors (per RFC)
     irc_send "$TMP_DIR/out.txt" \
         "PASS $PASS" \
-        "NICK silentnotice" \
-        "USER silentnotice 0 * :Silent" \
+        "NICK silnot" \
+        "USER silnot 0 * :Silent" \
         "NOTICE nobody :Hello?" \
         "QUIT"
 
@@ -455,10 +476,11 @@ test_kick() {
     client_send "victim" "JOIN #kicktest"
     sleep 0.2
 
+    mark_output_position "victim"
     client_send "op" "KICK #kicktest victim :Get out!"
     sleep 0.3
 
-    assert_output_contains "victim" "KICK.*#kicktest.*victim" "Victim received KICK"
+    assert_new_output_contains "victim" "KICK.*#kicktest.*victim" "Victim received KICK"
 
     stop_client "op"
     stop_client "victim"
@@ -477,11 +499,11 @@ test_kick_not_operator() {
     client_send "notop" "JOIN #nokicktest"
     sleep 0.2
 
-    > "$TMP_DIR/notop_out"
+    mark_output_position "notop"
     client_send "notop" "KICK #nokicktest target :Try to kick"
     sleep 0.3
 
-    assert_output_contains "notop" "482" "ERR_CHANOPRIVSNEEDED (482)"
+    assert_new_output_contains "notop" "482" "ERR_CHANOPRIVSNEEDED (482)"
 
     stop_client "notop"
     stop_client "target"
@@ -509,11 +531,11 @@ test_kick_not_in_channel() {
     client_send "insider" "JOIN #insideronly"
     sleep 0.2
 
-    > "$TMP_DIR/outsider_out"
+    mark_output_position "outsider"
     client_send "outsider" "KICK #insideronly insider :Bye"
     sleep 0.3
 
-    assert_output_contains "outsider" "442" "ERR_NOTONCHANNEL (442)"
+    assert_new_output_contains "outsider" "442" "ERR_NOTONCHANNEL (442)"
 
     stop_client "outsider"
     stop_client "insider"
@@ -561,12 +583,12 @@ test_quit_message() {
     client_send "watcher" "JOIN #quitwatch"
     sleep 0.2
 
-    > "$TMP_DIR/watcher_out"
+    mark_output_position "watcher"
     client_send "quitter" "QUIT :See you later!"
     sleep 0.3
 
-    assert_output_contains "watcher" "QUIT" "Watcher sees QUIT"
-    assert_output_contains "watcher" "See you later" "Quit message received"
+    assert_new_output_contains "watcher" "QUIT" "Watcher sees QUIT"
+    assert_new_output_contains "watcher" "See you later" "Quit message received"
 
     stop_client "watcher"
 }
@@ -578,8 +600,8 @@ test_quit_message() {
 test_unknown_command() {
     irc_send "$TMP_DIR/out.txt" \
         "PASS $PASS" \
-        "NICK unknowncmd" \
-        "USER unknowncmd 0 * :Unknown" \
+        "NICK unkcmd" \
+        "USER unkcmd 0 * :Unknown" \
         "FOOBAR test" \
         "QUIT"
 
@@ -608,18 +630,18 @@ test_special_chars_in_message() {
     start_client "receiver"
 
     register_client "special" "special"
-    register_client "receiver" "rcvspecial"
+    register_client "receiver" "rcvspec"
 
     client_send "special" "JOIN #specialtest"
     sleep 0.2
     client_send "receiver" "JOIN #specialtest"
     sleep 0.2
 
-    > "$TMP_DIR/receiver_out"
+    mark_output_position "receiver"
     client_send "special" "PRIVMSG #specialtest :Hello! @#\$%^&*() test :with :colons:"
     sleep 0.3
 
-    assert_output_contains "receiver" "Hello" "Special chars message received"
+    assert_new_output_contains "receiver" "Hello" "Special chars message received"
 
     stop_client "special"
     stop_client "receiver"

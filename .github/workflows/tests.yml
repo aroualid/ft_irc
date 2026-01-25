@@ -7,15 +7,82 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
-    name: Your beautiful code vs some scary tester
+  build:
+    name: Compiling the project (would be unfortunate if that failed :p)
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build and run tests
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential
+
+      - name: Build project
+        run: make
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: ircserv
+          path: ircserv
+          retention-days: 1
+
+  unit-tests:
+    name: Your beautiful code vs some scary tests
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Your beautiful code vs some scary tester
         env:
           TERM: xterm-256color
         run: make docker-test
+
+  functional-tests:
+    name: Your beautiful server vs Moulinette (exam 06 vibes :D)
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download binary
+        uses: actions/download-artifact@v4
+        with:
+          name: ircserv
+
+      - name: Make binary executable
+        run: chmod +x ircserv
+
+      - name: Install netcat
+        run: sudo apt-get update && sudo apt-get install -y netcat-openbsd
+
+      - name: Run functional tests
+        run: |
+          ./ircserv 6667 testpass > /tmp/ircserv.log 2>&1 &
+          SERVER_PID=$!
+
+          for i in {1..30}; do
+            if nc -z localhost 6667 2>/dev/null; then
+              echo "Server is ready"
+              break
+            fi
+            sleep 0.1
+          done
+
+          ./tests/functional/run_tests.sh localhost 6667 testpass
+          TEST_EXIT=$?
+
+          kill $SERVER_PID 2>/dev/null || true
+
+          if [ $TEST_EXIT -ne 0 ]; then
+            echo "=== Server log ==="
+            cat /tmp/ircserv.log
+          fi
+
+          exit $TEST_EXIT
