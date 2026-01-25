@@ -59,7 +59,8 @@ REQUIRED_SRCS = $(SRCS_DIR)/protocol/Message.cpp \
 
 REQUIRED_OBJ = $(REQUIRED_SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/srcs/%.o)
 
-TEST_SRCS = test_irc_utils.cpp \
+TEST_SRCS = test_hooks.cpp \
+			test_irc_utils.cpp \
 			test_message.cpp \
 			test_message_parser.cpp \
 			test_numeric_reply.cpp \

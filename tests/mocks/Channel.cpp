@@ -1,17 +1,17 @@
 #include "Channel.hpp"
 #include "Client.hpp"
-#include <iostream>
+#include "MockOutput.hpp"
 
 ChannelMock::ChannelMock(const std::string& name)
 	: m_name(name), m_topic(""), m_key(""), m_members(), m_operators(), m_invited(),
 	  m_inviteOnly(false), m_topicRestricted(true), m_userLimit(-1)
 {
-	std::cout << "[MOCK] ChannelMock created: " << name << std::endl;
+	MOCK_LOG("ChannelMock created: " << name);
 }
 
 ChannelMock::~ChannelMock()
 {
-	std::cout << "[MOCK] ChannelMock destroyed: " << m_name << std::endl;
+	MOCK_LOG("ChannelMock destroyed: " << m_name);
 }
 
 const std::string& ChannelMock::getName() const
@@ -46,39 +46,37 @@ int ChannelMock::getUserLimit() const
 void ChannelMock::setTopic(const std::string& topic)
 {
 	m_topic = topic;
-	std::cout << "[MOCK] Topic set for " << m_name << ": " << topic << std::endl;
+	MOCK_LOG("Topic set for " << m_name << ": " << topic);
 }
 
 void ChannelMock::setKey(const std::string& key)
 {
 	m_key = key;
-	std::cout << "[MOCK] Key set for " << m_name << std::endl;
+	MOCK_LOG("Key set for " << m_name);
 }
 
 void ChannelMock::setInviteOnly(bool inviteOnly)
 {
 	m_inviteOnly = inviteOnly;
-	std::cout << "[MOCK] Invite-only " << (inviteOnly ? "enabled" : "disabled") << " for " << m_name
-			  << std::endl;
+	MOCK_LOG("Invite-only " << (inviteOnly ? "enabled" : "disabled") << " for " << m_name);
 }
 
 void ChannelMock::setTopicRestricted(bool restricted)
 {
 	m_topicRestricted = restricted;
-	std::cout << "[MOCK] Topic restriction " << (restricted ? "enabled" : "disabled") << " for "
-			  << m_name << std::endl;
+	MOCK_LOG("Topic restriction " << (restricted ? "enabled" : "disabled") << " for " << m_name);
 }
 
 void ChannelMock::setUserLimit(int limit)
 {
 	m_userLimit = limit;
-	std::cout << "[MOCK] User limit set to " << limit << " for " << m_name << std::endl;
+	MOCK_LOG("User limit set to " << limit << " for " << m_name);
 }
 
 void ChannelMock::addInvite(IClient* client)
 {
 	m_invited.insert(client);
-	std::cout << "[MOCK] " << m_name << ": Added invite" << std::endl;
+	MOCK_LOG(m_name << ": Added invite");
 }
 
 void ChannelMock::removeInvite(IClient* client)
@@ -100,17 +98,17 @@ bool ChannelMock::addMember(IClient* client, const std::string& key)
 		return false;
 	if (m_inviteOnly && !isInvited(client))
 	{
-		std::cout << "[MOCK] " << m_name << ": Join denied - invite only" << std::endl;
+		MOCK_LOG(m_name << ": Join denied - invite only");
 		return false;
 	}
 	if (m_userLimit > 0 && static_cast< int >(m_members.size()) >= m_userLimit)
 	{
-		std::cout << "[MOCK] " << m_name << ": Join denied - channel full" << std::endl;
+		MOCK_LOG(m_name << ": Join denied - channel full");
 		return false;
 	}
 	if (!m_key.empty() && key != m_key)
 	{
-		std::cout << "[MOCK] " << m_name << ": Join denied - bad key" << std::endl;
+		MOCK_LOG(m_name << ": Join denied - bad key");
 		return false;
 	}
 	m_members.insert(client);
@@ -118,10 +116,10 @@ bool ChannelMock::addMember(IClient* client, const std::string& key)
 	if (m_members.size() == 1)
 	{
 		m_operators.insert(client);
-		std::cout << "[MOCK] " << m_name << ": Added first member as operator" << std::endl;
+		MOCK_LOG(m_name << ": Added first member as operator");
 	}
 	else
-		std::cout << "[MOCK] " << m_name << ": Added member" << std::endl;
+		MOCK_LOG(m_name << ": Added member");
 	return true;
 }
 
@@ -129,7 +127,7 @@ void ChannelMock::removeMember(IClient* client)
 {
 	m_members.erase(client);
 	m_operators.erase(client);
-	std::cout << "[MOCK] " << m_name << ": Removed member" << std::endl;
+	MOCK_LOG(m_name << ": Removed member");
 }
 
 bool ChannelMock::hasMember(IClient* client) const
@@ -147,7 +145,7 @@ void ChannelMock::addOperator(IClient* client)
 	if (hasMember(client))
 	{
 		m_operators.insert(client);
-		std::cout << "[MOCK] " << m_name << ": Added operator" << std::endl;
+		MOCK_LOG(m_name << ": Added operator");
 	}
 }
 
@@ -173,10 +171,7 @@ std::string ChannelMock::getMemberList() const
 
 void ChannelMock::broadcast(const std::string& message, IClient* exclude)
 {
-	std::cout << "[MOCK] " << m_name << ": Broadcasting message";
-	if (exclude)
-		std::cout << " (excluding one client)";
-	std::cout << std::endl;
+	MOCK_LOG(m_name << ": Broadcasting message" << (exclude ? " (excluding one client)" : ""));
 	for (std::set< IClient* >::iterator it = m_members.begin(); it != m_members.end(); ++it)
 	{
 		if (*it != exclude)
@@ -189,3 +184,24 @@ bool ChannelMock::isEmpty() const
 	return m_members.empty();
 }
 
+bool ChannelMock::applyMode(char mode, bool set, const std::string& param, IClient* setter)
+{
+	(void)param;
+	(void)setter;
+	MOCK_LOG(m_name << ": Applying mode " << (set ? "+" : "-") << mode);
+	return true;
+}
+
+std::string ChannelMock::getModeString() const
+{
+	std::string modes = "+";
+	if (m_inviteOnly)
+		modes += "i";
+	if (m_topicRestricted)
+		modes += "t";
+	if (!m_key.empty())
+		modes += "k";
+	if (m_userLimit > 0)
+		modes += "l";
+	return modes;
+}

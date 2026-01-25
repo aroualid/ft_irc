@@ -1,5 +1,4 @@
 #include "MessageBuffer.hpp"
-#include <iostream>
 
 MessageBufferMock::MessageBufferMock() : m_readBuffer(), m_writeBuffer()
 {

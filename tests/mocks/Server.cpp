@@ -1,11 +1,12 @@
 #include "Server.hpp"
 #include "Channel.hpp"
-#include <iostream>
+#include "MockOutput.hpp"
+#include "protocol/IrcUtils.hpp"
 
 Server::Server(int port, const std::string& password)
 	: m_port(port), m_password(password), m_clients(), m_channels()
 {
-	std::cout << "[MOCK] Server created: port=" << port << " password=" << password << std::endl;
+	MOCK_LOG("Server created: port=" << port << " password=" << password);
 }
 
 Server::~Server()
@@ -13,7 +14,7 @@ Server::~Server()
 	for (std::map< std::string, IChannel* >::iterator it = m_channels.begin();
 		 it != m_channels.end(); ++it)
 		delete it->second;
-	std::cout << "[MOCK] Server destroyed" << std::endl;
+	MOCK_LOG("Server destroyed");
 }
 
 bool Server::requiresPassword() const
@@ -33,22 +34,26 @@ const std::string& Server::getPassword() const
 
 IClient* Server::getClientByNickname(const std::string& nick)
 {
-	std::map< std::string, IClient* >::iterator it = m_clients.find(nick);
-	if (it != m_clients.end())
-		return it->second;
+	// RFC 1459: nickname comparison is case-insensitive
+	for (std::map< std::string, IClient* >::iterator it = m_clients.begin(); it != m_clients.end();
+		 ++it)
+	{
+		if (IrcUtils::iequals(it->first, nick))
+			return it->second;
+	}
 	return NULL;
 }
 
 void Server::registerClient(const std::string& nick, IClient* client)
 {
 	m_clients[nick] = client;
-	std::cout << "[MOCK] Server registered client: " << nick << std::endl;
+	MOCK_LOG("Server registered client: " << nick);
 }
 
 void Server::unregisterClient(const std::string& nick)
 {
 	m_clients.erase(nick);
-	std::cout << "[MOCK] Server unregistered client: " << nick << std::endl;
+	MOCK_LOG("Server unregistered client: " << nick);
 }
 
 IChannel* Server::getChannel(const std::string& name)
@@ -67,7 +72,7 @@ IChannel* Server::createChannel(const std::string& name, IClient* creator)
 	m_channels[name] = channel;
 	if (creator)
 		channel->addMember(creator);
-	std::cout << "[MOCK] Server created channel: " << name << std::endl;
+	MOCK_LOG("Server created channel: " << name);
 	return channel;
 }
 
@@ -78,7 +83,7 @@ void Server::deleteChannelIfEmpty(IChannel* channel)
 	std::string name = channel->getName();
 	m_channels.erase(name);
 	delete channel;
-	std::cout << "[MOCK] Server deleted empty channel: " << name << std::endl;
+	MOCK_LOG("Server deleted empty channel: " << name);
 }
 
 size_t Server::getChannelCount() const

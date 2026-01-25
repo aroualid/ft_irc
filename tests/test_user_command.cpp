@@ -6,272 +6,296 @@
 #include "protocol/Message.hpp"
 #include <criterion/criterion.h>
 
-TestSuite(UserCommand);
+// Test fixture
+static Server* g_server;
+static ClientMock* g_alice;
+static ACommand* g_cmd;
 
-// RFC 4.1.3: Sets username and realname correctly
+static void setup(void)
+{
+	g_server = new Server(6667, "testpass");
+	g_alice = new ClientMock(3, "localhost", *g_server);
+	g_cmd = CommandFactory::getInstance().createCommand(irc::USER, *g_server);
+}
+
+static void teardown(void)
+{
+	delete g_cmd;
+	delete g_alice;
+	delete g_server;
+}
+
+// Helper to build a USER message
+// USER <username> <hostname> <servername> <realname>
+static Message userMsg(const char* username, const char* hostname = "host",
+					   const char* servername = "server", const char* realname = NULL)
+{
+	Message msg;
+	msg.m_command = "USER";
+	if (username)
+		msg.m_params.push_back(username);
+	if (hostname)
+		msg.m_params.push_back(hostname);
+	if (servername)
+		msg.m_params.push_back(servername);
+	if (realname)
+		msg.m_params.push_back(realname);
+	return msg;
+}
+
+TestSuite(UserCommand, .init = setup, .fini = teardown);
+
+// ============================================================================
+// RFC 4.1.3: Basic functionality
+// ============================================================================
+
+Test(UserCommand, factory_creates_user_command)
+{
+	cr_assert_not_null(g_cmd, "Factory failed to create USER command. Is it registered?");
+	cr_assert_str_eq(g_cmd->getName(), "USER");
+}
+
 Test(UserCommand, sets_username_and_realname)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	client.setPasswordProvided(true);
+	g_alice->setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
-	cr_assert_not_null(cmd, "Factory failed to create USER command");
+	g_cmd->execute(g_alice, userMsg("alice", "hostname", "servername", "Alice Smith"));
+
+	cr_assert_str_eq(g_alice->getUsername().c_str(), "alice");
+	cr_assert_str_eq(g_alice->getRealname().c_str(), "Alice Smith");
+}
+
+Test(UserCommand, hostname_and_servername_ignored)
+{
+	g_alice->setPasswordProvided(true);
+
+	// Per RFC, hostname and servername are ignored for direct client connections
+	g_cmd->execute(g_alice, userMsg("alice", "ignored_host", "ignored_server", "Alice"));
+
+	cr_assert_str_eq(g_alice->getUsername().c_str(), "alice");
+}
+
+// ============================================================================
+// RFC 4.1.3: ERR_NEEDMOREPARAMS (461)
+// ============================================================================
+
+Test(UserCommand, error_missing_all_params)
+{
+	g_alice->setPasswordProvided(true);
 
 	Message msg;
 	msg.m_command = "USER";
-	msg.m_params.push_back("alice");	   // username
-	msg.m_params.push_back("hostname");	   // hostname (ignored)
-	msg.m_params.push_back("servername");  // servername (ignored)
-	msg.m_params.push_back("Alice Smith"); // realname
+	// No params
 
-	cmd->execute(&client, msg);
+	g_cmd->execute(g_alice, msg);
 
-	cr_assert_str_eq(client.getUsername().c_str(), "alice", "Username should be set");
-	cr_assert_str_eq(client.getRealname().c_str(), "Alice Smith", "Realname should be set");
-	delete cmd;
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("461") != std::string::npos, "Expected ERR_NEEDMOREPARAMS (461)");
 }
 
-// RFC 4.1.3: Requires all 4 parameters
-Test(UserCommand, requires_four_parameters)
+Test(UserCommand, error_missing_realname)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	client.setPasswordProvided(true);
-
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
-	cr_assert_not_null(cmd, "Factory failed to create USER command");
+	g_alice->setPasswordProvided(true);
 
 	Message msg;
 	msg.m_command = "USER";
 	msg.m_params.push_back("alice");
 	msg.m_params.push_back("hostname");
 	msg.m_params.push_back("servername");
-	// Missing realname parameter
+	// Missing realname
 
-	cmd->execute(&client, msg);
+	g_cmd->execute(g_alice, msg);
 
-	// Should send ERR_NEEDMOREPARAMS (461)
-	std::string buffer = client.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("461") != std::string::npos,
-			  "Should send ERR_NEEDMOREPARAMS when missing parameters");
-	delete cmd;
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("461") != std::string::npos, "Expected ERR_NEEDMOREPARAMS (461)");
 }
 
-// RFC 4.1.3: ERR_ALREADYREGISTRED if already registered
-Test(UserCommand, error_if_already_registered)
+Test(UserCommand, error_empty_username)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	client.setPasswordProvided(true);
-	client.setNickname("alice");
-	client.setUsername("alice");
-	// Client is now registered
+	g_alice->setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
-	cr_assert_not_null(cmd, "Factory failed to create USER command");
+	g_cmd->execute(g_alice, userMsg("", "hostname", "servername", "Alice Smith"));
 
-	Message msg;
-	msg.m_command = "USER";
-	msg.m_params.push_back("bob");
-	msg.m_params.push_back("hostname");
-	msg.m_params.push_back("servername");
-	msg.m_params.push_back("Bob Smith");
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("461") != std::string::npos, "Expected ERR_NEEDMOREPARAMS (461)");
+}
 
-	cmd->execute(&client, msg);
+// ============================================================================
+// RFC 4.1.3: ERR_ALREADYREGISTRED (462)
+// ============================================================================
 
-	// Should send ERR_ALREADYREGISTRED (462)
-	std::string buffer = client.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("462") != std::string::npos,
-			  "Should send ERR_ALREADYREGISTRED when already registered");
+Test(UserCommand, error_already_registered)
+{
+	g_alice->setPasswordProvided(true);
+	g_alice->setNickname("alice");
+	g_alice->setUsername("alice");
+	// Now registered
+
+	g_cmd->execute(g_alice, userMsg("bob", "hostname", "servername", "Bob Smith"));
+
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("462") != std::string::npos, "Expected ERR_ALREADYREGISTRED (462)");
 	// Username should not change
-	cr_assert_str_eq(client.getUsername().c_str(), "alice",
-					 "Username should not change when already registered");
-	delete cmd;
+	cr_assert_str_eq(g_alice->getUsername().c_str(), "alice");
 }
 
-// Completes registration when PASS+NICK+USER are all provided
-Test(UserCommand, sends_welcome_on_registration)
+// ============================================================================
+// Registration completion: RPL_WELCOME (001)
+// ============================================================================
+
+Test(UserCommand, sends_welcome_on_registration_complete)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	client.setPasswordProvided(true);
-	client.setNickname("alice");
-	// Now just need USER to complete registration
+	g_alice->setPasswordProvided(true);
+	g_alice->setNickname("alice");
+	// Only missing USER
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
-	cr_assert_not_null(cmd, "Factory failed to create USER command");
+	g_cmd->execute(g_alice, userMsg("alice", "host", "server", "Alice Smith"));
 
-	Message msg;
-	msg.m_command = "USER";
-	msg.m_params.push_back("alice");
-	msg.m_params.push_back("hostname");
-	msg.m_params.push_back("servername");
-	msg.m_params.push_back("Alice Smith");
-
-	cmd->execute(&client, msg);
-
-	cr_assert(client.isRegistered(), "Client should be registered after PASS+NICK+USER");
-	// Should send RPL_WELCOME (001)
-	std::string buffer = client.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("001") != std::string::npos,
-			  "Should send RPL_WELCOME when registration completes");
-	delete cmd;
+	cr_assert(g_alice->isRegistered());
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("001") != std::string::npos, "Expected RPL_WELCOME (001)");
 }
 
-// Realname can contain spaces
+Test(UserCommand, no_welcome_without_password)
+{
+	// No password
+	g_alice->setNickname("alice");
+
+	g_cmd->execute(g_alice, userMsg("alice", "host", "server", "Alice"));
+
+	cr_assert_not(g_alice->isRegistered());
+}
+
+Test(UserCommand, no_welcome_without_nickname)
+{
+	g_alice->setPasswordProvided(true);
+	// No nickname
+
+	g_cmd->execute(g_alice, userMsg("alice", "host", "server", "Alice"));
+
+	cr_assert_not(g_alice->isRegistered());
+}
+
+// ============================================================================
+// RFC 4.1.3: Realname with spaces
+// ============================================================================
+
 Test(UserCommand, realname_with_spaces)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	client.setPasswordProvided(true);
+	g_alice->setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
-	cr_assert_not_null(cmd, "Factory failed to create USER command");
+	g_cmd->execute(g_alice, userMsg("alice", "host", "server", "Alice Marie Smith"));
 
-	Message msg;
-	msg.m_command = "USER";
-	msg.m_params.push_back("alice");
-	msg.m_params.push_back("hostname");
-	msg.m_params.push_back("servername");
-	msg.m_params.push_back("Alice Marie Smith");
-
-	cmd->execute(&client, msg);
-
-	cr_assert_str_eq(client.getRealname().c_str(), "Alice Marie Smith",
-					 "Realname with spaces should be preserved");
-	delete cmd;
+	cr_assert_str_eq(g_alice->getRealname().c_str(), "Alice Marie Smith");
 }
 
-// Empty username triggers error
-Test(UserCommand, rejects_empty_username)
+Test(UserCommand, realname_empty)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	client.setPasswordProvided(true);
+	g_alice->setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
-	cr_assert_not_null(cmd, "Factory failed to create USER command");
+	g_cmd->execute(g_alice, userMsg("alice", "host", "server", ""));
 
-	Message msg;
-	msg.m_command = "USER";
-	msg.m_params.push_back(""); // Empty username
-	msg.m_params.push_back("hostname");
-	msg.m_params.push_back("servername");
-	msg.m_params.push_back("Alice Smith");
-
-	cmd->execute(&client, msg);
-
-	// Should send ERR_NEEDMOREPARAMS (461)
-	std::string buffer = client.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("461") != std::string::npos, "Should send error when username is empty");
-	delete cmd;
+	// Empty realname should be allowed
+	cr_assert_str_eq(g_alice->getUsername().c_str(), "alice");
 }
 
-// Requires authentication (password)
-Test(UserCommand, requires_authentication)
+// ============================================================================
+// Registration flow tests
+// ============================================================================
+
+Test(UserCommand, complete_registration_pass_nick_user)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	// No password provided
-
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::USER, server);
-	cr_assert_not_null(cmd, "Factory failed to create USER command");
-
-	Message msg;
-	msg.m_command = "USER";
-	msg.m_params.push_back("alice");
-	msg.m_params.push_back("hostname");
-	msg.m_params.push_back("servername");
-	msg.m_params.push_back("Alice Smith");
-
-	// Command should still execute but client won't be able to register
-	cmd->execute(&client, msg);
-
-	cr_assert_str_eq(client.getUsername().c_str(), "alice", "Username should be set");
-	cr_assert_not(client.isRegistered(), "Client should not be registered without password");
-	delete cmd;
-}
-
-// Full registration flow: PASS -> NICK -> USER
-Test(UserCommand, complete_registration_flow)
-{
-	Server server(6667, "secret");
-	ClientMock client(3, "localhost", server);
-
 	// Step 1: PASS
-	ACommand* passCmd = CommandFactory::getInstance().createCommand(irc::PASS, server);
+	ACommand* passCmd = CommandFactory::getInstance().createCommand(irc::PASS, *g_server);
 	Message passMsg;
 	passMsg.m_command = "PASS";
-	passMsg.m_params.push_back("secret");
-	passCmd->execute(&client, passMsg);
-	cr_assert(client.isPasswordProvided(), "Should be authenticated after PASS");
-	cr_assert_not(client.isRegistered(), "Should not be registered yet");
+	passMsg.m_params.push_back("testpass");
+	passCmd->execute(g_alice, passMsg);
+	cr_assert(g_alice->isPasswordProvided());
+	cr_assert_not(g_alice->isRegistered());
 	delete passCmd;
 
 	// Step 2: NICK
-	ACommand* nickCmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
+	ACommand* nickCmd = CommandFactory::getInstance().createCommand(irc::NICK, *g_server);
 	Message nickMsg;
 	nickMsg.m_command = "NICK";
 	nickMsg.m_params.push_back("alice");
-	nickCmd->execute(&client, nickMsg);
-	cr_assert_str_eq(client.getNickname().c_str(), "alice", "Nickname should be set");
-	cr_assert_not(client.isRegistered(), "Should not be registered yet");
+	nickCmd->execute(g_alice, nickMsg);
+	cr_assert_str_eq(g_alice->getNickname().c_str(), "alice");
+	cr_assert_not(g_alice->isRegistered());
 	delete nickCmd;
 
-	// Step 3: USER (completes registration)
-	ACommand* userCmd = CommandFactory::getInstance().createCommand(irc::USER, server);
-	Message userMsg;
-	userMsg.m_command = "USER";
-	userMsg.m_params.push_back("alice");
-	userMsg.m_params.push_back("hostname");
-	userMsg.m_params.push_back("servername");
-	userMsg.m_params.push_back("Alice Smith");
-	userCmd->execute(&client, userMsg);
+	// Step 3: USER
+	g_cmd->execute(g_alice, userMsg("alice", "host", "server", "Alice Smith"));
 
-	cr_assert(client.isRegistered(), "Should be registered after PASS+NICK+USER");
-	std::string buffer = client.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("001") != std::string::npos,
-			  "Should send RPL_WELCOME on successful registration");
-	delete userCmd;
+	cr_assert(g_alice->isRegistered());
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("001") != std::string::npos, "Expected RPL_WELCOME (001)");
 }
 
-// Alternative order: PASS -> USER -> NICK also works
-Test(UserCommand, registration_alternative_order)
+Test(UserCommand, complete_registration_pass_user_nick)
 {
-	Server server(6667, "secret");
-	ClientMock client(3, "localhost", server);
+	// Alternative order: PASS -> USER -> NICK
 
 	// Step 1: PASS
-	ACommand* passCmd = CommandFactory::getInstance().createCommand(irc::PASS, server);
+	ACommand* passCmd = CommandFactory::getInstance().createCommand(irc::PASS, *g_server);
 	Message passMsg;
 	passMsg.m_command = "PASS";
-	passMsg.m_params.push_back("secret");
-	passCmd->execute(&client, passMsg);
+	passMsg.m_params.push_back("testpass");
+	passCmd->execute(g_alice, passMsg);
 	delete passCmd;
 
 	// Step 2: USER (before NICK)
-	ACommand* userCmd = CommandFactory::getInstance().createCommand(irc::USER, server);
-	Message userMsg;
-	userMsg.m_command = "USER";
-	userMsg.m_params.push_back("alice");
-	userMsg.m_params.push_back("hostname");
-	userMsg.m_params.push_back("servername");
-	userMsg.m_params.push_back("Alice Smith");
-	userCmd->execute(&client, userMsg);
-	cr_assert_not(client.isRegistered(), "Should not be registered without NICK");
-	delete userCmd;
+	g_cmd->execute(g_alice, userMsg("alice", "host", "server", "Alice Smith"));
+	cr_assert_not(g_alice->isRegistered());
 
 	// Step 3: NICK (completes registration)
-	ACommand* nickCmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
+	ACommand* nickCmd = CommandFactory::getInstance().createCommand(irc::NICK, *g_server);
 	Message nickMsg;
 	nickMsg.m_command = "NICK";
 	nickMsg.m_params.push_back("alice");
-	nickCmd->execute(&client, nickMsg);
-
-	cr_assert(client.isRegistered(), "Should be registered after PASS+USER+NICK");
-	std::string buffer = client.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("001") != std::string::npos,
-			  "Should send RPL_WELCOME on successful registration");
+	nickCmd->execute(g_alice, nickMsg);
 	delete nickCmd;
+
+	cr_assert(g_alice->isRegistered());
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("001") != std::string::npos, "Expected RPL_WELCOME (001)");
+}
+
+// ============================================================================
+// Edge cases
+// ============================================================================
+
+Test(UserCommand, username_with_special_chars)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, userMsg("alice_user", "host", "server", "Alice"));
+
+	cr_assert_str_eq(g_alice->getUsername().c_str(), "alice_user");
+}
+
+Test(UserCommand, requires_registration_false)
+{
+	// USER should work for unregistered clients (that's how they register!)
+	cr_assert_not(g_cmd->requiresRegistration());
+}
+
+Test(UserCommand, realname_with_colons)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, userMsg("alice", "host", "server", "Alice: The Great"));
+
+	cr_assert_str_eq(g_alice->getRealname().c_str(), "Alice: The Great");
+}
+
+Test(UserCommand, long_realname)
+{
+	g_alice->setPasswordProvided(true);
+
+	std::string longRealname = "This is a very long realname that contains many words and spaces";
+	g_cmd->execute(g_alice, userMsg("alice", "host", "server", longRealname.c_str()));
+
+	cr_assert_str_eq(g_alice->getRealname().c_str(), longRealname.c_str());
 }

@@ -1,7 +1,7 @@
 #include "core/Channel.hpp"
 #include "mocks/Client.hpp"
-#include "mocks/Server.hpp"
 #include "mocks/MessageBuffer.hpp"
+#include "mocks/Server.hpp"
 #include "modes/IChannelMode.hpp"
 #include "modes/InviteOnlyMode.hpp"
 #include "modes/KeyMode.hpp"

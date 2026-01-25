@@ -50,4 +50,7 @@ public:
 	std::string getMemberList() const;
 	void broadcast(const std::string& message, IClient* exclude = NULL);
 	bool isEmpty() const;
+
+	bool applyMode(char mode, bool set, const std::string& param, IClient* setter);
+	std::string getModeString() const;
 };

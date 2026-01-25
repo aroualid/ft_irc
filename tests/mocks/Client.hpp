@@ -1,8 +1,8 @@
 #pragma once
 
 #include "IChannel.hpp"
-#include "core/IServer.hpp"
 #include "core/IClient.hpp"
+#include "core/IServer.hpp"
 #include "mocks/MessageBuffer.hpp"
 #include <set>
 #include <string>
@@ -20,7 +20,6 @@ private:
 	MessageBufferMock m_buffer;
 	std::set< IChannel* > m_channels;
 	IServer* m_server;
-
 
 public:
 	ClientMock(int fd, const std::string& hostname, IServer& server);

@@ -1,17 +1,17 @@
 #include "Client.hpp"
 #include "IChannel.hpp"
-#include <iostream>
+#include "MockOutput.hpp"
 
 ClientMock::ClientMock(int fd, const std::string& hostname, IServer& server)
 	: m_fd(fd), m_nickname(""), m_username(""), m_realname(""), m_hostname(hostname),
 	  m_passwordProvided(false), m_registered(false), m_server(&server)
 {
-	std::cout << "[MOCK] ClientMock created: fd=" << fd << " host=" << hostname << '\n';
+	MOCK_LOG("ClientMock created: fd=" << fd << " host=" << hostname);
 }
 
 ClientMock::~ClientMock()
 {
-	std::cout << "[MOCK] ClientMock destroyed: fd=" << m_fd << '\n';
+	MOCK_LOG("ClientMock destroyed: fd=" << m_fd);
 }
 
 int ClientMock::getFd() const
@@ -47,27 +47,27 @@ bool ClientMock::isRegistered() const
 void ClientMock::setNickname(const std::string& nick)
 {
 	m_nickname = nick;
-	std::cout << "[MOCK] Nickname set to: " << nick << '\n';
+	MOCK_LOG("Nickname set to: " << nick);
 	attemptRegistration();
 }
 
 void ClientMock::setUsername(const std::string& user)
 {
 	m_username = user;
-	std::cout << "[MOCK] Username set to: " << user << '\n';
+	MOCK_LOG("Username set to: " << user);
 	attemptRegistration();
 }
 
 void ClientMock::setRealname(const std::string& real)
 {
 	m_realname = real;
-	std::cout << "[MOCK] Realname set to: " << real << '\n';
+	MOCK_LOG("Realname set to: " << real);
 }
 
 void ClientMock::setPasswordProvided(bool provided)
 {
 	m_passwordProvided = provided;
-	std::cout << "[MOCK] Password provided: " << (provided ? "YES" : "NO") << '\n';
+	MOCK_LOG("Password provided: " << (provided ? "YES" : "NO"));
 	attemptRegistration();
 }
 
@@ -76,19 +76,19 @@ void ClientMock::attemptRegistration()
 	bool wasRegistered = m_registered;
 	m_registered = m_passwordProvided && !m_nickname.empty() && !m_username.empty();
 	if (m_registered && !wasRegistered)
-		std::cout << "[MOCK] ClientMock is now REGISTERED!" << '\n';
+		MOCK_LOG("ClientMock is now REGISTERED!");
 }
 
 void ClientMock::joinChannel(IChannel* channel)
 {
 	m_channels.insert(channel);
-	std::cout << "[MOCK] ClientMock joined channel: " << channel->getName() << '\n';
+	MOCK_LOG("ClientMock joined channel: " << channel->getName());
 }
 
 void ClientMock::leaveChannel(IChannel* channel)
 {
 	m_channels.erase(channel);
-	std::cout << "[MOCK] ClientMock left channel: " << channel->getName() << '\n';
+	MOCK_LOG("ClientMock left channel: " << channel->getName());
 }
 
 bool ClientMock::isInChannel(const std::string& channelName) const

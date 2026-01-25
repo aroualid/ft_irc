@@ -1,69 +1,196 @@
+#include "commands/ACommand.hpp"
 #include "commands/CommandFactory.hpp"
 #include "commands/CommandType.hpp"
-#include "commands/PingCommand.hpp"
 #include "mocks/Client.hpp"
 #include "mocks/Server.hpp"
+#include "protocol/Message.hpp"
 #include <criterion/criterion.h>
 
-TestSuite(PingCommand);
+// Test fixture
+static Server* g_server;
+static ClientMock* g_alice;
+static ACommand* g_cmd;
 
-// PING with valid origin responds with PONG
-Test(PingCommand, basic_ping_receives_pong)
+static void setup(void)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PING, server);
-	cr_assert_not_null(cmd, "Factory failed to create PING command");
-
-	Message msg;
-	msg.m_command = "PING";
-	msg.m_params.push_back("client.hostname");
-
-	cmd->execute(&client, msg);
-
-	std::string buffer = client.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("PONG") != std::string::npos, "Should respond with PONG");
-	cr_assert(buffer.find("client.hostname") != std::string::npos, "PONG should echo the origin");
-	delete cmd;
+	g_server = new Server(6667, "testpass");
+	g_alice = new ClientMock(3, "localhost", *g_server);
+	g_cmd = CommandFactory::getInstance().createCommand(irc::PING, *g_server);
 }
 
-// PING without parameters sends ERR_NOORIGIN
+static void teardown(void)
+{
+	delete g_cmd;
+	delete g_alice;
+	delete g_server;
+}
+
+// Helper to build a PING message
+static Message pingMsg(const char* origin = NULL, const char* destination = NULL)
+{
+	Message msg;
+	msg.m_command = "PING";
+	if (origin)
+		msg.m_params.push_back(origin);
+	if (destination)
+		msg.m_params.push_back(destination);
+	return msg;
+}
+
+TestSuite(PingCommand, .init = setup, .fini = teardown);
+
+// ============================================================================
+// RFC 4.6.2: Basic functionality
+// ============================================================================
+
+Test(PingCommand, factory_creates_ping_command)
+{
+	cr_assert_not_null(g_cmd, "Factory failed to create PING command. Is it registered?");
+	cr_assert_str_eq(g_cmd->getName(), "PING");
+}
+
+Test(PingCommand, basic_ping_receives_pong)
+{
+	g_cmd->execute(g_alice, pingMsg("client.hostname"));
+
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("PONG") != std::string::npos, "Should respond with PONG");
+	cr_assert(buffer.find("client.hostname") != std::string::npos, "PONG should echo the origin");
+}
+
+Test(PingCommand, pong_echoes_origin)
+{
+	g_cmd->execute(g_alice, pingMsg("test-origin"));
+
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("test-origin") != std::string::npos);
+}
+
+// ============================================================================
+// RFC 4.6.2: ERR_NOORIGIN (409)
+// ============================================================================
+
 Test(PingCommand, error_no_origin)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	client.setNickname("alice");
-
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PING, server);
+	g_alice->setNickname("alice");
 
 	Message msg;
 	msg.m_command = "PING";
 	// No parameters
 
-	cmd->execute(&client, msg);
+	g_cmd->execute(g_alice, msg);
 
-	std::string buffer = client.getBuffer().getWriteBuffer();
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
 	cr_assert(buffer.find("409") != std::string::npos, "Should send ERR_NOORIGIN (409)");
-	delete cmd;
 }
 
-// PING works before authentication
-Test(PingCommand, works_before_authentication)
+Test(PingCommand, empty_origin_accepted)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	// Not authenticated
+	// Empty string origin is technically valid (just an empty origin)
+	// Different from missing origin entirely
+	g_cmd->execute(g_alice, pingMsg(""));
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PING, server);
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	// Should still respond with PONG (empty origin is a valid parameter)
+	cr_assert(buffer.find("PONG") != std::string::npos);
+}
 
-	Message msg;
-	msg.m_command = "PING";
-	msg.m_params.push_back("test");
+// ============================================================================
+// RFC 4.6.2: Works before registration
+// ============================================================================
 
-	cmd->execute(&client, msg);
+Test(PingCommand, works_before_registration)
+{
+	// Not authenticated, not registered
 
-	std::string buffer = client.getBuffer().getWriteBuffer();
+	g_cmd->execute(g_alice, pingMsg("test"));
+
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
 	cr_assert(buffer.find("PONG") != std::string::npos, "PING should work before authentication");
-	delete cmd;
+}
+
+Test(PingCommand, works_before_password)
+{
+	// No password set
+
+	g_cmd->execute(g_alice, pingMsg("origin"));
+
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("PONG") != std::string::npos);
+}
+
+Test(PingCommand, works_before_nick)
+{
+	g_alice->setPasswordProvided(true);
+	// No nickname set
+
+	g_cmd->execute(g_alice, pingMsg("origin"));
+
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("PONG") != std::string::npos);
+}
+
+// ============================================================================
+// RFC 4.6.2: Works after registration
+// ============================================================================
+
+Test(PingCommand, works_after_registration)
+{
+	g_alice->setPasswordProvided(true);
+	g_alice->setNickname("alice");
+	g_alice->setUsername("alice");
+
+	g_cmd->execute(g_alice, pingMsg("origin"));
+
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("PONG") != std::string::npos);
+}
+
+// ============================================================================
+// RFC 4.6.2: With destination (optional second parameter)
+// ============================================================================
+
+Test(PingCommand, with_destination)
+{
+	g_cmd->execute(g_alice, pingMsg("origin", "destination"));
+
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("PONG") != std::string::npos);
+}
+
+// ============================================================================
+// Edge cases
+// ============================================================================
+
+Test(PingCommand, origin_with_spaces)
+{
+	g_cmd->execute(g_alice, pingMsg("origin with spaces"));
+
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("PONG") != std::string::npos);
+	cr_assert(buffer.find("origin with spaces") != std::string::npos);
+}
+
+Test(PingCommand, origin_with_special_chars)
+{
+	g_cmd->execute(g_alice, pingMsg("origin:1234"));
+
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("PONG") != std::string::npos);
+	cr_assert(buffer.find("origin:1234") != std::string::npos);
+}
+
+Test(PingCommand, numeric_origin)
+{
+	g_cmd->execute(g_alice, pingMsg("1234567890"));
+
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("PONG") != std::string::npos);
+	cr_assert(buffer.find("1234567890") != std::string::npos);
+}
+
+Test(PingCommand, requires_registration_false)
+{
+	// PING should work for unregistered clients
+	cr_assert_not(g_cmd->requiresRegistration());
 }

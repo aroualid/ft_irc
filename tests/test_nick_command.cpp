@@ -1,243 +1,374 @@
 #include "commands/ACommand.hpp"
 #include "commands/CommandFactory.hpp"
 #include "commands/CommandType.hpp"
+#include "mocks/Channel.hpp"
 #include "mocks/Client.hpp"
 #include "mocks/Server.hpp"
 #include "protocol/Message.hpp"
 #include <criterion/criterion.h>
 
-TestSuite(NickCommand);
+// Test fixture - fresh instance created for each test
+static Server* g_server;
+static ClientMock* g_alice;
+static ClientMock* g_bob;
+static ACommand* g_cmd;
 
-// RFC 4.1.2: Sets nickname correctly
+static void setup(void)
+{
+	g_server = new Server(6667, "testpass");
+	g_alice = new ClientMock(3, "localhost", *g_server);
+	g_bob = new ClientMock(4, "localhost", *g_server);
+	g_cmd = CommandFactory::getInstance().createCommand(irc::NICK, *g_server);
+}
+
+static void teardown(void)
+{
+	delete g_cmd;
+	delete g_bob;
+	delete g_alice;
+	delete g_server;
+}
+
+// Helper to build a NICK message
+static Message nickMsg(const char* nickname)
+{
+	Message msg;
+	msg.m_command = "NICK";
+	if (nickname)
+		msg.m_params.push_back(nickname);
+	return msg;
+}
+
+// Helper to register a client
+static void registerClient(ClientMock* client, const char* nick)
+{
+	client->setPasswordProvided(true);
+	client->setNickname(nick);
+	client->setUsername(nick);
+	g_server->registerClient(nick, client);
+}
+
+TestSuite(NickCommand, .init = setup, .fini = teardown);
+
+// ============================================================================
+// RFC 4.1.2: Basic functionality
+// ============================================================================
+
+Test(NickCommand, factory_creates_nick_command)
+{
+	cr_assert_not_null(g_cmd, "Factory failed to create NICK command. Is it registered?");
+	cr_assert_str_eq(g_cmd->getName(), "NICK");
+}
+
 Test(NickCommand, sets_nickname_correctly)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	client.setPasswordProvided(true);
+	g_alice->setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
-	cr_assert_not_null(cmd, "Factory failed to create NICK command");
+	g_cmd->execute(g_alice, nickMsg("alice"));
 
-	Message msg;
-	msg.m_command = "NICK";
-	msg.m_params.push_back("alice");
-
-	cmd->execute(&client, msg);
-
-	cr_assert_str_eq(client.getNickname().c_str(), "alice", "Nickname should be set to alice");
-	delete cmd;
+	cr_assert_str_eq(g_alice->getNickname().c_str(), "alice");
 }
 
-// RFC 4.1.2: Valid nickname format (starts with letter, max 9 chars)
-Test(NickCommand, accepts_valid_nickname_format)
+Test(NickCommand, nickname_change_allowed)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	client.setPasswordProvided(true);
+	registerClient(g_alice, "alice");
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
-	cr_assert_not_null(cmd, "Factory failed to create NICK command");
+	g_cmd->execute(g_alice, nickMsg("bob"));
 
-	Message msg;
-	msg.m_command = "NICK";
-	msg.m_params.push_back("Alice123");
-
-	cmd->execute(&client, msg);
-
-	cr_assert_str_eq(client.getNickname().c_str(), "Alice123", "Valid nickname should be accepted");
-	delete cmd;
+	cr_assert_str_eq(g_alice->getNickname().c_str(), "bob");
 }
 
-// RFC 4.1.2: ERR_ERRONEUSNICKNAME for invalid format
+// ============================================================================
+// RFC 4.1.2: Nickname format validation (RFC 1459 section 2.3.1)
+// <nick> ::= <letter> { <letter> | <number> | <special> }
+// <special> ::= '-' | '[' | ']' | '\' | '`' | '^' | '{' | '}'
+// Max 9 characters
+// ============================================================================
+
+Test(NickCommand, accepts_valid_alphanumeric)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, nickMsg("Alice123"));
+
+	cr_assert_str_eq(g_alice->getNickname().c_str(), "Alice123");
+}
+
+Test(NickCommand, accepts_max_nine_chars)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, nickMsg("abcdefghi")); // exactly 9
+
+	cr_assert_str_eq(g_alice->getNickname().c_str(), "abcdefghi");
+}
+
+Test(NickCommand, accepts_special_char_bracket)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, nickMsg("alice[0]"));
+
+	cr_assert_str_eq(g_alice->getNickname().c_str(), "alice[0]");
+}
+
+Test(NickCommand, accepts_special_char_curly)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, nickMsg("a{b}c"));
+
+	cr_assert_str_eq(g_alice->getNickname().c_str(), "a{b}c");
+}
+
+Test(NickCommand, accepts_special_char_pipe)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, nickMsg("a|b"));
+
+	cr_assert_str_eq(g_alice->getNickname().c_str(), "a|b");
+}
+
+Test(NickCommand, accepts_special_char_backslash)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, nickMsg("a\\b"));
+
+	cr_assert_str_eq(g_alice->getNickname().c_str(), "a\\b");
+}
+
+Test(NickCommand, accepts_special_char_caret)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, nickMsg("a^b"));
+
+	cr_assert_str_eq(g_alice->getNickname().c_str(), "a^b");
+}
+
+Test(NickCommand, accepts_special_char_backtick)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, nickMsg("a`b"));
+
+	cr_assert_str_eq(g_alice->getNickname().c_str(), "a`b");
+}
+
+Test(NickCommand, accepts_special_char_dash)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, nickMsg("a-b"));
+
+	cr_assert_str_eq(g_alice->getNickname().c_str(), "a-b");
+}
+
+// ============================================================================
+// RFC 4.1.2: ERR_ERRONEUSNICKNAME (432)
+// ============================================================================
+
 Test(NickCommand, rejects_nickname_starting_with_number)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	client.setPasswordProvided(true);
+	g_alice->setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
-	cr_assert_not_null(cmd, "Factory failed to create NICK command");
+	g_cmd->execute(g_alice, nickMsg("123alice"));
 
-	Message msg;
-	msg.m_command = "NICK";
-	msg.m_params.push_back("123alice");
-
-	cmd->execute(&client, msg);
-
-	// Should send ERR_ERRONEUSNICKNAME (432)
-	std::string buffer = client.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("432") != std::string::npos,
-			  "Should send ERR_ERRONEUSNICKNAME for nickname starting with number");
-	cr_assert(client.getNickname().empty(), "Nickname should not be set");
-	delete cmd;
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("432") != std::string::npos, "Expected ERR_ERRONEUSNICKNAME (432)");
+	cr_assert(g_alice->getNickname().empty());
 }
 
 Test(NickCommand, rejects_nickname_too_long)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	client.setPasswordProvided(true);
+	g_alice->setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
-	cr_assert_not_null(cmd, "Factory failed to create NICK command");
+	g_cmd->execute(g_alice, nickMsg("abcdefghij")); // 10 chars, max is 9
 
-	Message msg;
-	msg.m_command = "NICK";
-	msg.m_params.push_back("ThisIsTooLong"); // More than 9 characters
-
-	cmd->execute(&client, msg);
-
-	// Should send ERR_ERRONEUSNICKNAME (432)
-	std::string buffer = client.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("432") != std::string::npos,
-			  "Should send ERR_ERRONEUSNICKNAME for nickname over 9 characters");
-	delete cmd;
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("432") != std::string::npos, "Expected ERR_ERRONEUSNICKNAME (432)");
 }
 
-// RFC 4.1.2: ERR_NICKNAMEINUSE if nickname already taken
+Test(NickCommand, rejects_nickname_with_invalid_chars)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, nickMsg("alice@bob"));
+
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("432") != std::string::npos, "Expected ERR_ERRONEUSNICKNAME (432)");
+}
+
+Test(NickCommand, rejects_nickname_with_space)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, nickMsg("ali ce"));
+
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("432") != std::string::npos, "Expected ERR_ERRONEUSNICKNAME (432)");
+}
+
+Test(NickCommand, rejects_nickname_starting_with_dash)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, nickMsg("-alice"));
+
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("432") != std::string::npos, "Expected ERR_ERRONEUSNICKNAME (432)");
+}
+
+Test(NickCommand, rejects_empty_nickname_after_param)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, nickMsg(""));
+
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("431") != std::string::npos || buffer.find("432") != std::string::npos,
+			  "Expected ERR_NONICKNAMEGIVEN (431) or ERR_ERRONEUSNICKNAME (432)");
+}
+
+// ============================================================================
+// RFC 4.1.2: ERR_NICKNAMEINUSE (433)
+// ============================================================================
+
 Test(NickCommand, rejects_nickname_in_use)
 {
-	Server server(6667, "testpass");
-	ClientMock client1(3, "localhost", server);
-	ClientMock client2(4, "localhost", server);
-	client1.setPasswordProvided(true);
-	client2.setPasswordProvided(true);
+	registerClient(g_alice, "alice");
+	g_bob->setPasswordProvided(true);
 
-	// Client1 takes "alice"
-	client1.setNickname("alice");
-	server.registerClient("alice", &client1);
+	g_cmd->execute(g_bob, nickMsg("alice"));
 
-	// Client2 tries to take "alice"
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
-	cr_assert_not_null(cmd, "Factory failed to create NICK command");
-
-	Message msg;
-	msg.m_command = "NICK";
-	msg.m_params.push_back("alice");
-
-	cmd->execute(&client2, msg);
-
-	// Should send ERR_NICKNAMEINUSE (433)
-	std::string buffer = client2.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("433") != std::string::npos,
-			  "Should send ERR_NICKNAMEINUSE when nickname already taken");
-	cr_assert(client2.getNickname().empty(), "Nickname should not be set for client2");
-	delete cmd;
+	std::string buffer = g_bob->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("433") != std::string::npos, "Expected ERR_NICKNAMEINUSE (433)");
+	cr_assert(g_bob->getNickname().empty());
 }
 
-// RFC 4.1.2: ERR_NONICKNAMEGIVEN if no nickname provided (handled by template method)
-Test(NickCommand, error_if_no_parameters)
+Test(NickCommand, rejects_nickname_in_use_case_insensitive)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	client.setPasswordProvided(true);
+	registerClient(g_alice, "Alice");
+	g_bob->setPasswordProvided(true);
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
-	cr_assert_not_null(cmd, "Factory failed to create NICK command");
+	g_cmd->execute(g_bob, nickMsg("ALICE"));
 
-	Message msg;
-	msg.m_command = "NICK";
-	// No parameters
-
-	cmd->execute(&client, msg);
-
-	// Should send ERR_NEEDMOREPARAMS (461) via template method
-	std::string buffer = client.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("461") != std::string::npos,
-			  "Should send ERR_NEEDMOREPARAMS when no nickname provided");
-	delete cmd;
+	std::string buffer = g_bob->getBuffer().getWriteBuffer();
+	// IRC is case-insensitive for nicknames per RFC
+	cr_assert(buffer.find("433") != std::string::npos, "Expected ERR_NICKNAMEINUSE (433)");
 }
 
-// Nickname changes are allowed
-Test(NickCommand, allows_nickname_change)
+Test(NickCommand, allows_same_nick_from_same_client)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	client.setPasswordProvided(true);
-	client.setNickname("alice");
-	client.setUsername("alice");
-	// Client is now registered
+	registerClient(g_alice, "alice");
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
-	cr_assert_not_null(cmd, "Factory failed to create NICK command");
+	g_cmd->execute(g_alice, nickMsg("alice"));
 
-	Message msg;
-	msg.m_command = "NICK";
-	msg.m_params.push_back("bob");
-
-	cmd->execute(&client, msg);
-
-	cr_assert_str_eq(client.getNickname().c_str(), "bob",
-					 "Registered client should be able to change nickname");
-	delete cmd;
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("433") == std::string::npos, "Should not send ERR_NICKNAMEINUSE to self");
 }
 
-// Completes registration when PASS+NICK+USER are all provided
-Test(NickCommand, sends_welcome_on_registration)
-{
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	client.setPasswordProvided(true);
-	client.setUsername("alice");
-	// Now just need NICK to complete registration
+// ============================================================================
+// RFC 4.1.2: ERR_NONICKNAMEGIVEN (431) / ERR_NEEDMOREPARAMS (461)
+// ============================================================================
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
-	cr_assert_not_null(cmd, "Factory failed to create NICK command");
+Test(NickCommand, error_no_parameters)
+{
+	g_alice->setPasswordProvided(true);
 
 	Message msg;
 	msg.m_command = "NICK";
-	msg.m_params.push_back("alice");
+	// No params
 
-	cmd->execute(&client, msg);
+	g_cmd->execute(g_alice, msg);
 
-	cr_assert(client.isRegistered(), "Client should be registered after PASS+NICK+USER");
-	// Should send RPL_WELCOME (001)
-	std::string buffer = client.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("001") != std::string::npos,
-			  "Should send RPL_WELCOME when registration completes");
-	delete cmd;
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("461") != std::string::npos || buffer.find("431") != std::string::npos,
+			  "Expected ERR_NEEDMOREPARAMS (461) or ERR_NONICKNAMEGIVEN (431)");
 }
 
-// Special characters allowed in nickname
-Test(NickCommand, accepts_special_chars_in_nickname)
+// ============================================================================
+// Registration completion: RPL_WELCOME (001)
+// ============================================================================
+
+Test(NickCommand, sends_welcome_on_registration_complete)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	client.setPasswordProvided(true);
+	g_alice->setPasswordProvided(true);
+	g_alice->setUsername("alice");
+	// Only missing NICK
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
-	cr_assert_not_null(cmd, "Factory failed to create NICK command");
+	g_cmd->execute(g_alice, nickMsg("alice"));
 
-	Message msg;
-	msg.m_command = "NICK";
-	msg.m_params.push_back("alice[0]"); // Special chars allowed: - [ ] \ ` ^ { } |
-
-	cmd->execute(&client, msg);
-
-	cr_assert_str_eq(client.getNickname().c_str(), "alice[0]",
-					 "Nickname with special chars should be accepted");
-	delete cmd;
+	cr_assert(g_alice->isRegistered());
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("001") != std::string::npos, "Expected RPL_WELCOME (001)");
 }
 
-// Requires authentication (password)
-Test(NickCommand, requires_password_first)
+Test(NickCommand, no_welcome_without_password)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	// No password provided
+	// No password
+	g_alice->setUsername("alice");
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::NICK, server);
-	cr_assert_not_null(cmd, "Factory failed to create NICK command");
+	g_cmd->execute(g_alice, nickMsg("alice"));
 
-	Message msg;
-	msg.m_command = "NICK";
-	msg.m_params.push_back("alice");
+	cr_assert_not(g_alice->isRegistered());
+}
 
-	// Command should still execute but client won't be able to register
-	cmd->execute(&client, msg);
+Test(NickCommand, no_welcome_without_username)
+{
+	g_alice->setPasswordProvided(true);
+	// No username
 
-	// Nickname is set but client can't register without password
-	cr_assert_str_eq(client.getNickname().c_str(), "alice", "Nickname should be set");
-	cr_assert_not(client.isRegistered(), "Client should not be registered without password");
-	delete cmd;
+	g_cmd->execute(g_alice, nickMsg("alice"));
+
+	cr_assert_not(g_alice->isRegistered());
+}
+
+// ============================================================================
+// Nickname change notifications
+// ============================================================================
+
+Test(NickCommand, nickname_change_after_registration)
+{
+	registerClient(g_alice, "alice");
+
+	g_cmd->execute(g_alice, nickMsg("alice2"));
+
+	cr_assert_str_eq(g_alice->getNickname().c_str(), "alice2");
+	cr_assert(g_alice->isRegistered());
+}
+
+// ============================================================================
+// Edge cases
+// ============================================================================
+
+Test(NickCommand, single_char_nickname)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, nickMsg("A"));
+
+	cr_assert_str_eq(g_alice->getNickname().c_str(), "A");
+}
+
+Test(NickCommand, all_special_chars)
+{
+	g_alice->setPasswordProvided(true);
+
+	g_cmd->execute(g_alice, nickMsg("a[]\\`^{}"));
+
+	cr_assert_str_eq(g_alice->getNickname().c_str(), "a[]\\`^{}");
+}
+
+Test(NickCommand, works_before_password)
+{
+	// Per RFC, NICK can be sent before registration is complete
+	// but user won't be registered until PASS is provided
+
+	g_cmd->execute(g_alice, nickMsg("alice"));
+
+	cr_assert_str_eq(g_alice->getNickname().c_str(), "alice");
+	cr_assert_not(g_alice->isRegistered());
 }

@@ -6,140 +6,200 @@
 #include "protocol/Message.hpp"
 #include <criterion/criterion.h>
 
-TestSuite(PassCommand);
+// Test fixture
+static Server* g_server;
+static ClientMock* g_alice;
+static ACommand* g_cmd;
 
-// RFC 4.1.1: PASS command sets connection password
-Test(PassCommand, sets_password_correctly)
+static void setup(void)
 {
-	Server server(6667, "secret123");
-	ClientMock client(3, "localhost", server);
-
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PASS, server);
-	cr_assert_not_null(cmd, "Factory failed to create PASS command");
-
-	Message msg;
-	msg.m_command = "PASS";
-	msg.m_params.push_back("secret123");
-
-	cmd->execute(&client, msg);
-
-	cr_assert(client.isPasswordProvided(), "Client should be authenticated after correct password");
-	delete cmd;
+	g_server = new Server(6667, "secretpass");
+	g_alice = new ClientMock(3, "localhost", *g_server);
+	g_cmd = CommandFactory::getInstance().createCommand(irc::PASS, *g_server);
 }
 
-Test(PassCommand, rejects_wrong_password)
+static void teardown(void)
 {
-	Server server(6667, "correctpass");
-	ClientMock client(3, "localhost", server);
+	delete g_cmd;
+	delete g_alice;
+	delete g_server;
+}
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PASS, server);
-	cr_assert_not_null(cmd, "Factory failed to create PASS command");
-
+// Helper to build a PASS message
+static Message passMsg(const char* password)
+{
 	Message msg;
 	msg.m_command = "PASS";
-	msg.m_params.push_back("wrongpass");
+	if (password)
+		msg.m_params.push_back(password);
+	return msg;
+}
 
-	cmd->execute(&client, msg);
+TestSuite(PassCommand, .init = setup, .fini = teardown);
 
-	cr_assert_not(client.isPasswordProvided(),
+// ============================================================================
+// RFC 4.1.1: Basic functionality
+// ============================================================================
+
+Test(PassCommand, factory_creates_pass_command)
+{
+	cr_assert_not_null(g_cmd, "Factory failed to create PASS command. Is it registered?");
+	cr_assert_str_eq(g_cmd->getName(), "PASS");
+}
+
+Test(PassCommand, correct_password_authenticates)
+{
+	g_cmd->execute(g_alice, passMsg("secretpass"));
+
+	cr_assert(g_alice->isPasswordProvided(),
+			  "Client should be authenticated after correct password");
+}
+
+Test(PassCommand, wrong_password_rejected)
+{
+	g_cmd->execute(g_alice, passMsg("wrongpass"));
+
+	cr_assert_not(g_alice->isPasswordProvided(),
 				  "Client should not be authenticated with wrong password");
-	delete cmd;
 }
 
-// RFC 4.1.1: Multiple PASS commands allowed, only last one counts
-Test(PassCommand, multiple_pass_only_last_counts)
+// ============================================================================
+// RFC 4.1.1: Multiple PASS commands - only last one counts
+// ============================================================================
+
+Test(PassCommand, multiple_pass_last_counts_correct)
 {
-	Server server(6667, "finalpass");
-	ClientMock client(3, "localhost", server);
+	g_cmd->execute(g_alice, passMsg("wrong1"));
+	g_cmd->execute(g_alice, passMsg("wrong2"));
+	g_cmd->execute(g_alice, passMsg("secretpass"));
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PASS, server);
-	cr_assert_not_null(cmd, "Factory failed to create PASS command");
-
-	Message msg1;
-	msg1.m_command = "PASS";
-	msg1.m_params.push_back("wrongpass1");
-	cmd->execute(&client, msg1);
-
-	Message msg2;
-	msg2.m_command = "PASS";
-	msg2.m_params.push_back("wrongpass2");
-	cmd->execute(&client, msg2);
-
-	Message msg3;
-	msg3.m_command = "PASS";
-	msg3.m_params.push_back("finalpass");
-	cmd->execute(&client, msg3);
-
-	cr_assert(client.isPasswordProvided(),
-			  "Client should be authenticated after final correct password");
-	delete cmd;
+	cr_assert(g_alice->isPasswordProvided(), "Last correct password should authenticate");
 }
 
-// RFC 4.1.1: ERR_ALREADYREGISTRED if already registered
-Test(PassCommand, error_if_already_registered)
+Test(PassCommand, multiple_pass_last_counts_wrong)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
-	client.setPasswordProvided(true);
-	client.setNickname("alice");
-	client.setUsername("alice");
-	// Now client is registered
+	g_cmd->execute(g_alice, passMsg("secretpass"));
+	g_cmd->execute(g_alice, passMsg("wrongpass"));
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PASS, server);
-	cr_assert_not_null(cmd, "Factory failed to create PASS command");
+	// Only last password matters
+	cr_assert_not(g_alice->isPasswordProvided(), "Last wrong password should not authenticate");
+}
 
+// ============================================================================
+// RFC 4.1.1: ERR_ALREADYREGISTRED (462)
+// ============================================================================
+
+Test(PassCommand, error_already_registered)
+{
+	// Fully register the client
+	g_alice->setPasswordProvided(true);
+	g_alice->setNickname("alice");
+	g_alice->setUsername("alice");
+
+	g_cmd->execute(g_alice, passMsg("secretpass"));
+
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("462") != std::string::npos, "Expected ERR_ALREADYREGISTRED (462)");
+}
+
+// ============================================================================
+// RFC 4.1.1: ERR_NEEDMOREPARAMS (461)
+// ============================================================================
+
+Test(PassCommand, error_no_parameters)
+{
 	Message msg;
 	msg.m_command = "PASS";
-	msg.m_params.push_back("testpass");
+	// No params
 
-	cmd->execute(&client, msg);
+	g_cmd->execute(g_alice, msg);
 
-	// Should send ERR_ALREADYREGISTRED (462)
-	std::string buffer = client.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("462") != std::string::npos,
-			  "Should send ERR_ALREADYREGISTRED when already registered");
-	delete cmd;
+	std::string buffer = g_alice->getBuffer().getWriteBuffer();
+	cr_assert(buffer.find("461") != std::string::npos, "Expected ERR_NEEDMOREPARAMS (461)");
+	cr_assert_not(g_alice->isPasswordProvided());
 }
 
-// RFC 4.1.1: ERR_NEEDMOREPARAMS if no password provided (handled by template method)
-Test(PassCommand, error_if_no_parameters)
+// ============================================================================
+// RFC 4.1.1: PASS must precede NICK/USER
+// ============================================================================
+
+Test(PassCommand, works_before_nick_user)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
+	g_cmd->execute(g_alice, passMsg("secretpass"));
 
-	ACommand* cmd = CommandFactory::getInstance().createCommand(irc::PASS, server);
-	cr_assert_not_null(cmd, "Factory failed to create PASS command");
-
-	Message msg;
-	msg.m_command = "PASS";
-	// No parameters
-
-	cmd->execute(&client, msg);
-
-	// Should send ERR_NEEDMOREPARAMS (461) via template method
-	std::string buffer = client.getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("461") != std::string::npos,
-			  "Should send ERR_NEEDMOREPARAMS when no password provided");
-	cr_assert_not(client.isPasswordProvided(), "Client should not be authenticated");
-	delete cmd;
+	cr_assert(g_alice->isPasswordProvided(), "PASS should work before NICK/USER");
+	cr_assert_not(g_alice->isRegistered(), "Client should not be registered yet");
 }
 
-// RFC 4.1.1: PASS must be sent before NICK/USER
-Test(PassCommand, must_be_sent_before_registration)
+// ============================================================================
+// Edge cases
+// ============================================================================
+
+Test(PassCommand, empty_password_param)
 {
-	Server server(6667, "testpass");
-	ClientMock client(3, "localhost", server);
+	g_cmd->execute(g_alice, passMsg(""));
 
-	// This test verifies PASS works when sent first
-	ACommand* passCmd = CommandFactory::getInstance().createCommand(irc::PASS, server);
-	cr_assert_not_null(passCmd, "Factory failed to create PASS command");
+	// Empty password should not match non-empty server password
+	cr_assert_not(g_alice->isPasswordProvided());
+}
 
-	Message passMsg;
-	passMsg.m_command = "PASS";
-	passMsg.m_params.push_back("testpass");
-	passCmd->execute(&client, passMsg);
+Test(PassCommand, password_with_spaces)
+{
+	// Create server with password containing spaces
+	delete g_cmd;
+	delete g_alice;
+	delete g_server;
 
-	cr_assert(client.isPasswordProvided(), "PASS should work before registration");
-	cr_assert_not(client.isRegistered(), "Client should not yet be registered");
-	delete passCmd;
+	g_server = new Server(6667, "pass with spaces");
+	g_alice = new ClientMock(3, "localhost", *g_server);
+	g_cmd = CommandFactory::getInstance().createCommand(irc::PASS, *g_server);
+
+	g_cmd->execute(g_alice, passMsg("pass with spaces"));
+
+	cr_assert(g_alice->isPasswordProvided(), "Password with spaces should work");
+}
+
+Test(PassCommand, case_sensitive_password)
+{
+	g_cmd->execute(g_alice, passMsg("SECRETPASS")); // uppercase
+
+	cr_assert_not(g_alice->isPasswordProvided(), "Password should be case-sensitive");
+}
+
+Test(PassCommand, special_chars_in_password)
+{
+	delete g_cmd;
+	delete g_alice;
+	delete g_server;
+
+	g_server = new Server(6667, "p@ss!#$%^&*()");
+	g_alice = new ClientMock(3, "localhost", *g_server);
+	g_cmd = CommandFactory::getInstance().createCommand(irc::PASS, *g_server);
+
+	g_cmd->execute(g_alice, passMsg("p@ss!#$%^&*()"));
+
+	cr_assert(g_alice->isPasswordProvided(), "Password with special chars should work");
+}
+
+// ============================================================================
+// Integration with registration flow
+// ============================================================================
+
+Test(PassCommand, pass_then_nick_then_user_completes_registration)
+{
+	g_cmd->execute(g_alice, passMsg("secretpass"));
+	cr_assert(g_alice->isPasswordProvided());
+	cr_assert_not(g_alice->isRegistered());
+
+	// Complete registration
+	g_alice->setNickname("alice");
+	g_alice->setUsername("alice");
+
+	cr_assert(g_alice->isRegistered());
+}
+
+Test(PassCommand, requires_registration_false)
+{
+	// PASS should work for unregistered clients
+	cr_assert_not(g_cmd->requiresRegistration());
 }
