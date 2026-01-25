@@ -120,13 +120,10 @@ void Server::onIrcLine(int fd, const std::string& line)
 	cmd->execute(client, msg);
 	delete cmd;
 
-	// client->getBuffer().appendWrite(":ircserv NOTICE * :you said: " + line + "\r\n");  //:prefix
-	// COMMAND target (* is general, everyone) //DEBUG std::cout << "queued out=" <<
-	// client->getBuffer().getWriteBuffer().size() << " bytes\n";
-	if (!client->getBuffer().getWriteBuffer().empty())
+	for (std::map< int, IClient* >::iterator it = m_clients.begin(); it != m_clients.end(); ++it)
 	{
-		m_sm->modifySocket(fd, EPOLLIN | EPOLLOUT);
-		writeClientsData(fd);
+		if (!it->second->getBuffer().getWriteBuffer().empty())
+			m_sm->modifySocket(it->first, EPOLLIN | EPOLLOUT);
 	}
 	// cmdHandle(fd, line);
 }
