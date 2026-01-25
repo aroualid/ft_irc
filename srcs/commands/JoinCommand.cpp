@@ -2,9 +2,9 @@
 #include "commands/CommandRegistration.hpp"
 #include "commands/CommandType.hpp"
 #include "core/IChannel.hpp"
+#include "protocol/IrcUtils.hpp"
 #include "protocol/MessageParser.hpp"
 #include "protocol/NumericReply.hpp"
-#include <cstddef>
 
 REGISTER_COMMAND(JoinCommand, irc::JOIN, "JOIN")
 
@@ -16,58 +16,13 @@ JoinCommand::~JoinCommand()
 {
 }
 
-bool JoinCommand::isValidChannelName(const std::string& name) const
-{
-	if (name.empty())
-		return (false);
-	if (name[0] != '#' && name[0] != '&')
-		return (false);
-	if (name.length() > 200)
-		return (false);
-
-	for (std::size_t i = 0; i < name.length(); i++)
-	{
-		char c = name[i];
-		if (c == ' ' || c == ',' || c == '\07')
-			return (false);
-	}
-	return (true);
-}
-
-std::vector< std::string > JoinCommand::splitByComma(const std::string& str) const
-{
-	std::vector< std::string > result;
-	std::string current;
-
-	for (std::size_t i = 0; i < str.length(); i++)
-	{
-		if (str[i] == ',')
-		{
-			if (!current.empty())
-			{
-				result.push_back(current);
-				current.clear();
-			}
-		}
-		else
-		{
-			current += str[i];
-		}
-	}
-
-	if (!current.empty())
-		result.push_back(current);
-
-	return result;
-}
-
 void JoinCommand::doExecute(IClient* client, const Message& message)
 {
-	std::vector< std::string > channels = splitByComma(message.m_params[0]);
+	std::vector< std::string > channels = IrcUtils::splitByComma(message.m_params[0]);
 	std::vector< std::string > keys;
 
 	if (message.m_params.size() > 1)
-		keys = splitByComma(message.m_params[1]);
+		keys = IrcUtils::splitByComma(message.m_params[1]);
 
 	for (std::size_t i = 0; i < channels.size(); i++)
 	{
@@ -79,7 +34,7 @@ void JoinCommand::doExecute(IClient* client, const Message& message)
 void JoinCommand::joinSingleChannel(IClient* client, const std::string& channelName,
 									const std::string& key)
 {
-	if (!isValidChannelName(channelName))
+	if (!IrcUtils::isValidChannelName(channelName))
 	{
 		sendReply(client, NumericReply::noSuchChannel(client->getNickname(), channelName));
 		return;
@@ -111,8 +66,6 @@ void JoinCommand::joinSingleChannel(IClient* client, const std::string& channelN
 				sendReply(client, NumericReply::channelIsFull(client->getNickname(), channelName));
 			else if (!channel->getKey().empty() && key != channel->getKey())
 				sendReply(client, NumericReply::badChannelKey(client->getNickname(), channelName));
-			else
-				sendReply(client, NumericReply::inviteOnlyChan(client->getNickname(), channelName));
 			return;
 		}
 	}

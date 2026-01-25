@@ -2,8 +2,8 @@
 #include "commands/ACommand.hpp"
 #include "commands/CommandRegistration.hpp"
 #include "commands/CommandType.hpp"
+#include "protocol/IrcUtils.hpp"
 #include "protocol/NumericReply.hpp"
-#include <cctype>
 
 REGISTER_COMMAND(NickCommand, irc::NICK, "NICK")
 
@@ -13,22 +13,6 @@ NickCommand::NickCommand(IServer& server) : ACommand(server)
 
 NickCommand::~NickCommand()
 {
-}
-
-bool NickCommand::isValidNickname(const std::string& nickname) const
-{
-	if (nickname.empty() || nickname.length() > 9 || !std::isalpha(nickname[0]))
-		return (false);
-
-	for (size_t i = 1; i < nickname.size(); i++)
-	{
-		char c = nickname[i];
-		if (std::isalnum(c) || c == '-' || c == '[' || c == ']' || c == '\\' || c == '`' ||
-			c == '^' || c == '{' || c == '}' || c == '|')
-			continue;
-		return (false);
-	}
-	return (true);
 }
 
 void NickCommand::doExecute(IClient* client, const Message& message)
@@ -41,7 +25,7 @@ void NickCommand::doExecute(IClient* client, const Message& message)
 		return;
 	}
 
-	if (!isValidNickname(nickname))
+	if (!IrcUtils::isValidNickname(nickname))
 	{
 		sendReply(client,
 				  NumericReply::erroneusNickname(

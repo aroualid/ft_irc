@@ -302,4 +302,3 @@ int Channel::getUserLimit() const
 {
 	return _userLimit;
 }
-

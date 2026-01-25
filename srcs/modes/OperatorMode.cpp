@@ -5,7 +5,7 @@
 bool OperatorMode::apply(IChannel* channel, bool set, const std::string& param, IClient* setter)
 {
 	IServer* serv = setter->getServer();
-	IClient *client = serv->getClientByNickname(param);
+	IClient* client = serv->getClientByNickname(param);
 
 	if (channel->hasMember(client))
 	{

@@ -3,6 +3,7 @@
 #include "core/IClient.hpp"
 #include "core/IMessageBuffer.hpp"
 #include "network/MessageBuffer.hpp"
+#include "protocol/IrcUtils.hpp"
 #include "protocol/MessageParser.hpp"
 
 #include <vector>
@@ -70,7 +71,7 @@ std::vector< std::string > ACommand::splitByComma(const std::string& str)
 
 bool ACommand::isChannelName(const std::string& name)
 {
-	return (!name.empty() && (name[0] == '#' || name[0] == '&'));
+	return IrcUtils::isValidChannelName(name);
 }
 
 void ACommand::execute(IClient* client, const Message& message)

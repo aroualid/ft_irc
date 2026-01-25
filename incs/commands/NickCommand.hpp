@@ -5,8 +5,6 @@
 class NickCommand : public ACommand
 {
 private:
-	bool isValidNickname(const std::string& nickname) const;
-
 	NickCommand(IServer& server);
 
 	void doExecute(IClient* client, const Message& message);

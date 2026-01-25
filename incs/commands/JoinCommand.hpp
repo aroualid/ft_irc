@@ -1,13 +1,10 @@
 #pragma once
 
 #include "ACommand.hpp"
-#include <vector>
 
 class JoinCommand : public ACommand
 {
 private:
-	bool isValidChannelName(const std::string& name) const;
-	std::vector< std::string > splitByComma(const std::string& str) const;
 	void joinSingleChannel(IClient* client, const std::string& channelName, const std::string& key);
 
 	JoinCommand(IServer& server);

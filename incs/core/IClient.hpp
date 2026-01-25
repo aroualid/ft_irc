@@ -1,6 +1,6 @@
 #pragma once
-#include "IServer.hpp"
 #include "IChannel.hpp"
+#include "IServer.hpp"
 #include <set>
 #include <string>
 
@@ -32,8 +32,8 @@ public:
 	virtual void joinChannel(IChannel* channel) = 0;
 	virtual void leaveChannel(IChannel* channel) = 0;
 	virtual bool isInChannel(const std::string& channel) const = 0;
-	virtual const std::set< IChannel * >& getChannels() const = 0;
-	virtual IServer* getServer() const =0;
+	virtual const std::set< IChannel* >& getChannels() const = 0;
+	virtual IServer* getServer() const = 0;
 
 	virtual IMessageBuffer& getBuffer() = 0;
 	virtual const IMessageBuffer& getBuffer() const = 0;
