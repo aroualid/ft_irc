@@ -18,6 +18,11 @@ JoinCommand::~JoinCommand()
 
 void JoinCommand::doExecute(IClient* client, const Message& message)
 {
+	if (message.m_params.empty())
+	{
+		sendReply(client, NumericReply::needMoreParams(client->getNickname(), "JOIN"));
+		return;
+	}
 	std::vector< std::string > channels = IrcUtils::splitByComma(message.m_params[0]);
 	std::vector< std::string > keys;
 

@@ -153,7 +153,18 @@ void Server::disconnectClient(int fd)
 	std::map< int, IClient* >::iterator it = m_clients.find(fd);
 	if (it != m_clients.end())
 	{
-		delete it->second;
+		IClient* client = it->second;
+
+		const std::set< IChannel* >& channels = client->getChannels();
+		std::set< IChannel* > channels_copy = channels;
+
+		for (std::set< IChannel* >::iterator chan_it = channels_copy.begin();
+			 chan_it != channels_copy.end(); ++chan_it)
+		{
+			(*chan_it)->removeMember(client);
+		}
+
+		delete client;
 		m_clients.erase(it);
 	}
 	std::cout << "Disconnected : " << fd << "\n";

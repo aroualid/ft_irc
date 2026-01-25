@@ -21,6 +21,14 @@ void UserCommand::doExecute(IClient* client, const Message& message)
 		return;
 	}
 
+	if (message.m_params.size() < 4)
+	{
+		sendReply(client,
+				  NumericReply::needMoreParams(
+					  client->getNickname().empty() ? "*" : client->getNickname(), getName()));
+		return;
+	}
+
 	const std::string& username = message.m_params[0];
 	const std::string& realname = message.m_params[3];
 

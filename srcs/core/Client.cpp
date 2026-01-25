@@ -111,6 +111,7 @@ void Client::attemptRegistration()
 	if (_server->requiresPassword() && !_passwordProvided)
 		return;
 	_state = REGISTERED;
+	_server->registerClient(_nickname, this);
 }
 
 IMessageBuffer& Client::getBuffer()

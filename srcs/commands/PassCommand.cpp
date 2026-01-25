@@ -21,6 +21,12 @@ void PassCommand::doExecute(IClient* client, const Message& message)
 		return;
 	}
 
+	if (message.m_params.empty())
+	{
+		sendReply(client, NumericReply::needMoreParams(client->getNickname(), "PASS"));
+		return;
+	}
+
 	const std::string& providedPass = message.m_params[0];
 
 	if (providedPass == m_server.getPassword())
