@@ -124,7 +124,8 @@ Test(NamesCommand, names_nonexistent_channel)
 
 	std::string buffer = g_alice->getBuffer().getWriteBuffer();
 	cr_assert(buffer.find("366") != std::string::npos, "Expected RPL_ENDOFNAMES (366)");
-	cr_assert(buffer.find("353") == std::string::npos, "Should not have NAMREPLY for nonexistent channel");
+	cr_assert(buffer.find("353") == std::string::npos,
+			  "Should not have NAMREPLY for nonexistent channel");
 }
 
 Test(NamesCommand, names_channel_symbol_in_reply)

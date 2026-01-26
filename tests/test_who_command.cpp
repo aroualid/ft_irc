@@ -99,7 +99,8 @@ Test(WhoCommand, who_channel_shows_operator_flag)
 	g_cmd->execute(g_alice, whoMsg("#test"));
 
 	std::string buffer = g_alice->getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("H@") != std::string::npos, "Alice should have H@ flag (here + operator)");
+	cr_assert(buffer.find("H@") != std::string::npos,
+			  "Alice should have H@ flag (here + operator)");
 }
 
 Test(WhoCommand, who_nonexistent_channel)
@@ -110,7 +111,8 @@ Test(WhoCommand, who_nonexistent_channel)
 
 	std::string buffer = g_alice->getBuffer().getWriteBuffer();
 	cr_assert(buffer.find("315") != std::string::npos, "Expected RPL_ENDOFWHO (315)");
-	cr_assert(buffer.find("352") == std::string::npos, "Should not have WHO reply for nonexistent channel");
+	cr_assert(buffer.find("352") == std::string::npos,
+			  "Should not have WHO reply for nonexistent channel");
 }
 
 Test(WhoCommand, who_user_by_nickname)
@@ -136,7 +138,8 @@ Test(WhoCommand, who_nonexistent_user)
 
 	std::string buffer = g_alice->getBuffer().getWriteBuffer();
 	cr_assert(buffer.find("315") != std::string::npos, "Expected RPL_ENDOFWHO (315)");
-	cr_assert(buffer.find("352") == std::string::npos, "Should not have WHO reply for nonexistent user");
+	cr_assert(buffer.find("352") == std::string::npos,
+			  "Should not have WHO reply for nonexistent user");
 }
 
 Test(WhoCommand, who_includes_realname)
@@ -147,7 +150,8 @@ Test(WhoCommand, who_includes_realname)
 	g_cmd->execute(g_alice, whoMsg("alice"));
 
 	std::string buffer = g_alice->getBuffer().getWriteBuffer();
-	cr_assert(buffer.find("Alice Real Name") != std::string::npos, "WHO reply should include realname");
+	cr_assert(buffer.find("Alice Real Name") != std::string::npos,
+			  "WHO reply should include realname");
 }
 
 Test(WhoCommand, who_includes_hostname)

@@ -21,7 +21,7 @@ std::string NumericReply::toString() const
 
 NumericReply NumericReply::welcome(const std::string& nick)
 {
-	std::string message = "Welcome to 42{83400_61500} (aka ft_irchouine), " + nick + " :D";
+	std::string message = "Welcome to 42{83400_61500} (aka ft_irchouine), " + nick + " =D";
 	return NumericReply(1, nick, message);
 }
 
@@ -193,8 +193,8 @@ NumericReply NumericReply::whoReply(const std::string& nick, const std::string& 
 									const std::string& server, const std::string& targetNick,
 									const std::string& flags, const std::string& realname)
 {
-	std::string message =
-		channel + " " + user + " " + host + " " + server + " " + targetNick + " " + flags + " :0 " + realname;
+	std::string message = channel + " " + user + " " + host + " " + server + " " + targetNick +
+						  " " + flags + " :0 " + realname;
 	return NumericReply(352, nick, message);
 }
 

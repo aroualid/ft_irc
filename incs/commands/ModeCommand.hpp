@@ -9,6 +9,7 @@ private:
 	ModeCommand(IServer& server);
 	void doExecute(IClient* client, const Message& message);
 
+	static bool isSupportedMode(char mode);
 	static bool modeRequiresParamOnSet(char mode);
 	static bool modeRequiresParamOnUnset(char mode);
 

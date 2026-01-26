@@ -64,6 +64,10 @@ bool Channel::addMember(IClient* client, const std::string& key)
 void Channel::removeMember(IClient* client)
 {
 	_members.erase(client);
+	removeOperator(client);
+
+	if (getMemberCount() == 1)
+		addOperator(*_members.begin());
 }
 
 void Channel::addInvite(IClient* client)

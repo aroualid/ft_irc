@@ -37,10 +37,10 @@ void WhoCommand::doExecute(IClient* client, const Message& message)
 			if (channel->isOperator(member))
 				flags += "@";
 
-			sendReply(client, NumericReply::whoReply(client->getNickname(), channel->getName(),
-													 member->getUsername(), member->getHostname(),
-													 m_server.getServerName(), member->getNickname(),
-													 flags, member->getRealname()));
+			sendReply(client, NumericReply::whoReply(
+								  client->getNickname(), channel->getName(), member->getUsername(),
+								  member->getHostname(), m_server.getServerName(),
+								  member->getNickname(), flags, member->getRealname()));
 		}
 		sendReply(client, NumericReply::endOfWho(client->getNickname(), target));
 	}
@@ -49,11 +49,10 @@ void WhoCommand::doExecute(IClient* client, const Message& message)
 		IClient* targetClient = m_server.getClientByNickname(target);
 		if (targetClient)
 		{
-			sendReply(client, NumericReply::whoReply(client->getNickname(), "*",
-													 targetClient->getUsername(),
-													 targetClient->getHostname(), m_server.getServerName(),
-													 targetClient->getNickname(), "H",
-													 targetClient->getRealname()));
+			sendReply(client, NumericReply::whoReply(
+								  client->getNickname(), "*", targetClient->getUsername(),
+								  targetClient->getHostname(), m_server.getServerName(),
+								  targetClient->getNickname(), "H", targetClient->getRealname()));
 		}
 		sendReply(client, NumericReply::endOfWho(client->getNickname(), target));
 	}

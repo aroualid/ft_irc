@@ -14,6 +14,11 @@ ModeCommand::~ModeCommand()
 {
 }
 
+bool ModeCommand::isSupportedMode(char mode)
+{
+	return mode == 'i' || mode == 't' || mode == 'k' || mode == 'o' || mode == 'l';
+}
+
 bool ModeCommand::modeRequiresParamOnSet(char mode)
 {
 	return mode == 'k' || mode == 'o' || mode == 'l';
@@ -26,8 +31,12 @@ bool ModeCommand::modeRequiresParamOnUnset(char mode)
 
 void ModeCommand::doExecute(IClient* client, const Message& message)
 {
-	const std::string& channelName = message.m_params[0];
+	const std::string& target = message.m_params[0];
 
+	if (target[0] != '#' && target[0] != '&')
+		return;
+
+	const std::string& channelName = target;
 	IChannel* channel = m_server.getChannel(channelName);
 	if (!channel)
 	{
@@ -42,6 +51,30 @@ void ModeCommand::doExecute(IClient* client, const Message& message)
 		return;
 	}
 
+	const std::string& modeString = message.m_params[1];
+
+	bool hasSupportedMode = false;
+	for (size_t i = 0; i < modeString.size(); ++i)
+	{
+		char c = modeString[i];
+		if (c != '+' && c != '-' && isSupportedMode(c))
+		{
+			hasSupportedMode = true;
+			break;
+		}
+	}
+
+	if (!hasSupportedMode)
+	{
+		for (size_t i = 0; i < modeString.size(); ++i)
+		{
+			char c = modeString[i];
+			if (c != '+' && c != '-')
+				sendReply(client, NumericReply::unknownMode(client->getNickname(), c));
+		}
+		return;
+	}
+
 	if (!channel->hasMember(client))
 	{
 		sendReply(client, NumericReply::notOnChannel(client->getNickname(), channelName));
@@ -53,8 +86,6 @@ void ModeCommand::doExecute(IClient* client, const Message& message)
 		sendReply(client, NumericReply::chanOpPrivsNeeded(client->getNickname(), channelName));
 		return;
 	}
-
-	const std::string& modeString = message.m_params[1];
 	size_t paramIndex = 2;
 
 	bool isSet = true;
@@ -98,7 +129,6 @@ void ModeCommand::doExecute(IClient* client, const Message& message)
 				continue;
 			}
 		}
-
 		if (channel->applyMode(c, isSet, param, client))
 		{
 			if (isSet)
