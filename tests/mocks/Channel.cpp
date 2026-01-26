@@ -1,6 +1,7 @@
 #include "Channel.hpp"
 #include "Client.hpp"
 #include "MockOutput.hpp"
+#include <cstdlib>
 
 ChannelMock::ChannelMock(const std::string& name)
 	: m_name(name), m_topic(""), m_key(""), m_members(), m_operators(), m_invited(),
@@ -186,10 +187,61 @@ bool ChannelMock::isEmpty() const
 
 bool ChannelMock::applyMode(char mode, bool set, const std::string& param, IClient* setter)
 {
-	(void)param;
-	(void)setter;
+	if (!isOperator(setter))
+		return false;
+
 	MOCK_LOG(m_name << ": Applying mode " << (set ? "+" : "-") << mode);
-	return true;
+
+	switch (mode)
+	{
+	case 'i':
+		m_inviteOnly = set;
+		return true;
+	case 't':
+		m_topicRestricted = set;
+		return true;
+	case 'k':
+		if (set)
+		{
+			if (param.empty())
+				return false;
+			m_key = param;
+		}
+		else
+			m_key = "";
+		return true;
+	case 'o':
+	{
+		IClient* target = NULL;
+		for (std::set< IClient* >::iterator it = m_members.begin(); it != m_members.end(); ++it)
+		{
+			if ((*it)->getNickname() == param)
+			{
+				target = *it;
+				break;
+			}
+		}
+		if (!target || !hasMember(target))
+			return false;
+		if (set)
+			addOperator(target);
+		else
+			removeOperator(target);
+		return true;
+	}
+	case 'l':
+		if (set)
+		{
+			if (param.empty())
+				return false;
+			m_userLimit = std::atoi(param.c_str());
+		}
+		else
+			m_userLimit = -1;
+		return true;
+	default:
+		return false;
+	}
 }
 
 std::string ChannelMock::getModeString() const

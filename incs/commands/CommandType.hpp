@@ -28,6 +28,9 @@ enum CommandType
 
 	// operator stuff
 	KICK,
+	INVITE,
+	TOPIC,
+	MODE,
 
 	// unknown/invalid
 	CMD_UNKNOWN

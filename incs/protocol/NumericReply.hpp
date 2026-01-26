@@ -41,4 +41,11 @@ public:
 	static NumericReply userNotInChannel(const std::string& nick, const std::string& target,
 										 const std::string& channel);
 	static NumericReply chanOpPrivsNeeded(const std::string& nick, const std::string& channel);
+	static NumericReply inviting(const std::string& nick, const std::string& invited,
+								 const std::string& channel);
+	static NumericReply userOnChannel(const std::string& nick, const std::string& target,
+									  const std::string& channel);
+	static NumericReply channelModeIs(const std::string& nick, const std::string& channel,
+									  const std::string& modes);
+	static NumericReply unknownMode(const std::string& nick, char mode);
 };

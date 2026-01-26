@@ -160,3 +160,30 @@ NumericReply NumericReply::chanOpPrivsNeeded(const std::string& nick, const std:
 	std::string message = channel + " :You're not channel operator (boooo!)";
 	return NumericReply(482, nick, message);
 }
+
+NumericReply NumericReply::inviting(const std::string& nick, const std::string& invited,
+									const std::string& channel)
+{
+	std::string message = invited + " " + channel;
+	return NumericReply(341, nick, message);
+}
+
+NumericReply NumericReply::userOnChannel(const std::string& nick, const std::string& target,
+										 const std::string& channel)
+{
+	std::string message = target + " " + channel + " :is already on channel";
+	return NumericReply(443, nick, message);
+}
+
+NumericReply NumericReply::channelModeIs(const std::string& nick, const std::string& channel,
+										 const std::string& modes)
+{
+	std::string message = channel + " " + modes;
+	return NumericReply(324, nick, message);
+}
+
+NumericReply NumericReply::unknownMode(const std::string& nick, char mode)
+{
+	std::string message = std::string(1, mode) + " :is unknown mode char to me";
+	return NumericReply(472, nick, message);
+}

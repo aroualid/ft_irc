@@ -35,6 +35,9 @@ SRCS = $(SRCS_DIR)/main.cpp \
 		$(SRCS_DIR)/commands/PingCommand.cpp \
 		$(SRCS_DIR)/commands/PongCommand.cpp \
 		$(SRCS_DIR)/commands/KickCommand.cpp \
+		$(SRCS_DIR)/commands/InviteCommand.cpp \
+		$(SRCS_DIR)/commands/TopicCommand.cpp \
+		$(SRCS_DIR)/commands/ModeCommand.cpp \
 		$(SRCS_DIR)/protocol/Message.cpp \
 		$(SRCS_DIR)/protocol/MessageParser.cpp \
 		$(SRCS_DIR)/protocol/NumericReply.cpp \

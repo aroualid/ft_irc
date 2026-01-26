@@ -2,8 +2,7 @@
 # Functional test suite for ft_irc using netcat
 # Usage: ./run_tests.sh [host] [port] [password]
 #
-# Tested commands: PASS, NICK, USER, JOIN, PART, PRIVMSG, NOTICE, KICK, PING, QUIT
-# Not yet implemented: MODE, TOPIC, INVITE
+# Tested commands: PASS, NICK, USER, JOIN, PART, PRIVMSG, NOTICE, KICK, PING, QUIT, INVITE, TOPIC, MODE
 
 # set -e
 
@@ -542,6 +541,486 @@ test_kick_not_in_channel() {
 }
 
 # ============================================================================
+# INVITE Tests
+# ============================================================================
+
+test_invite_basic() {
+    start_client "inviter"
+    start_client "invitee"
+
+    register_client "inviter" "inviter"
+    register_client "invitee" "invitee"
+
+    client_send "inviter" "JOIN #invitetest"
+    sleep 0.2
+
+    mark_output_position "inviter"
+    mark_output_position "invitee"
+
+    client_send "inviter" "INVITE invitee #invitetest"
+    sleep 0.3
+
+    assert_new_output_contains "inviter" "341" "RPL_INVITING (341) received"
+    assert_new_output_contains "invitee" "INVITE" "Invitee received INVITE message"
+
+    stop_client "inviter"
+    stop_client "invitee"
+}
+
+test_invite_to_invite_only() {
+    start_client "op"
+    start_client "guest"
+
+    register_client "op" "invop"
+    register_client "guest" "invguest"
+
+    client_send "op" "JOIN #invonly"
+    sleep 0.2
+    client_send "op" "MODE #invonly +i"
+    sleep 0.2
+
+    mark_output_position "guest"
+    client_send "op" "INVITE invguest #invonly"
+    sleep 0.3
+
+    assert_new_output_contains "guest" "INVITE" "Guest received INVITE"
+
+    # Now guest should be able to join
+    mark_output_position "guest"
+    client_send "guest" "JOIN #invonly"
+    sleep 0.3
+
+    assert_new_output_contains "guest" "JOIN" "Guest joined invite-only channel after invite"
+
+    stop_client "op"
+    stop_client "guest"
+}
+
+test_invite_not_on_channel() {
+    start_client "notmember"
+    start_client "target"
+
+    register_client "notmember" "notmembr"
+    register_client "target" "invtargt"
+
+    # Create channel with target as owner
+    client_send "target" "JOIN #notmemtest"
+    sleep 0.2
+
+    mark_output_position "notmember"
+    client_send "notmember" "INVITE invtargt #notmemtest"
+    sleep 0.3
+
+    assert_new_output_contains "notmember" "442" "ERR_NOTONCHANNEL (442)"
+
+    stop_client "notmember"
+    stop_client "target"
+}
+
+test_invite_user_already_on_channel() {
+    start_client "inv1"
+    start_client "inv2"
+
+    register_client "inv1" "alrdyinv"
+    register_client "inv2" "alrdymem"
+
+    client_send "inv1" "JOIN #alreadytest"
+    sleep 0.2
+    client_send "inv2" "JOIN #alreadytest"
+    sleep 0.2
+
+    mark_output_position "inv1"
+    client_send "inv1" "INVITE alrdymem #alreadytest"
+    sleep 0.3
+
+    assert_new_output_contains "inv1" "443" "ERR_USERONCHANNEL (443)"
+
+    stop_client "inv1"
+    stop_client "inv2"
+}
+
+test_invite_nonexistent_user() {
+    irc_send "$TMP_DIR/out.txt" \
+        "PASS $PASS" \
+        "NICK invnone" \
+        "USER invnone 0 * :Inviter" \
+        "JOIN #invnonetest" \
+        "INVITE ghost #invnonetest" \
+        "QUIT"
+
+    assert_contains "$TMP_DIR/out.txt" "401" "ERR_NOSUCHNICK (401)"
+}
+
+test_invite_nonop_invite_only() {
+    start_client "chanop"
+    start_client "regular"
+    start_client "wannajoin"
+
+    register_client "chanop" "chanop"
+    register_client "regular" "regular"
+    register_client "wannajoin" "wannajn"
+
+    client_send "chanop" "JOIN #nopinvite"
+    sleep 0.2
+    client_send "regular" "JOIN #nopinvite"
+    sleep 0.2
+    client_send "chanop" "MODE #nopinvite +i"
+    sleep 0.2
+
+    mark_output_position "regular"
+    client_send "regular" "INVITE wannajn #nopinvite"
+    sleep 0.3
+
+    assert_new_output_contains "regular" "482" "ERR_CHANOPRIVSNEEDED (482) for non-op invite to +i channel"
+
+    stop_client "chanop"
+    stop_client "regular"
+    stop_client "wannajoin"
+}
+
+# ============================================================================
+# TOPIC Tests
+# ============================================================================
+
+test_topic_query_no_topic() {
+    irc_send "$TMP_DIR/out.txt" \
+        "PASS $PASS" \
+        "NICK topicq" \
+        "USER topicq 0 * :Topic Query" \
+        "JOIN #notopictest" \
+        "TOPIC #notopictest" \
+        "QUIT"
+
+    assert_contains "$TMP_DIR/out.txt" "331" "RPL_NOTOPIC (331)"
+}
+
+test_topic_set_and_query() {
+    irc_send "$TMP_DIR/out.txt" \
+        "PASS $PASS" \
+        "NICK topicset" \
+        "USER topicset 0 * :Topic Setter" \
+        "JOIN #topicsettest" \
+        "TOPIC #topicsettest :Welcome to our channel!" \
+        "TOPIC #topicsettest" \
+        "QUIT"
+
+    assert_contains "$TMP_DIR/out.txt" "TOPIC.*Welcome" "Topic set broadcast received"
+    assert_contains "$TMP_DIR/out.txt" "332" "RPL_TOPIC (332) on query"
+    assert_contains "$TMP_DIR/out.txt" "Welcome to our channel" "Topic content correct"
+}
+
+test_topic_broadcast() {
+    start_client "setter"
+    start_client "viewer"
+
+    register_client "setter" "topsetter"
+    register_client "viewer" "topviewer"
+
+    client_send "setter" "JOIN #topicbc"
+    sleep 0.2
+    client_send "viewer" "JOIN #topicbc"
+    sleep 0.2
+
+    mark_output_position "viewer"
+    client_send "setter" "TOPIC #topicbc :New topic here"
+    sleep 0.3
+
+    assert_new_output_contains "viewer" "TOPIC" "Viewer received TOPIC broadcast"
+    assert_new_output_contains "viewer" "New topic here" "Topic content in broadcast"
+
+    stop_client "setter"
+    stop_client "viewer"
+}
+
+test_topic_restricted_nonop() {
+    start_client "topop"
+    start_client "topreg"
+
+    register_client "topop" "topicop"
+    register_client "topreg" "topicreg"
+
+    client_send "topop" "JOIN #topicrestr"
+    sleep 0.2
+    client_send "topreg" "JOIN #topicrestr"
+    sleep 0.2
+    client_send "topop" "MODE #topicrestr +t"
+    sleep 0.2
+
+    mark_output_position "topreg"
+    client_send "topreg" "TOPIC #topicrestr :Trying to change"
+    sleep 0.3
+
+    assert_new_output_contains "topreg" "482" "ERR_CHANOPRIVSNEEDED (482) for topic change on +t channel"
+
+    stop_client "topop"
+    stop_client "topreg"
+}
+
+test_topic_not_on_channel() {
+    start_client "topchan"
+
+    register_client "topchan" "topnotch"
+
+    client_send "topchan" "JOIN #topchantest"
+    sleep 0.2
+
+    irc_send "$TMP_DIR/out.txt" \
+        "PASS $PASS" \
+        "NICK topout" \
+        "USER topout 0 * :Topic Outsider" \
+        "TOPIC #topchantest" \
+        "QUIT"
+
+    assert_contains "$TMP_DIR/out.txt" "442" "ERR_NOTONCHANNEL (442)"
+
+    stop_client "topchan"
+}
+
+test_topic_no_such_channel() {
+    irc_send "$TMP_DIR/out.txt" \
+        "PASS $PASS" \
+        "NICK topicnoch" \
+        "USER topicnoch 0 * :No Channel" \
+        "TOPIC #nonexistentchan" \
+        "QUIT"
+
+    assert_contains "$TMP_DIR/out.txt" "403" "ERR_NOSUCHCHANNEL (403)"
+}
+
+# ============================================================================
+# MODE Tests
+# ============================================================================
+
+test_mode_query() {
+    irc_send "$TMP_DIR/out.txt" \
+        "PASS $PASS" \
+        "NICK modeq" \
+        "USER modeq 0 * :Mode Query" \
+        "JOIN #modeqtest" \
+        "MODE #modeqtest" \
+        "QUIT"
+
+    assert_contains "$TMP_DIR/out.txt" "324" "RPL_CHANNELMODEIS (324)"
+}
+
+test_mode_set_invite_only() {
+    irc_send "$TMP_DIR/out.txt" \
+        "PASS $PASS" \
+        "NICK modei" \
+        "USER modei 0 * :Mode i" \
+        "JOIN #modeitest" \
+        "MODE #modeitest +i" \
+        "MODE #modeitest" \
+        "QUIT"
+
+    assert_contains "$TMP_DIR/out.txt" "MODE.*+i\|324.*i" "Invite-only mode set"
+}
+
+test_mode_set_topic_restricted() {
+    irc_send "$TMP_DIR/out.txt" \
+        "PASS $PASS" \
+        "NICK modet" \
+        "USER modet 0 * :Mode t" \
+        "JOIN #modettest" \
+        "MODE #modettest +t" \
+        "MODE #modettest" \
+        "QUIT"
+
+    assert_contains "$TMP_DIR/out.txt" "MODE.*+t\|324.*t" "Topic-restricted mode set"
+}
+
+test_mode_set_channel_key() {
+    start_client "keyop"
+    start_client "keyjoin"
+
+    register_client "keyop" "keyoper"
+    register_client "keyjoin" "keyjoinr"
+
+    client_send "keyop" "JOIN #keytest"
+    sleep 0.2
+    client_send "keyop" "MODE #keytest +k secretkey"
+    sleep 0.3
+
+    # Try to join without key
+    mark_output_position "keyjoin"
+    client_send "keyjoin" "JOIN #keytest"
+    sleep 0.3
+
+    assert_new_output_contains "keyjoin" "475" "ERR_BADCHANNELKEY (475) without key"
+
+    # Try to join with correct key
+    mark_output_position "keyjoin"
+    client_send "keyjoin" "JOIN #keytest secretkey"
+    sleep 0.3
+
+    assert_new_output_contains "keyjoin" "JOIN" "Joined with correct key"
+
+    stop_client "keyop"
+    stop_client "keyjoin"
+}
+
+test_mode_set_user_limit() {
+    start_client "limitop"
+    start_client "limit1"
+    start_client "limit2"
+
+    register_client "limitop" "limitop"
+    register_client "limit1" "limitone"
+    register_client "limit2" "limittwo"
+
+    client_send "limitop" "JOIN #limitest"
+    sleep 0.2
+    client_send "limitop" "MODE #limitest +l 2"
+    sleep 0.2
+
+    client_send "limit1" "JOIN #limitest"
+    sleep 0.2
+
+    # Third user should be rejected
+    mark_output_position "limit2"
+    client_send "limit2" "JOIN #limitest"
+    sleep 0.3
+
+    assert_new_output_contains "limit2" "471" "ERR_CHANNELISFULL (471)"
+
+    stop_client "limitop"
+    stop_client "limit1"
+    stop_client "limit2"
+}
+
+test_mode_give_operator() {
+    start_client "giveop"
+    start_client "getop"
+
+    register_client "giveop" "giverop"
+    register_client "getop" "getoper"
+
+    client_send "giveop" "JOIN #optest"
+    sleep 0.2
+    client_send "getop" "JOIN #optest"
+    sleep 0.2
+
+    mark_output_position "getop"
+    client_send "giveop" "MODE #optest +o getoper"
+    sleep 0.3
+
+    assert_new_output_contains "getop" "MODE.*+o.*getoper" "Operator mode granted"
+
+    # Verify getop can now kick
+    start_client "victim"
+    register_client "victim" "opvictim"
+    client_send "victim" "JOIN #optest"
+    sleep 0.2
+
+    mark_output_position "victim"
+    client_send "getop" "KICK #optest opvictim :Testing op"
+    sleep 0.3
+
+    assert_new_output_contains "victim" "KICK" "New operator can kick"
+
+    stop_client "giveop"
+    stop_client "getop"
+    stop_client "victim"
+}
+
+test_mode_remove_operator() {
+    start_client "deop1"
+    start_client "deop2"
+
+    register_client "deop1" "deopone"
+    register_client "deop2" "deoptwo"
+
+    client_send "deop1" "JOIN #deoptest"
+    sleep 0.2
+    client_send "deop2" "JOIN #deoptest"
+    sleep 0.2
+    client_send "deop1" "MODE #deoptest +o deoptwo"
+    sleep 0.2
+
+    mark_output_position "deop2"
+    client_send "deop1" "MODE #deoptest -o deoptwo"
+    sleep 0.3
+
+    assert_new_output_contains "deop2" "MODE.*-o.*deoptwo" "Operator mode removed"
+
+    stop_client "deop1"
+    stop_client "deop2"
+}
+
+test_mode_combined() {
+    irc_send "$TMP_DIR/out.txt" \
+        "PASS $PASS" \
+        "NICK combmode" \
+        "USER combmode 0 * :Combined Mode" \
+        "JOIN #combtest" \
+        "MODE #combtest +itk secretpass" \
+        "MODE #combtest" \
+        "QUIT"
+
+    assert_contains "$TMP_DIR/out.txt" "324" "RPL_CHANNELMODEIS received"
+    # Check that modes are reflected
+    assert_contains "$TMP_DIR/out.txt" "i" "Invite-only in mode string"
+    assert_contains "$TMP_DIR/out.txt" "t" "Topic-restricted in mode string"
+    assert_contains "$TMP_DIR/out.txt" "k" "Key mode in mode string"
+}
+
+test_mode_not_operator() {
+    start_client "modeop"
+    start_client "modereg"
+
+    register_client "modeop" "modeoper"
+    register_client "modereg" "moderegr"
+
+    client_send "modeop" "JOIN #noopmode"
+    sleep 0.2
+    client_send "modereg" "JOIN #noopmode"
+    sleep 0.2
+
+    mark_output_position "modereg"
+    client_send "modereg" "MODE #noopmode +i"
+    sleep 0.3
+
+    assert_new_output_contains "modereg" "482" "ERR_CHANOPRIVSNEEDED (482)"
+
+    stop_client "modeop"
+    stop_client "modereg"
+}
+
+test_mode_unknown_mode() {
+    irc_send "$TMP_DIR/out.txt" \
+        "PASS $PASS" \
+        "NICK unkmode" \
+        "USER unkmode 0 * :Unknown Mode" \
+        "JOIN #unktest" \
+        "MODE #unktest +x" \
+        "QUIT"
+
+    assert_contains "$TMP_DIR/out.txt" "472" "ERR_UNKNOWNMODE (472)"
+}
+
+test_mode_broadcast() {
+    start_client "modebc1"
+    start_client "modebc2"
+
+    register_client "modebc1" "modebcop"
+    register_client "modebc2" "modebcmb"
+
+    client_send "modebc1" "JOIN #modebctest"
+    sleep 0.2
+    client_send "modebc2" "JOIN #modebctest"
+    sleep 0.2
+
+    mark_output_position "modebc2"
+    client_send "modebc1" "MODE #modebctest +i"
+    sleep 0.3
+
+    assert_new_output_contains "modebc2" "MODE.*+i" "Mode change broadcast to channel members"
+
+    stop_client "modebc1"
+    stop_client "modebc2"
+}
+
+# ============================================================================
 # PING/PONG Tests
 # ============================================================================
 
@@ -731,6 +1210,35 @@ main() {
     run_test "KICK Not Operator" test_kick_not_operator
     run_test "KICK Nonexistent User" test_kick_nonexistent_user
     run_test "KICK Not In Channel" test_kick_not_in_channel
+
+    echo -e "${CYAN}--- INVITE Tests ---${NC}"
+    run_test "INVITE Basic" test_invite_basic
+    run_test "INVITE to Invite-Only Channel" test_invite_to_invite_only
+    run_test "INVITE Not On Channel" test_invite_not_on_channel
+    run_test "INVITE User Already On Channel" test_invite_user_already_on_channel
+    run_test "INVITE Nonexistent User" test_invite_nonexistent_user
+    run_test "INVITE Non-Op to Invite-Only" test_invite_nonop_invite_only
+
+    echo -e "${CYAN}--- TOPIC Tests ---${NC}"
+    run_test "TOPIC Query No Topic" test_topic_query_no_topic
+    run_test "TOPIC Set and Query" test_topic_set_and_query
+    run_test "TOPIC Broadcast" test_topic_broadcast
+    run_test "TOPIC Restricted Non-Op" test_topic_restricted_nonop
+    run_test "TOPIC Not On Channel" test_topic_not_on_channel
+    run_test "TOPIC No Such Channel" test_topic_no_such_channel
+
+    echo -e "${CYAN}--- MODE Tests ---${NC}"
+    run_test "MODE Query" test_mode_query
+    run_test "MODE Set Invite-Only (+i)" test_mode_set_invite_only
+    run_test "MODE Set Topic-Restricted (+t)" test_mode_set_topic_restricted
+    run_test "MODE Set Channel Key (+k)" test_mode_set_channel_key
+    run_test "MODE Set User Limit (+l)" test_mode_set_user_limit
+    run_test "MODE Give Operator (+o)" test_mode_give_operator
+    run_test "MODE Remove Operator (-o)" test_mode_remove_operator
+    run_test "MODE Combined Modes" test_mode_combined
+    run_test "MODE Not Operator" test_mode_not_operator
+    run_test "MODE Unknown Mode" test_mode_unknown_mode
+    run_test "MODE Broadcast" test_mode_broadcast
 
     echo -e "${CYAN}--- PING/PONG Tests ---${NC}"
     run_test "PING/PONG" test_ping_pong
