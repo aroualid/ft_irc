@@ -2,7 +2,7 @@
 # Functional test suite for ft_irc using netcat
 # Usage: ./run_tests.sh [host] [port] [password]
 #
-# Tested commands: PASS, NICK, USER, JOIN, PART, PRIVMSG, NOTICE, KICK, PING, QUIT, INVITE, TOPIC, MODE
+# Tested commands: PASS, NICK, USER, JOIN, PART, PRIVMSG, NOTICE, KICK, PING, QUIT, INVITE, TOPIC, MODE, WHO, NAMES
 
 # set -e
 
@@ -1021,6 +1021,155 @@ test_mode_broadcast() {
 }
 
 # ============================================================================
+# WHO Tests
+# ============================================================================
+
+test_who_channel() {
+    start_client "whoer"
+    start_client "member"
+
+    register_client "whoer" "whoer"
+    register_client "member" "whomem"
+
+    client_send "whoer" "JOIN #whotest"
+    sleep 0.2
+    client_send "member" "JOIN #whotest"
+    sleep 0.2
+
+    mark_output_position "whoer"
+    client_send "whoer" "WHO #whotest"
+    sleep 0.3
+
+    assert_new_output_contains "whoer" "352" "RPL_WHOREPLY (352) received"
+    assert_new_output_contains "whoer" "315" "RPL_ENDOFWHO (315) received"
+    assert_new_output_contains "whoer" "whoer" "WHO contains whoer"
+    assert_new_output_contains "whoer" "whomem" "WHO contains whomem"
+
+    stop_client "whoer"
+    stop_client "member"
+}
+
+test_who_user() {
+    start_client "whouser1"
+    start_client "whouser2"
+
+    register_client "whouser1" "whousr1"
+    register_client "whouser2" "whousr2"
+    sleep 0.2
+
+    mark_output_position "whouser1"
+    client_send "whouser1" "WHO whousr2"
+    sleep 0.3
+
+    assert_new_output_contains "whouser1" "352" "RPL_WHOREPLY (352) for user"
+    assert_new_output_contains "whouser1" "315" "RPL_ENDOFWHO (315) received"
+    assert_new_output_contains "whouser1" "whousr2" "WHO contains target user"
+
+    stop_client "whouser1"
+    stop_client "whouser2"
+}
+
+test_who_nonexistent() {
+    irc_send "$TMP_DIR/out.txt" \
+        "PASS $PASS" \
+        "NICK whonone" \
+        "USER whonone 0 * :Who None" \
+        "WHO #nonexistentchan" \
+        "QUIT"
+
+    assert_contains "$TMP_DIR/out.txt" "315" "RPL_ENDOFWHO (315) for nonexistent"
+    assert_not_contains "$TMP_DIR/out.txt" "352" "No WHOREPLY for nonexistent channel"
+}
+
+test_who_shows_operator() {
+    irc_send "$TMP_DIR/out.txt" \
+        "PASS $PASS" \
+        "NICK whooptest" \
+        "USER whooptest 0 * :Who Op Test" \
+        "JOIN #whooptest" \
+        "WHO #whooptest" \
+        "QUIT"
+
+    assert_contains "$TMP_DIR/out.txt" "352" "RPL_WHOREPLY received"
+    assert_contains "$TMP_DIR/out.txt" "H@" "Operator flag (H@) in WHO reply"
+}
+
+# ============================================================================
+# NAMES Tests
+# ============================================================================
+
+test_names_channel() {
+    start_client "namer"
+    start_client "namemem"
+
+    register_client "namer" "namer"
+    register_client "namemem" "namemem"
+
+    client_send "namer" "JOIN #namestest"
+    sleep 0.2
+    client_send "namemem" "JOIN #namestest"
+    sleep 0.2
+
+    mark_output_position "namer"
+    client_send "namer" "NAMES #namestest"
+    sleep 0.3
+
+    assert_new_output_contains "namer" "353" "RPL_NAMREPLY (353) received"
+    assert_new_output_contains "namer" "366" "RPL_ENDOFNAMES (366) received"
+    assert_new_output_contains "namer" "namer" "NAMES contains namer"
+    assert_new_output_contains "namer" "namemem" "NAMES contains namemem"
+
+    stop_client "namer"
+    stop_client "namemem"
+}
+
+test_names_shows_operator_prefix() {
+    irc_send "$TMP_DIR/out.txt" \
+        "PASS $PASS" \
+        "NICK namesop" \
+        "USER namesop 0 * :Names Op" \
+        "JOIN #namesoptest" \
+        "NAMES #namesoptest" \
+        "QUIT"
+
+    assert_contains "$TMP_DIR/out.txt" "353" "RPL_NAMREPLY received"
+    assert_contains "$TMP_DIR/out.txt" "@namesop" "Operator prefix in NAMES"
+}
+
+test_names_nonexistent_channel() {
+    irc_send "$TMP_DIR/out.txt" \
+        "PASS $PASS" \
+        "NICK namesnone" \
+        "USER namesnone 0 * :Names None" \
+        "NAMES #nonexistentnames" \
+        "QUIT"
+
+    assert_contains "$TMP_DIR/out.txt" "366" "RPL_ENDOFNAMES (366) for nonexistent"
+    assert_not_contains "$TMP_DIR/out.txt" "353" "No NAMREPLY for nonexistent channel"
+}
+
+test_names_non_member_can_query() {
+    start_client "namesowner"
+    start_client "namesout"
+
+    register_client "namesowner" "nmowner"
+    register_client "namesout" "nmout"
+
+    client_send "namesowner" "JOIN #namesqtest"
+    sleep 0.2
+
+    mark_output_position "namesout"
+    client_send "namesout" "NAMES #namesqtest"
+    sleep 0.3
+
+    assert_new_output_contains "namesout" "353" "Non-member receives RPL_NAMREPLY"
+    assert_new_output_contains "namesout" "nmowner" "Non-member sees channel members"
+
+    stop_client "namesowner"
+    stop_client "namesout"
+}
+
+# ============================================================================
 # PING/PONG Tests
 # ============================================================================
 
@@ -1239,6 +1388,18 @@ main() {
     run_test "MODE Not Operator" test_mode_not_operator
     run_test "MODE Unknown Mode" test_mode_unknown_mode
     run_test "MODE Broadcast" test_mode_broadcast
+
+    echo -e "${CYAN}--- WHO Tests ---${NC}"
+    run_test "WHO Channel" test_who_channel
+    run_test "WHO User" test_who_user
+    run_test "WHO Nonexistent" test_who_nonexistent
+    run_test "WHO Shows Operator" test_who_shows_operator
+
+    echo -e "${CYAN}--- NAMES Tests ---${NC}"
+    run_test "NAMES Channel" test_names_channel
+    run_test "NAMES Shows Operator Prefix" test_names_shows_operator_prefix
+    run_test "NAMES Nonexistent Channel" test_names_nonexistent_channel
+    run_test "NAMES Non-Member Can Query" test_names_non_member_can_query
 
     echo -e "${CYAN}--- PING/PONG Tests ---${NC}"
     run_test "PING/PONG" test_ping_pong
