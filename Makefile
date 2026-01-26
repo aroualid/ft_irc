@@ -38,6 +38,8 @@ SRCS = $(SRCS_DIR)/main.cpp \
 		$(SRCS_DIR)/commands/InviteCommand.cpp \
 		$(SRCS_DIR)/commands/TopicCommand.cpp \
 		$(SRCS_DIR)/commands/ModeCommand.cpp \
+		$(SRCS_DIR)/commands/WhoCommand.cpp \
+		$(SRCS_DIR)/commands/NamesCommand.cpp \
 		$(SRCS_DIR)/protocol/Message.cpp \
 		$(SRCS_DIR)/protocol/MessageParser.cpp \
 		$(SRCS_DIR)/protocol/NumericReply.cpp \

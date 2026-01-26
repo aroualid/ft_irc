@@ -248,6 +248,11 @@ std::string Channel::getMemberList() const
 	return list;
 }
 
+std::vector< IClient* > Channel::getMembers() const
+{
+	return std::vector< IClient* >(_members.begin(), _members.end());
+}
+
 bool Channel::isEmpty() const
 {
 	return _members.empty();

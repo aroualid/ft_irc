@@ -170,6 +170,11 @@ std::string ChannelMock::getMemberList() const
 	return list;
 }
 
+std::vector< IClient* > ChannelMock::getMembers() const
+{
+	return std::vector< IClient* >(m_members.begin(), m_members.end());
+}
+
 void ChannelMock::broadcast(const std::string& message, IClient* exclude)
 {
 	MOCK_LOG(m_name << ": Broadcasting message" << (exclude ? " (excluding one client)" : ""));

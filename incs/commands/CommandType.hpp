@@ -32,6 +32,10 @@ enum CommandType
 	TOPIC,
 	MODE,
 
+	// channel info
+	WHO,
+	NAMES,
+
 	// unknown/invalid
 	CMD_UNKNOWN
 };

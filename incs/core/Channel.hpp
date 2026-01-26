@@ -42,6 +42,7 @@ public:
 	// Broadcasting
 	void broadcast(const std::string& message, IClient* exclude = NULL);
 	std::string getMemberList() const;
+	std::vector< IClient* > getMembers() const;
 	bool isEmpty() const;
 
 	void setTopic(const std::string& topic);

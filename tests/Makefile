@@ -51,6 +51,8 @@ REQUIRED_SRCS = $(SRCS_DIR)/protocol/Message.cpp \
 			$(SRCS_DIR)/commands/InviteCommand.cpp \
 			$(SRCS_DIR)/commands/TopicCommand.cpp \
 			$(SRCS_DIR)/commands/ModeCommand.cpp \
+			$(SRCS_DIR)/commands/WhoCommand.cpp \
+			$(SRCS_DIR)/commands/NamesCommand.cpp \
         		$(SRCS_DIR)/core/Channel.cpp \
 				$(SRCS_DIR)/modes/InviteOnlyMode.cpp \
 				$(SRCS_DIR)/modes/TopicRestrictedMode.cpp \
@@ -83,7 +85,9 @@ TEST_SRCS = test_hooks.cpp \
 			test_kick_command.cpp \
 			test_invite_command.cpp \
 			test_topic_command.cpp \
-			test_mode_command.cpp
+			test_mode_command.cpp \
+			test_who_command.cpp \
+			test_names_command.cpp
 
 TEST_OBJ = $(TEST_SRCS:%.cpp=$(OBJ_DIR)/%.o)
 

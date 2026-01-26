@@ -3,6 +3,7 @@
 #include "core/IChannel.hpp"
 #include <set>
 #include <string>
+#include <vector>
 
 class ChannelMock : public IChannel
 {
@@ -48,6 +49,7 @@ public:
 	void removeOperator(IClient* client);
 
 	std::string getMemberList() const;
+	std::vector< IClient* > getMembers() const;
 	void broadcast(const std::string& message, IClient* exclude = NULL);
 	bool isEmpty() const;
 

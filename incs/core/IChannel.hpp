@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 class IClient;
 
@@ -38,6 +39,7 @@ public:
 	virtual void removeOperator(IClient* client) = 0;
 
 	virtual std::string getMemberList() const = 0;
+	virtual std::vector< IClient* > getMembers() const = 0;
 	virtual void broadcast(const std::string& message, IClient* exclude = NULL) = 0;
 	virtual bool isEmpty() const = 0;
 

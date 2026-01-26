@@ -187,3 +187,19 @@ NumericReply NumericReply::unknownMode(const std::string& nick, char mode)
 	std::string message = std::string(1, mode) + " :is unknown mode char to me";
 	return NumericReply(472, nick, message);
 }
+
+NumericReply NumericReply::whoReply(const std::string& nick, const std::string& channel,
+									const std::string& user, const std::string& host,
+									const std::string& server, const std::string& targetNick,
+									const std::string& flags, const std::string& realname)
+{
+	std::string message =
+		channel + " " + user + " " + host + " " + server + " " + targetNick + " " + flags + " :0 " + realname;
+	return NumericReply(352, nick, message);
+}
+
+NumericReply NumericReply::endOfWho(const std::string& nick, const std::string& name)
+{
+	std::string message = name + " :End of WHO list";
+	return NumericReply(315, nick, message);
+}

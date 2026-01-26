@@ -48,4 +48,9 @@ public:
 	static NumericReply channelModeIs(const std::string& nick, const std::string& channel,
 									  const std::string& modes);
 	static NumericReply unknownMode(const std::string& nick, char mode);
+	static NumericReply whoReply(const std::string& nick, const std::string& channel,
+								 const std::string& user, const std::string& host,
+								 const std::string& server, const std::string& targetNick,
+								 const std::string& flags, const std::string& realname);
+	static NumericReply endOfWho(const std::string& nick, const std::string& name);
 };
