@@ -19,8 +19,8 @@ ACommand* PongCommand::create(IServer& server)
 
 void PongCommand::doExecute(IClient* client, const Message& message)
 {
-	(void)client;
 	(void)message;
+	client->setLastPingSent(0); // client is alive!! yay :D
 }
 
 void PongCommand::execute(IClient* client, const Message& message)
