@@ -40,7 +40,7 @@ public:
 	virtual const IMessageBuffer& getBuffer() const = 0;
 
 	// MessageBuffer& getBuffer();
-	
+
 	virtual std::time_t getLastActivity() const = 0;
 	virtual void updateLastActivity() = 0;
 	virtual std::time_t getLastPingSent() const = 0;

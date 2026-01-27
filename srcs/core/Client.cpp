@@ -3,8 +3,9 @@
 #include "core/IServer.hpp"
 
 Client::Client(int fd, const std::string& hostname, IServer& server)
-	: _fd(fd), _nickname(""), _username(""), _realname(""), _hostname(hostname), m_lastActivity(std::time_t(NULL)),
-	  m_lastPingSent(0), _state(HANDSHAKE), _passwordProvided(false), _server(&server)
+	: _fd(fd), _nickname(""), _username(""), _realname(""), _hostname(hostname),
+	  m_lastActivity(std::time_t(NULL)), m_lastPingSent(0), _state(HANDSHAKE),
+	  _passwordProvided(false), _server(&server)
 {
 }
 
