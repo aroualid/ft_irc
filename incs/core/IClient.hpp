@@ -1,6 +1,7 @@
 #pragma once
 #include "IChannel.hpp"
 #include "IServer.hpp"
+#include <ctime>
 #include <set>
 #include <string>
 
@@ -39,6 +40,11 @@ public:
 	virtual const IMessageBuffer& getBuffer() const = 0;
 
 	// MessageBuffer& getBuffer();
+	
+	virtual std::time_t getLastActivity() const = 0;
+	virtual void updateLastActivity() = 0;
+	virtual std::time_t getLastPingSent() const = 0;
+	virtual void setLastPingSent(std::time_t last_ping) = 0;
 
 	virtual std::string getPrefix() const = 0;
 };

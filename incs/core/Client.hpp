@@ -16,6 +16,9 @@ private:
 	std::string _realname;
 	std::string _hostname;
 
+	std::time_t m_lastActivity;
+	std::time_t m_lastPingSent;
+
 	enum ClientState
 	{
 		HANDSHAKE,
@@ -61,5 +64,11 @@ public:
 	// Buffer access
 	IMessageBuffer& getBuffer();
 	const IMessageBuffer& getBuffer() const;
+
+	std::time_t getLastActivity() const;
+	void updateLastActivity();
+	std::time_t getLastPingSent() const;
+	void setLastPingSent(std::time_t last_ping);
+
 	std::string getPrefix() const; // "nick!user@host"
 };

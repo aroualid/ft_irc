@@ -3,8 +3,8 @@
 #include "core/IServer.hpp"
 
 Client::Client(int fd, const std::string& hostname, IServer& server)
-	: _fd(fd), _nickname(""), _username(""), _realname(""), _hostname(hostname), _state(HANDSHAKE),
-	  _passwordProvided(false), _buffer(), _server(&server), _channels()
+	: _fd(fd), _nickname(""), _username(""), _realname(""), _hostname(hostname), m_lastActivity(std::time_t(NULL)),
+	  m_lastPingSent(0), _state(HANDSHAKE), _passwordProvided(false), _server(&server)
 {
 }
 
@@ -122,6 +122,26 @@ IMessageBuffer& Client::getBuffer()
 const IMessageBuffer& Client::getBuffer() const
 {
 	return _buffer;
+}
+
+std::time_t Client::getLastActivity() const
+{
+	return m_lastActivity;
+}
+
+void Client::updateLastActivity()
+{
+	m_lastActivity = std::time_t(NULL);
+}
+
+std::time_t Client::getLastPingSent() const
+{
+	return m_lastPingSent;
+}
+
+void Client::setLastPingSent(std::time_t last_ping)
+{
+	m_lastPingSent = last_ping;
 }
 
 std::string Client::getPrefix() const
