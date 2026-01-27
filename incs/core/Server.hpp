@@ -34,6 +34,10 @@ private:
 	int m_listenFd;
 	ISocketManager* m_sm;
 
+	static const std::time_t PING_TIMEOUT = 120;
+	static const std::time_t PONG_TIMEOUT = 30;
+	static const int EPOLL_TIMEOUT_MS = 30000;
+
 	std::map< int, IClient* > m_clients;
 	std::map< std::string, IClient* > m_clientsByNick;
 	std::map< std::string, IChannel* > m_channels;
@@ -48,7 +52,7 @@ private:
 
 	void writeClientsData(int fd);
 
-	;
+	void checkClientTimeouts();
 
 public:
 	Server(const Config& cfg);

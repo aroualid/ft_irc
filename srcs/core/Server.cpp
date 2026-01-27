@@ -10,6 +10,7 @@
 #include "commands/CommandFactory.hpp"
 #include "protocol/Message.hpp"
 #include "protocol/MessageParser.hpp"
+#include <sstream>
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int Server::getPort() const
 {
@@ -34,6 +35,45 @@ void Server::deleteChannelIfEmpty(IChannel* channel)
 		return;
 	m_channels.erase(channel->getName());
 	delete channel;
+}
+
+void Server::checkClientTimeouts()
+{
+	std::time_t now = std::time_t(NULL);
+	std::vector< int > to_disconnect;
+
+	for (std::map< int, IClient* >::iterator it = m_clients.begin(); it != m_clients.end(); ++it)
+	{
+		int client_fd = it->first;
+		IClient* client = it->second;
+
+		if (client_fd == m_listenFd)
+			continue;
+
+		std::time_t last_ping = client->getLastPingSent();
+		std::time_t last_activity = client->getLastActivity();
+
+		if (last_ping != 0 && (now - last_ping) > PONG_TIMEOUT)
+		{
+			std::cout << "Client #" << client_fd << " didn't respond to ping. Killing it :D\n";
+			client->getBuffer().appendWrite(
+				"ERROR :You didn't respond to my PING :(, therefore you're gonna die\r\n");
+			to_disconnect.push_back(client_fd);
+			continue;
+		}
+
+		if (last_ping != 0 && (now - last_activity) > PING_TIMEOUT)
+		{
+			std::ostringstream ping;
+			ping << "PING :" << getServerName() << "\r\n";
+			client->getBuffer().appendWrite(ping.str());
+			client->setLastPingSent(now);
+			m_sm->modifySocket(client_fd, EPOLLIN | EPOLLOUT);
+		}
+	}
+
+	for (size_t i = 0; i < to_disconnect.size(); i++)
+		disconnectClient(to_disconnect[i]);
 }
 
 IChannel* Server::createChannel(const std::string& name, IClient* creator)
@@ -216,6 +256,7 @@ void Server::readClientsData(int fd)
 		ssize_t receiving = recv(fd, buffer, sizeof(buffer), 0);
 		if (receiving > 0)
 		{
+			client->updateLastActivity();
 			client->getBuffer().appendRead(std::string(buffer, receiving));
 			while (client->getBuffer().hasCompleteMessage())
 			{
