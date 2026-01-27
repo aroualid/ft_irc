@@ -4,7 +4,8 @@
 
 ClientMock::ClientMock(int fd, const std::string& hostname, IServer& server)
 	: m_fd(fd), m_nickname(""), m_username(""), m_realname(""), m_hostname(hostname),
-	  m_passwordProvided(false), m_registered(false), m_server(&server)
+	  m_passwordProvided(false), m_registered(false), m_lastActivity(std::time(NULL)),
+	  m_lastPingSent(0), m_server(&server)
 {
 	MOCK_LOG("ClientMock created: fd=" << fd << " host=" << hostname);
 }
@@ -115,6 +116,27 @@ IMessageBuffer& ClientMock::getBuffer()
 const IMessageBuffer& ClientMock::getBuffer() const
 {
 	return m_buffer;
+}
+
+std::time_t ClientMock::getLastActivity() const
+{
+	return m_lastActivity;
+}
+
+void ClientMock::updateLastActivity()
+{
+	m_lastActivity = std::time(NULL);
+	m_lastPingSent = 0;
+}
+
+std::time_t ClientMock::getLastPingSent() const
+{
+	return m_lastPingSent;
+}
+
+void ClientMock::setLastPingSent(std::time_t last_ping)
+{
+	m_lastPingSent = last_ping;
 }
 
 std::string ClientMock::getPrefix() const

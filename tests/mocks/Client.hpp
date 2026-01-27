@@ -19,6 +19,10 @@ private:
 	bool m_registered;
 	MessageBufferMock m_buffer;
 	std::set< IChannel* > m_channels;
+
+	std::time_t m_lastActivity;
+	std::time_t m_lastPingSent;
+
 	IServer* m_server;
 
 public:
@@ -48,6 +52,11 @@ public:
 
 	IMessageBuffer& getBuffer();
 	const IMessageBuffer& getBuffer() const;
+
+	std::time_t getLastActivity() const;
+	void updateLastActivity();
+	std::time_t getLastPingSent() const;
+	void setLastPingSent(std::time_t last_ping);
 
 	std::string getPrefix() const;
 };
