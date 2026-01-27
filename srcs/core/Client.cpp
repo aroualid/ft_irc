@@ -4,7 +4,7 @@
 
 Client::Client(int fd, const std::string& hostname, IServer& server)
 	: _fd(fd), _nickname(""), _username(""), _realname(""), _hostname(hostname),
-	  m_lastActivity(std::time_t(NULL)), m_lastPingSent(0), _state(HANDSHAKE),
+	  m_lastActivity(std::time(NULL)), m_lastPingSent(0), _state(HANDSHAKE),
 	  _passwordProvided(false), _server(&server)
 {
 }
@@ -132,7 +132,8 @@ std::time_t Client::getLastActivity() const
 
 void Client::updateLastActivity()
 {
-	m_lastActivity = std::time_t(NULL);
+	m_lastActivity = std::time(NULL);
+	m_lastPingSent = 0;
 }
 
 std::time_t Client::getLastPingSent() const

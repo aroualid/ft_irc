@@ -34,9 +34,9 @@ private:
 	int m_listenFd;
 	ISocketManager* m_sm;
 
-	static const std::time_t PING_TIMEOUT = 120;
-	static const std::time_t PONG_TIMEOUT = 30;
-	static const int EPOLL_TIMEOUT_MS = 30000;
+	static const std::time_t PING_TIMEOUT = 10;
+	static const std::time_t PONG_TIMEOUT = 5;
+	static const int EPOLL_TIMEOUT_MS = 2000; // Check every 2 seconds
 
 	std::map< int, IClient* > m_clients;
 	std::map< std::string, IClient* > m_clientsByNick;

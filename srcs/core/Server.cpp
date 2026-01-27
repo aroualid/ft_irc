@@ -10,7 +10,9 @@
 #include "commands/CommandFactory.hpp"
 #include "protocol/Message.hpp"
 #include "protocol/MessageParser.hpp"
+#include <cerrno>
 #include <sstream>
+#include <stdexcept>
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int Server::getPort() const
 {
@@ -39,7 +41,7 @@ void Server::deleteChannelIfEmpty(IChannel* channel)
 
 void Server::checkClientTimeouts()
 {
-	std::time_t now = std::time_t(NULL);
+	std::time_t now = std::time(NULL);
 	std::vector< int > to_disconnect;
 
 	for (std::map< int, IClient* >::iterator it = m_clients.begin(); it != m_clients.end(); ++it)
@@ -56,14 +58,16 @@ void Server::checkClientTimeouts()
 		if (last_ping != 0 && (now - last_ping) > PONG_TIMEOUT)
 		{
 			std::cout << "Client #" << client_fd << " didn't respond to ping. Killing it :D\n";
-			client->getBuffer().appendWrite(
-				"ERROR :You didn't respond to my PING :(, therefore you're gonna die\r\n");
+			std::string error_msg = "ERROR :You didn't respond to my ping and that's mean :( "
+									"Therefore you're gonna die :D\r\n";
+			send(client_fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
 			to_disconnect.push_back(client_fd);
 			continue;
 		}
-
-		if (last_ping != 0 && (now - last_activity) > PING_TIMEOUT)
+		else if (last_ping == 0 && (now - last_activity) > PING_TIMEOUT)
 		{
+			std::cout << "Client #" << client_fd << " has been idle for " << (now - last_activity)
+					  << " seconds. Checking if it's still alive lol\n";
 			std::ostringstream ping;
 			ping << "PING :" << getServerName() << "\r\n";
 			client->getBuffer().appendWrite(ping.str());
@@ -375,7 +379,15 @@ void Server::run()
 
 	while (true)
 	{
-		int n = m_sm->wait(-1); // waiting for incoming connexxions
+		int n = m_sm->wait(EPOLL_TIMEOUT_MS); // waiting for incoming connexxions
+		checkClientTimeouts();
+		if (n < 0)
+		{
+			if (errno == EINTR)
+				continue;
+			throw std::runtime_error("epoll_wait failed");
+		}
+
 		const std::vector< epoll_event >& evts = m_sm->getEvents(); // vector getting events
 
 		for (int i = 0; i < n; i++)

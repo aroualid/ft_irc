@@ -22,6 +22,8 @@ void PingCommand::doExecute(IClient* client, const Message& message)
 	std::string origin = message.m_params[0];
 	std::string serverName = m_server.getServerName();
 
+	client->setLastPingSent(0);
+
 	Message pongResponse;
 	pongResponse.m_prefix = serverName;
 	pongResponse.m_command = "PONG";
