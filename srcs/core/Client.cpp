@@ -5,7 +5,7 @@
 Client::Client(int fd, const std::string& hostname, IServer& server)
 	: _fd(fd), _nickname(""), _username(""), _realname(""), _hostname(hostname),
 	  m_lastActivity(std::time(NULL)), m_lastPingSent(0), _state(HANDSHAKE),
-	  _passwordProvided(false), _server(&server)
+	  _passwordProvided(false), _server(server)
 {
 }
 
@@ -15,7 +15,7 @@ Client::~Client()
 
 IServer* Client::getServer() const
 {
-	return _server;
+	return &_server;
 }
 
 int Client::getFd() const
@@ -109,10 +109,10 @@ void Client::attemptRegistration()
 		return;
 	if (_username.empty())
 		return;
-	if (_server->requiresPassword() && !_passwordProvided)
+	if (_server.requiresPassword() && !_passwordProvided)
 		return;
 	_state = REGISTERED;
-	_server->registerClient(_nickname, this);
+	_server.registerClient(_nickname, this);
 }
 
 IMessageBuffer& Client::getBuffer()
@@ -156,3 +156,4 @@ std::string Client::getPrefix() const
 		prefix += "!" + _username + "@" + _hostname;
 	return prefix;
 }
+

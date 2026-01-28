@@ -31,7 +31,7 @@ private:
 	bool _passwordProvided;
 
 	MessageBuffer _buffer;
-	IServer* _server;
+	IServer& _server;
 	std::set< IChannel* > _channels;
 
 public:
