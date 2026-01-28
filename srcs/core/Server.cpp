@@ -18,6 +18,44 @@
 
 extern volatile sig_atomic_t g_shutdown;
 
+enum LogLevel
+{
+	LOG_DEBUG,
+	LOG_INFO,
+	LOG_WARNING,
+	LOG_ERROR,
+	LOG_CRITICAL
+};
+
+static void logInfo(LogLevel level, const std::string &message)
+{
+	std::ostringstream oss;
+
+	switch (level)
+	{
+		case LOG_DEBUG:
+			oss << "[ " BLUE "DEBUG" RESET " ] ";
+			break ;
+		case LOG_INFO:
+			oss << "[ " GREEN "INFO" RESET " ] ";
+			break ;
+		case LOG_WARNING:
+			oss << "[ " YELLOW "WARN" RESET " ] ";
+			break ;
+		case LOG_ERROR:
+			oss << "[ " RED "ERROR" RESET " ] ";
+			break ;
+		case LOG_CRITICAL:
+			oss << "[ " MAGENTA "CRITICAL" RESET " ] ";
+			break ;
+		default:
+			oss << "[ ]";
+	}
+
+	oss << message << "\n";
+	std::cout << oss.str();
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int Server::getPort() const
 {
@@ -373,10 +411,10 @@ static int createListeningSocket(int port) // fd that listens to all interfaces 
 
 void Server::run()
 {
-	std::cout << "Ready to run !\n";
 
+	logInfo(LOG_INFO, "Ready to run!");
 	m_listenFd = createListeningSocket(m_cfg.getPort()); // the "door" of the server irc
-	std::cout << "Listening...\n";
+	logInfo(LOG_INFO, "Socket acquired! Now listening incoming connections...");
 
 	m_sm = new PollSocketManager(); // THE Manager of the Sockets
 
@@ -428,7 +466,10 @@ void Server::run()
 	}
 
 	if (g_shutdown)
-		std::cout << "\nServer shutting down...\n";
+	{
+		std::cout << '\n';
+		logInfo(LOG_INFO, "Server shutting down...");
+	}
 }
 
 Server::Server(const Config& cfg) : m_cfg(cfg), m_listenFd(-1), m_sm(0)
@@ -437,7 +478,7 @@ Server::Server(const Config& cfg) : m_cfg(cfg), m_listenFd(-1), m_sm(0)
 
 Server::~Server()
 {
-	std::cout << "Cleaning up my stuff...\n";
+	logInfo(LOG_INFO, "Cleaning up my stuff...");
 
 	for (std::map< int, IClient* >::iterator it = m_clients.begin(); it != m_clients.end(); it++)
 	{
@@ -462,5 +503,5 @@ Server::~Server()
 
 	delete (m_sm);
 
-	std::cout << "All resources freed. I can die in peace! :D\n";
+	logInfo(LOG_INFO, "All resources freed. I can die in peace! :D");
 }
