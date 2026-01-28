@@ -1,4 +1,5 @@
 #include "PollSocketManager.hpp"
+#include <cerrno>
 
 const std::vector< epoll_event >& PollSocketManager::getEvents() const
 {
@@ -9,7 +10,7 @@ int PollSocketManager::wait(int timeout_ms)
 {
 	int n = epoll_wait(m_epollFd, &m_events[0], (int)m_events.size(), timeout_ms);
 
-	if (n == -1)
+	if (n == -1 && errno != EINTR)
 		throw std::runtime_error("epoll_wait failed\n");
 
 	if (n == (int)m_events.size())

@@ -11,17 +11,27 @@ void MessageBuffer::appendRead(const std::string& data)
 
 bool MessageBuffer::hasCompleteMessage() const
 {
-	return (m_readBuffer.find("\r\n") != std::string::npos);
+	return (m_readBuffer.find("\r\n") != std::string::npos ||
+			m_readBuffer.find('\n') != std::string::npos);
 }
 
 std::string MessageBuffer::getNextMessage()
 {
 	std::string::size_type pos = m_readBuffer.find("\r\n");
-	if (pos == std::string::npos)
-		return ("");
-	std::string line = m_readBuffer.substr(0, pos);
-	m_readBuffer.erase(0, pos + 2);
-	return (line);
+	if (pos != std::string::npos)
+	{
+		std::string line = m_readBuffer.substr(0, pos);
+		m_readBuffer.erase(0, pos + 2);
+		return (line);
+	}
+	pos = m_readBuffer.find('\n');
+	if (pos != std::string::npos)
+	{
+		std::string line = m_readBuffer.substr(0, pos);
+		m_readBuffer.erase(0, pos + 1);
+		return (line);
+	}
+	return ("");
 }
 
 size_t MessageBuffer::getReadBufferSize() const

@@ -11,7 +11,7 @@ class SixSevenBot : public IBot
 {
 private:
 	IServer& m_server;
-	BotClient* client;
+	BotClient* m_client;
 
 	void sendToChannel(IChannel* channel, const std::string& message);
 

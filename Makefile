@@ -13,7 +13,7 @@ INCLUDES = -I$(INC_DIR) \
 			-I$(INC_DIR)/network \
 			-I$(INC_DIR)/commands \
 
-FLAGS = -Wall -Wextra -Werror -std=c++98 $(INCLUDES)
+FLAGS = -Wall -Wextra -Werror -std=c++98 -g3 $(INCLUDES)
 
 SRCS = $(SRCS_DIR)/main.cpp \
 		$(SRCS_DIR)/core/Config.cpp \

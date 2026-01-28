@@ -11,8 +11,13 @@
 #include "protocol/Message.hpp"
 #include "protocol/MessageParser.hpp"
 #include <cerrno>
+#include <csignal>
+#include <cstdlib>
 #include <sstream>
 #include <stdexcept>
+
+extern volatile sig_atomic_t g_shutdown;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int Server::getPort() const
 {
@@ -196,6 +201,8 @@ void Server::disconnectClient(int fd)
 	{
 		IClient* client = it->second;
 
+		unregisterClient(client->getNickname());
+
 		const std::set< IChannel* >& channels = client->getChannels();
 		std::set< IChannel* > channels_copy = channels;
 
@@ -377,9 +384,13 @@ void Server::run()
 
 	m_sm->addSocket(m_listenFd, EPOLLIN); // pending incoming connexions :
 
-	while (true)
+	while (!g_shutdown)
 	{
 		int n = m_sm->wait(EPOLL_TIMEOUT_MS); // waiting for incoming connexxions
+
+		if (g_shutdown)
+			break;
+
 		checkClientTimeouts();
 		if (n < 0)
 		{
@@ -415,6 +426,9 @@ void Server::run()
 			}
 		}
 	}
+
+	if (g_shutdown)
+		std::cout << "\nServer shutting down...\n";
 }
 
 Server::Server(const Config& cfg) : m_cfg(cfg), m_listenFd(-1), m_sm(0)
@@ -423,14 +437,30 @@ Server::Server(const Config& cfg) : m_cfg(cfg), m_listenFd(-1), m_sm(0)
 
 Server::~Server()
 {
+	std::cout << "Cleaning up my stuff...\n";
+
 	for (std::map< int, IClient* >::iterator it = m_clients.begin(); it != m_clients.end(); it++)
 	{
+		if (it->first != m_listenFd)
+		{
+			std::string goodbye =
+				"ERROR :Server shutting down. Say goodbye. (sike it's too late :p)\r\n";
+			send(it->first, goodbye.c_str(), goodbye.length(), MSG_NOSIGNAL);
+		}
 		close(it->first);
 		delete (it->second);
 	}
 	m_clients.clear();
 
+	for (std::map< std::string, IChannel* >::iterator it = m_channels.begin();
+		 it != m_channels.end(); ++it)
+		delete it->second;
+	m_channels.clear();
+
 	if (m_listenFd != -1)
 		close(m_listenFd);
+
 	delete (m_sm);
+
+	std::cout << "All resources freed. I can die in peace! :D\n";
 }
