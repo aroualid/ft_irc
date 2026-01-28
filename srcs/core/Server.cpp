@@ -201,6 +201,8 @@ void Server::disconnectClient(int fd)
 	{
 		IClient* client = it->second;
 
+		unregisterClient(client->getNickname());
+
 		const std::set< IChannel* >& channels = client->getChannels();
 		std::set< IChannel* > channels_copy = channels;
 

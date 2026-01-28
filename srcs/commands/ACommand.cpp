@@ -21,7 +21,7 @@ void ACommand::sendReply(IClient* client, const NumericReply& reply)
 	if (!client)
 		return;
 
-	std::string replyStr = reply.toString();
+	std::string replyStr = ":" + m_server.getServerName() + " " + reply.toString();
 	client->getBuffer().appendWrite(replyStr);
 }
 
