@@ -6,7 +6,6 @@
 #include "BotMessageBuffer.hpp"
 
 class IBot;
-class BotMessageBuffer;
 class BotClient : public IClient
 {
 private:
