@@ -10,7 +10,7 @@ class Config
 private:
 	int m_port;
 	std::string m_passwd;
-	Config(int port, std::string password);
+	Config(int port, const std::string& password);
 
 public:
 	int getPort() const;

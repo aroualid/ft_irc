@@ -20,6 +20,7 @@ SRCS = $(SRCS_DIR)/main.cpp \
 		$(SRCS_DIR)/core/Server.cpp \
 		$(SRCS_DIR)/core/Client.cpp \
 		$(SRCS_DIR)/core/Channel.cpp \
+		$(SRCS_DIR)/core/Logger.cpp \
 		$(SRCS_DIR)/network/PollSocketManager.cpp \
 		$(SRCS_DIR)/network/MessageBuffer.cpp \
 		$(SRCS_DIR)/commands/ACommand.cpp \

@@ -1,4 +1,5 @@
 #include "core/Server.hpp"
+#include "Logger.hpp"
 #include "core/Channel.hpp"
 #include "core/Client.hpp"
 #include "core/IClient.hpp"
@@ -13,6 +14,7 @@
 #include <cerrno>
 #include <csignal>
 #include <cstdlib>
+#include <ostream>
 #include <sstream>
 #include <stdexcept>
 
@@ -41,6 +43,8 @@ void Server::deleteChannelIfEmpty(IChannel* channel)
 	if (!channel->isEmpty())
 		return;
 	m_channels.erase(channel->getName());
+	LOG_INFO << "Channel " << channel->getName() << " was empty, so I went ahead and deleted it"
+			 << std::endl;
 	delete channel;
 }
 
@@ -62,7 +66,8 @@ void Server::checkClientTimeouts()
 
 		if (last_ping != 0 && (now - last_ping) > PONG_TIMEOUT)
 		{
-			std::cout << "Client #" << client_fd << " didn't respond to ping. Killing it :D\n";
+			LOG_NOTICE << "Client #" << client_fd << " didn't respond to ping. Killing it :D"
+					   << std::endl;
 			std::string error_msg = "ERROR :You didn't respond to my ping and that's mean :( "
 									"Therefore you're gonna die :D\r\n";
 			send(client_fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
@@ -71,8 +76,8 @@ void Server::checkClientTimeouts()
 		}
 		else if (last_ping == 0 && (now - last_activity) > PING_TIMEOUT)
 		{
-			std::cout << "Client #" << client_fd << " has been idle for " << (now - last_activity)
-					  << " seconds. Checking if it's still alive lol\n";
+			LOG_NOTICE << "Client #" << client_fd << " has been idle for " << (now - last_activity)
+					   << " seconds. Checking if it's still alive lol" << std::endl;
 			std::ostringstream ping;
 			ping << "PING :" << getServerName() << "\r\n";
 			client->getBuffer().appendWrite(ping.str());
@@ -95,6 +100,8 @@ IChannel* Server::createChannel(const std::string& name, IClient* creator)
 	m_channels[name] = channel;
 
 	channel->addMember(creator, "");
+	LOG_INFO << "Channel " << channel->getName() << " has been created by "
+			 << creator->getNickname() << " (#" << creator->getFd() << ")" << std::endl;
 	return (channel);
 }
 
@@ -159,13 +166,15 @@ void Server::onIrcLine(int fd, const std::string& line)
 	if (!msg.isValid())
 		return;
 
+	LOG_DEBUG << "Processing message\n" << msg << std::endl;
+
 	ACommand* cmd = CommandFactory::getInstance().createCommand(msg.m_command_type, *this);
 	if (!cmd)
 	{
-		std::cout << "[DEBUG] Command not found: " << msg.m_command << ". Ignoring...\n";
+		LOG_NOTICE << "Command not found: " << msg.m_command << ". Ignoring..." << std::endl;
 		return;
 	}
-	std::cout << "[DEBUG] Running " << cmd->getName() << "\n";
+	LOG_INFO << "Running command: " << cmd->getName() << std::endl;
 	cmd->execute(client, msg);
 	delete cmd;
 
@@ -215,7 +224,7 @@ void Server::disconnectClient(int fd)
 		delete client;
 		m_clients.erase(it);
 	}
-	std::cout << "Disconnected : " << fd << "\n";
+	LOG_INFO << "Disconnected Client #" << fd << std::endl;
 }
 
 void Server::writeClientsData(int fd)
@@ -276,7 +285,7 @@ void Server::readClientsData(int fd)
 			}
 			if (client->getBuffer().getReadBufferSize() > 65536)
 			{
-				std::cout << "Input buffer is too big, disconnecting : " << fd << "\n";
+				LOG_NOTICE << "Input buffer is too big, so I'm killing Client #" << fd << std::endl;
 				disconnectClient(fd);
 				return;
 			}
@@ -311,7 +320,7 @@ void Server::acceptNewClients()
 		m_sm->addSocket(clientFd, EPOLLIN);
 
 		m_clients[clientFd] = new Client(clientFd, "unknown", *this);
-		std::cout << "Client Accepted : " << clientFd << "\n";
+		LOG_NOTICE << "New client has joined! (#" << clientFd << ")" << std::endl;
 	}
 }
 
@@ -373,10 +382,9 @@ static int createListeningSocket(int port) // fd that listens to all interfaces 
 
 void Server::run()
 {
-	std::cout << "Ready to run !\n";
-
+	LOG_INFO << "Ready to run!" << std::endl;
 	m_listenFd = createListeningSocket(m_cfg.getPort()); // the "door" of the server irc
-	std::cout << "Listening...\n";
+	LOG_INFO << "Now listening on port " << m_cfg.getPort() << std::endl;
 
 	m_sm = new PollSocketManager(); // THE Manager of the Sockets
 
@@ -428,7 +436,10 @@ void Server::run()
 	}
 
 	if (g_shutdown)
-		std::cout << "\nServer shutting down...\n";
+	{
+		std::cout << '\n';
+		LOG_INFO << "Server is shutting down..." << std::endl;
+	}
 }
 
 Server::Server(const Config& cfg) : m_cfg(cfg), m_listenFd(-1), m_sm(0)
@@ -437,8 +448,7 @@ Server::Server(const Config& cfg) : m_cfg(cfg), m_listenFd(-1), m_sm(0)
 
 Server::~Server()
 {
-	std::cout << "Cleaning up my stuff...\n";
-
+	LOG_NOTICE << "Cleaning up my stuff" << std::endl;
 	for (std::map< int, IClient* >::iterator it = m_clients.begin(); it != m_clients.end(); it++)
 	{
 		if (it->first != m_listenFd)
@@ -462,5 +472,5 @@ Server::~Server()
 
 	delete (m_sm);
 
-	std::cout << "All resources freed. I can die in peace! :D\n";
+	LOG_INFO << "All resources freed. I can die in peace! :D" << std::endl;
 }
