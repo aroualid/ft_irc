@@ -26,6 +26,7 @@
 #include "core/Config.hpp"
 #include "core/IServer.hpp"
 #include "network/ISocketManager.hpp"
+#include "bot/IBot.hpp"
 
 #define RESET "\033[0m"
 #define RED "\033[91m"
@@ -63,6 +64,8 @@ private:
 
 	void checkClientTimeouts();
 
+	std::vector<IBot*>	m_bots;
+
 public:
 	Server(const Config& cfg);
 	~Server();
@@ -82,4 +85,7 @@ public:
 	size_t getChannelCount() const;
 	std::string getServerName() const;
 	bool requiresPassword() const;
+
+	void	registerBot(IBot* bot);
+	void	unregisterBot(IBot* bot);
 };
