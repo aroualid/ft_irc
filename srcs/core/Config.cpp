@@ -26,7 +26,8 @@ int parsePort(char* argv)
 	if (errno != 0 || end == argv || *end != '\0')
 	{
 		std::ostringstream oss;
-		oss << "Port must be a number.\nI know it's crazy, but there's nothing to listen to on " << argv << " :o";
+		oss << "Port must be a number.\nI know it's crazy, but there's nothing to listen to on "
+			<< argv << " :o";
 		throw(std::runtime_error(oss.str()));
 	}
 	if (port < PORT_MIN || port > PORT_MAX)
@@ -44,7 +45,7 @@ Config Config::checkArgs(int argc, char** argv)
 	{
 		std::ostringstream oss;
 		oss << "Usage: " << argv[0] << " <port> <password>";
-		throw (std::runtime_error(oss.str()));
+		throw(std::runtime_error(oss.str()));
 	}
 
 	int port = parsePort(argv[1]);
@@ -64,6 +65,6 @@ const std::string& Config::getPassword() const
 	return this->m_passwd;
 }
 
-Config::Config(int port, const std::string &password) : m_port(port), m_passwd(password)
+Config::Config(int port, const std::string& password) : m_port(port), m_passwd(password)
 {
 }

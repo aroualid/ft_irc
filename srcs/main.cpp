@@ -1,3 +1,4 @@
+#include "Logger.hpp"
 #include "core/Server.hpp"
 #include <csignal>
 #include <cstdlib>
@@ -15,6 +16,8 @@ int main(int argc, char** argv)
 	std::signal(SIGINT, signalHandler);
 	std::signal(SIGTERM, signalHandler);
 
+	Logger::getInstance().setMinLevel(Logger::DEBUG);
+
 	try
 	{
 		Config cfg = Config::checkArgs(argc, argv);
@@ -25,7 +28,9 @@ int main(int argc, char** argv)
 
 	catch (const std::exception& e)
 	{
-		std::cerr << RED "Something went TERRIBLY wrong: " RESET << e.what() << '\n';
+		LOG_CRITICAL << "Something went TERRIBLY wrong: " << e.what();
+		Logger::getInstance().log((Logger::Level)153)
+			<< "Bailing out, you are on your own. Good luck" << std::endl;
 		return (1);
 	}
 }

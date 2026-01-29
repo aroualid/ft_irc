@@ -1,8 +1,10 @@
 #pragma once
 
 #include "commands/CommandType.hpp"
+#include <ostream>
 #include <string>
 #include <vector>
+
 struct Message
 {
 	std::string m_prefix;
@@ -13,3 +15,5 @@ struct Message
 	Message();
 	bool isValid() const;
 };
+
+std::ostream& operator<<(std::ostream& stream, const Message& message);
