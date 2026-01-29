@@ -1,17 +1,18 @@
 #include "bot/SixSevenBot.hpp"
 #include "CommandType.hpp"
+#include "bot/BotClient.hpp"
 #include "protocol/Message.hpp"
 #include "protocol/MessageParser.hpp"
 
 SixSevenBot::SixSevenBot(IServer& server, const std::string& nick) : m_server(server)
 {
-	(void)nick;
+	m_client = new BotClient(nick, server);
 }
 
-void SixSevenBot::onChannelMessage(IClient *sender, IChannel *channel, const std::string &message)
+void SixSevenBot::onChannelMessage(IClient* sender, IChannel* channel, const std::string& message)
 {
 	if (sender == m_client)
-		return ;
+		return;
 
 	bool hasSix = message.find('6') != std::string::npos;
 	bool hasSeven = message.find('7') != std::string::npos;
@@ -21,7 +22,7 @@ void SixSevenBot::onChannelMessage(IClient *sender, IChannel *channel, const std
 		sendToChannel(channel, "DID SOMEONE SAY... SIX SEVENNNNNNNN????");
 }
 
-void SixSevenBot::sendToChannel(IChannel *channel, const std::string &message)
+void SixSevenBot::sendToChannel(IChannel* channel, const std::string& message)
 {
 	Message msg;
 	msg.m_prefix = m_client->getPrefix();
@@ -32,4 +33,9 @@ void SixSevenBot::sendToChannel(IChannel *channel, const std::string &message)
 
 	std::string serialized = MessageParser::serialize(msg);
 	channel->broadcast(serialized, m_client);
+}
+
+IClient* SixSevenBot::getClient()
+{
+	return (m_client);
 }

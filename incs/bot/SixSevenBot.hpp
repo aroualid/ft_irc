@@ -3,9 +3,8 @@
 #include "IChannel.hpp"
 #include "IClient.hpp"
 #include "IServer.hpp"
+#include "bot/BotClient.hpp"
 #include "bot/IBot.hpp"
-
-class BotClient;
 
 class SixSevenBot : public IBot
 {
