@@ -4,8 +4,7 @@
 #include "IClient.hpp"
 #include "IServer.hpp"
 #include "bot/IBot.hpp"
-
-class BotClient;
+#include "bot/BotClient.hpp"
 
 class MiaouBot : public IBot
 {
