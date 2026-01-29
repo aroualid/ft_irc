@@ -11,8 +11,8 @@ TEST_DIR = ./tests
 INCLUDES = -I$(INC_DIR) \
 			-I$(INC_DIR)/core \
 			-I$(INC_DIR)/network \
-			-I$(INC_DIR)/commands \
-			-I$(INC_DIR)/bot
+			-I$(INC_DIR)/commands 
+#			-I$(INC_DIR)/bot
 
 FLAGS = -Wall -Wextra -Werror -std=c++98 $(INCLUDES)
 
@@ -49,8 +49,8 @@ SRCS = $(SRCS_DIR)/main.cpp \
 		$(SRCS_DIR)/modes/OperatorMode.cpp \
 		$(SRCS_DIR)/modes/KeyMode.cpp \
 		$(SRCS_DIR)/modes/UserLimitMode.cpp \
-		$(SRCS_DIR)/protocol/IrcUtils.cpp \
-		$(SRCS_DIR)/bot/BotClient.cpp
+		$(SRCS_DIR)/protocol/IrcUtils.cpp 
+#		$(SRCS_DIR)/bot/BotClient.cpp
 	   
 OBJ = $(SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
