@@ -9,6 +9,11 @@ SixSevenBot::SixSevenBot(IServer& server, const std::string& nick) : m_server(se
 	m_client = new BotClient(nick, server);
 }
 
+SixSevenBot::~SixSevenBot()
+{
+	delete m_client;
+}
+
 void SixSevenBot::onChannelMessage(IClient* sender, IChannel* channel, const std::string& message)
 {
 	if (sender == m_client)
@@ -20,6 +25,25 @@ void SixSevenBot::onChannelMessage(IClient* sender, IChannel* channel, const std
 
 	if (isValidSixSeven)
 		sendToChannel(channel, "DID SOMEONE SAY... SIX SEVENNNNNNNN????");
+}
+
+void SixSevenBot::onPrivateMessage(IClient* sender, const std::string& message)
+{
+	if (sender == m_client)
+		return;
+	(void)message;
+}
+
+void SixSevenBot::joinChannel(const std::string& channelName)
+{
+	IChannel* channel = m_server.getChannel(channelName);
+	if (!channel)
+		channel = m_server.createChannel(channelName, m_client);
+	if (!channel->hasMember(m_client))
+	{
+		channel->addMember(m_client);
+		m_client->joinChannel(channel);
+	}
 }
 
 void SixSevenBot::sendToChannel(IChannel* channel, const std::string& message)
