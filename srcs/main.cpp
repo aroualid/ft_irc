@@ -2,6 +2,7 @@
 #include "core/Server.hpp"
 #include <csignal>
 #include <cstdlib>
+#include "bot/MiaouBot.hpp"
 
 volatile sig_atomic_t g_shutdown = 0;
 
@@ -21,7 +22,9 @@ int main(int argc, char** argv)
 	try
 	{
 		Config cfg = Config::checkArgs(argc, argv);
-		Server srv(cfg);
+		Server srv(cfg);	
+	    MiaouBot* bot = new MiaouBot(srv, "larry");
+	    srv.registerBot(bot);
 		srv.run();
 		return (0);
 	}

@@ -52,7 +52,9 @@ SRCS = $(SRCS_DIR)/main.cpp \
 		$(SRCS_DIR)/modes/UserLimitMode.cpp \
 		$(SRCS_DIR)/protocol/IrcUtils.cpp  \
 		$(SRCS_DIR)/bot/BotMessageBuffer.cpp \
-		$(SRCS_DIR)/bot/BotClient.cpp
+		$(SRCS_DIR)/bot/BotClient.cpp \
+		$(SRCS_DIR)/bot/MiaouBot.cpp 
+
 
 
 OBJ = $(SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/%.o)

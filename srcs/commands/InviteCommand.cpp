@@ -4,6 +4,7 @@
 #include "core/IMessageBuffer.hpp"
 #include "protocol/MessageParser.hpp"
 #include <new>
+#include <iostream>
 
 REGISTER_COMMAND(InviteCommand, irc::INVITE, "INVITE");
 
@@ -28,6 +29,12 @@ void InviteCommand::doExecute(IClient* client, const Message& message)
 	}
 
 	IChannel* channel = m_server.getChannel(channelName);
+	if (target && target->getFd() < 0)  // It's a bot!
+    {
+        channel->addMember(target);
+        target->joinChannel(channel);
+        return;
+    }	
 	if (!channel)
 	{
 		sendReply(client, NumericReply::noSuchChannel(client->getNickname(), channelName));
@@ -51,7 +58,7 @@ void InviteCommand::doExecute(IClient* client, const Message& message)
 		sendReply(client,
 				  NumericReply::userOnChannel(client->getNickname(), targetNick, channelName));
 		return;
-	}
+	}    
 
 	channel->addInvite(target);
 
