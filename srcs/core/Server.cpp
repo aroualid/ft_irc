@@ -346,6 +346,14 @@ bool Server::requiresPassword() const
 	return !m_cfg.getPassword().empty();
 }
 
+void Server::markForDisconnect(int fd)
+{
+	m_pendingDisconnects.insert(fd);
+	IClient* client = getClient(fd);
+	if (client && !client->getBuffer().getWriteBuffer().empty())
+		m_sm->modifySocket(fd, EPOLLIN | EPOLLOUT);
+}
+
 static int createListeningSocket(int port) // fd that listens to all interfaces trying to bind
 {
 	std::stringstream ss;

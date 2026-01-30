@@ -95,3 +95,8 @@ std::string Server::getServerName() const
 {
 	return "mock_server.serv";
 }
+
+void Server::markForDisconnect(int fd)
+{
+	MOCK_LOG("Server marking fd " << fd << " for disconnect");
+}

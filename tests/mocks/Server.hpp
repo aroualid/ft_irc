@@ -29,4 +29,5 @@ public:
 	void deleteChannelIfEmpty(IChannel* channel);
 	size_t getChannelCount() const;
 	std::string getServerName() const;
+	void markForDisconnect(int fd);
 };

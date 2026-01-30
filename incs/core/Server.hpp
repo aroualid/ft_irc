@@ -83,4 +83,5 @@ public:
 	size_t getChannelCount() const;
 	std::string getServerName() const;
 	bool requiresPassword() const;
+	void markForDisconnect(int fd);
 };
