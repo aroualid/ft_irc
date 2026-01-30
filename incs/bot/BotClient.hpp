@@ -4,8 +4,8 @@
 #include "IServer.hpp"
 #include "IChannel.hpp"
 #include "BotMessageBuffer.hpp"
+#include "IBot.hpp"
 
-class IBot;
 class BotClient : public IClient
 {
 private:
