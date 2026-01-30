@@ -16,7 +16,11 @@ int main(int argc, char** argv)
 	std::signal(SIGINT, signalHandler);
 	std::signal(SIGTERM, signalHandler);
 
+#ifdef DEBUG_MODE
 	Logger::getInstance().setMinLevel(Logger::DEBUG);
+#else
+	Logger::getInstance().setMinLevel(Logger::NOTICE);
+#endif
 
 	try
 	{
