@@ -6,7 +6,6 @@
 #include <string>
 
 class IMessageBuffer;
-// class MessageBuffer;
 
 class IClient
 {

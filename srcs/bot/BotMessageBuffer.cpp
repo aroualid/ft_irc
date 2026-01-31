@@ -1,6 +1,6 @@
 #include "bot/BotMessageBuffer.hpp"
 
-BotMessageBuffer::BotMessageBuffer() : m_readBuffer(), m_writeBuffer()
+BotMessageBuffer::BotMessageBuffer(IServer& server) : m_server(server), m_readBuffer(), m_writeBuffer()
 {
 }
 
@@ -63,3 +63,58 @@ void BotMessageBuffer::clearWriteBuffer()
 {
 	m_writeBuffer.clear();
 }
+
+
+void	BotMessageBuffer::parseAndDispatch(const std::string& prefix, const std::string& command, const std::vector<std::string>& params)
+{
+	if (command != "PRIVMSG" || params.size() < 2)
+		return;
+
+	std::string	target = params[0];
+	std::string	text = params[1];
+
+	std::string	senderNick = prefix.substr(0, prefix.find('!'));
+	IClient* sender = m_server.getClientByNickname(senderNick);
+	if (!sender)
+		return;
+
+	if (target[0] == '#')
+	{
+		IChannel* channel = m_server.getChannel(target);
+		if (channel)
+			m_bot->onChannelMessage(sender, channel, text);
+	}
+	else
+	{
+		m_bot->onPrivateMessage(sender, text);
+	}
+}
+
+void	BotMessageBuffer::processIncomingMessage(const std::string& raw)
+{
+	std::string line = raw;
+	if (line.size() >= 2 && line.substr(line.size()-2) == "\r\n")
+		line = line.substr(0, line.size()-2);
+	//\r\n removed
+
+	std::string	prefix;
+	std::string	command;
+	std::vector<std::string> params;
+
+	size_t	pos = 0;
+	if (line[0] == ':')
+	{
+		pos = line.find(' ');
+		prefix = line.substr(1, pos - 1);
+		pos++;
+	}
+	//we've got the prefix
+	
+	size_t	nextSpace = line.find(' ', pos);
+	command = line.substr(pos, nextSpace - pos);
+	//we've got the command
+
+	parseAndDispatch(prefix, command, params);
+}
+
+//:prefix COMMAND param1 param2 :trailing parameter with spaces

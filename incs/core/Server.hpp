@@ -19,8 +19,6 @@
 #include <set>
 #include <sstream>
 
-// #include "PollSocketManager.hpp"
-
 #include "IChannel.hpp"
 #include "IClient.hpp"
 #include "core/Config.hpp"
