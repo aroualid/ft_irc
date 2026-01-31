@@ -12,7 +12,8 @@ TEST_DIR := ./tests
 INCLUDES := -I$(INC_DIR) \
 			-I$(INC_DIR)/core \
 			-I$(INC_DIR)/network \
-			-I$(INC_DIR)/commands
+			-I$(INC_DIR)/commands \
+			-I$(INC_DIR)/bot
 
 BONUS_INCLUDES := -I$(INC_DIR)/bot
 
@@ -60,8 +61,11 @@ SRCS := $(SRCS_DIR)/main.cpp \
 		$(SRCS_DIR)/modes/UserLimitMode.cpp \
 		$(SRCS_DIR)/protocol/IrcUtils.cpp
 
-BONUS_SRCS := $(SRCS_DIR)/bot/BotClient.cpp \
-			  $(SRCS_DIR)/bot/SixSevenBot.cpp
+
+OBJ = $(SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+
+BONUS_SRCS := $(SRCS_DIR)/bot/BotMessageBuffer.cpp \
+			  $(SRCS_DIR)/bot/BotClient.cpp
 
 OBJS := $(SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 OBJS_BONUS := $(SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/bonus/%.o) \
