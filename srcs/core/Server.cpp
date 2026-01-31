@@ -17,24 +17,49 @@
 #include <ostream>
 #include <sstream>
 #include <stdexcept>
+#include <algorithm>
 
 extern volatile sig_atomic_t g_shutdown;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int Server::getPort() const
 {
 	return m_cfg.getPort();
 }
 
+#ifdef BONUS
+void	Server::registerBot(IBot* bot)
+{
+	if (!bot)
+		return;
+	IClient* botClient = bot->getClient();
+
+	if (!botClient)
+		return;
+	
+	if (std::find(m_bots.begin(), m_bots.end(), bot) != m_bots.end())
+		return;
+	m_clientsByNick[botClient->getNickname()] = botClient;
+
+	m_bots.push_back(bot);
+}
+
+void	Server::unregisterBot(IBot* bot)
+{
+	if (!bot)
+		return;
+	std::vector<IBot*>::iterator it = std::find(m_bots.begin(), m_bots.end(), bot);
+	if (it != m_bots.end())
+		m_bots.erase(it);
+	IClient* botClient = bot->getClient();
+	if (botClient)
+		m_clientsByNick.erase(botClient->getNickname());
+}
+#endif
+
 const std::string& Server::getPassword() const
 {
 	return m_cfg.getPassword();
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// getClientByNickname
-// register
-// unregister
 
 void Server::deleteChannelIfEmpty(IChannel* channel)
 {
@@ -194,13 +219,8 @@ static void setNonBlocking(int fd)
 void Server::disconnectClient(int fd)
 {
 	m_pendingDisconnects.erase(fd);
-	try
-	{
-		m_sm->removeSocket(fd);
-	}
-	catch (...)
-	{ // catch any exception "..."
-	}
+
+	m_sm->removeSocket(fd);
 	close(fd);
 	std::map< int, IClient* >::iterator it = m_clients.find(fd);
 	if (it != m_clients.end())
@@ -346,6 +366,14 @@ bool Server::requiresPassword() const
 	return !m_cfg.getPassword().empty();
 }
 
+void Server::markForDisconnect(int fd)
+{
+	m_pendingDisconnects.insert(fd);
+	IClient* client = getClient(fd);
+	if (client && !client->getBuffer().getWriteBuffer().empty())
+		m_sm->modifySocket(fd, EPOLLIN | EPOLLOUT);
+}
+
 static int createListeningSocket(int port) // fd that listens to all interfaces trying to bind
 {
 	std::stringstream ss;
@@ -475,5 +503,8 @@ Server::~Server()
 
 	delete (m_sm);
 
+
+	//cleaning bots here !!!!
 	LOG_INFO << "All resources freed. I can die in peace! :D" << std::endl;
 }
+

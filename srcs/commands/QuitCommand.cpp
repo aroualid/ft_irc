@@ -2,6 +2,7 @@
 #include "IChannel.hpp"
 #include "IClient.hpp"
 #include "IServer.hpp"
+#include "core/IMessageBuffer.hpp"
 #include "commands/ACommand.hpp"
 #include "commands/CommandRegistration.hpp"
 #include "commands/CommandType.hpp"
@@ -62,6 +63,10 @@ void QuitCommand::doExecute(IClient* client, const Message& message)
 			m_server.deleteChannelIfEmpty(*it);
 		}
 	}
+
+	std::string errorMsg = "ERROR :Closing link (" + quitMessage + ")\r\n";
+	client->getBuffer().appendWrite(errorMsg);
+	m_server.markForDisconnect(client->getFd());
 }
 
 ACommand* QuitCommand::create(IServer& server)

@@ -1,22 +1,31 @@
-NAME = ircserv
+NAME := ircserv
+ANNOUNCER_NAME := Announcer
 
-CXX = c++
+CXX := c++
+CXXFLAGS := -Wall -Wextra -Werror -std=c++98 -MMD -MP
 
-SRCS_DIR = ./srcs
-INC_DIR = ./incs
-OBJ_DIR = ./objs
-TEST_DIR = ./tests
+SRCS_DIR := ./srcs
+INC_DIR := ./incs
+OBJ_DIR := ./objs
+TEST_DIR := ./tests
 
-
-INCLUDES = -I$(INC_DIR) \
+INCLUDES := -I$(INC_DIR) \
 			-I$(INC_DIR)/core \
 			-I$(INC_DIR)/network \
-			-I$(INC_DIR)/commands 
-#			-I$(INC_DIR)/bot
+			-I$(INC_DIR)/commands \
+			-I$(INC_DIR)/bot
 
-FLAGS = -Wall -Wextra -Werror -std=c++98 -g3 $(INCLUDES)
+BONUS_INCLUDES := -I$(INC_DIR)/bot
 
-SRCS = $(SRCS_DIR)/main.cpp \
+get_color = $(if $(filter Purple,$(1)),$(shell tput setaf 5),$(if $(filter Red,$(1)),$(shell tput setaf 1),$(if $(filter Cyan,$(1)),$(shell tput setaf 6),$(if $(filter Blue,$(1)),$(shell tput setaf 4),$(if $(filter Yellow,$(1)),$(shell tput setaf 3),$(if $(filter Green,$(1)),$(shell tput setaf 2),$(if $(filter Off,$(1)),$(shell tput sgr0),$(shell tput sgr0))))))))
+
+ifdef DEBUG
+	CXXFLAGS += -g3 -DDEBUG_MODE
+else ifdef FSAN
+	CXXFLAGS += -g3 -fsanitize=address -DDEBUG_MODE
+endif
+
+SRCS := $(SRCS_DIR)/main.cpp \
 		$(SRCS_DIR)/core/Config.cpp \
 		$(SRCS_DIR)/core/Server.cpp \
 		$(SRCS_DIR)/core/Client.cpp \
@@ -50,19 +59,106 @@ SRCS = $(SRCS_DIR)/main.cpp \
 		$(SRCS_DIR)/modes/OperatorMode.cpp \
 		$(SRCS_DIR)/modes/KeyMode.cpp \
 		$(SRCS_DIR)/modes/UserLimitMode.cpp \
-		$(SRCS_DIR)/protocol/IrcUtils.cpp 
-#		$(SRCS_DIR)/bot/BotClient.cpp
-	   
+		$(SRCS_DIR)/protocol/IrcUtils.cpp
+
+
 OBJ = $(SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
-all: $(NAME)
+BONUS_SRCS := $(SRCS_DIR)/bot/BotMessageBuffer.cpp \
+			  $(SRCS_DIR)/bot/BotClient.cpp
 
-$(NAME): $(OBJ)
-	$(CXX) $(FLAGS) -o $(NAME) $(OBJ)
+OBJS := $(SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+OBJS_BONUS := $(SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/bonus/%.o) \
+			  $(BONUS_SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/bonus/%.o)
+
+BONUS_MARKER := .bonus
+
+.PHONY: all bonus clean fclean re debug fsan format lint lint-fix \
+		test test_run test_filter docker-test docker-test-shell docker-test-filter
+
+all:
+	@if $(MAKE) --no-print-directory -q $(NAME) 2>/dev/null; then \
+		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] Everything is up to date. $(call get_color,Purple)Zzz...$(call get_color,Off)"; \
+	else \
+		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] Starting build of $(call get_color,Purple)$(NAME)$(call get_color,Off)..."; \
+		$(MAKE) --no-print-directory $(NAME); \
+	fi
+
+bonus:
+	@if [ -f $(BONUS_MARKER) ] && $(MAKE) --no-print-directory -q $(BONUS_MARKER) 2>/dev/null; then \
+		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] Bonus is already up to date. $(call get_color,Purple)Zzz...$(call get_color,Off)"; \
+	else \
+		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] Starting build of $(call get_color,Yellow)$(NAME)$(call get_color,Off) (with bots. many of these.)..."; \
+		$(MAKE) --no-print-directory $(BONUS_MARKER); \
+	fi
+
+-include $(OBJS:.o=.d)
+-include $(OBJS_BONUS:.o=.d)
 
 $(OBJ_DIR)/%.o: $(SRCS_DIR)/%.cpp
-	@mkdir -p $(dir $@) 
-	$(CXX) $(FLAGS) -c $< -o $@
+	@mkdir -p $(dir $@)
+	@printf "\r\033[K$(call get_color,Off)[$(ANNOUNCER_NAME)] $(call get_color,Cyan)Compiling $<$(call get_color,Off)"
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@ || \
+		(echo "\n$(call get_color,Red)Compilation failed for $<$(call get_color,Off)" && exit 1)
+
+$(OBJ_DIR)/bonus/%.o: $(SRCS_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	@printf "\r\033[K$(call get_color,Off)[$(ANNOUNCER_NAME)] $(call get_color,Cyan)Compiling $<$(call get_color,Off)"
+	@$(CXX) $(CXXFLAGS) -DBONUS $(INCLUDES) $(BONUS_INCLUDES) -c $< -o $@ || \
+		(echo "\n$(call get_color,Red)Compilation failed for $<$(call get_color,Off)" && exit 1)
+
+$(NAME): $(OBJS)
+	@printf "\r\033[K$(call get_color,Off)[$(ANNOUNCER_NAME)] $(call get_color,Green)Linking $(NAME)$(call get_color,Off)\n"
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $(NAME) $(OBJS) || \
+		(echo "$(call get_color,Red)Linking failed!$(call get_color,Off)" && exit 1)
+	@if [ "$(DEBUG)" = "1" ]; then \
+		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] $(call get_color,Purple)$(NAME)$(call get_color,Off) compiled in $(call get_color,Red)DEBUG$(call get_color,Off) mode!"; \
+	else \
+		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] $(call get_color,Purple)$(NAME)$(call get_color,Off) has been compiled! Netsplits are now a philosophical concept and PING timeouts build character :) (discord remains the disaster recovery plan)"; \
+	fi
+
+$(BONUS_MARKER): $(OBJS_BONUS)
+	@printf "\r\033[K$(call get_color,Off)[$(ANNOUNCER_NAME)] $(call get_color,Green)Linking $(NAME) with bonus$(call get_color,Off)\n"
+	@$(CXX) $(CXXFLAGS) $(INCLUDES) $(BONUS_INCLUDES) -o $(NAME) $(OBJS_BONUS) || \
+		(echo "$(call get_color,Red)Linking failed!$(call get_color,Off)" && exit 1)
+	@touch $(BONUS_MARKER)
+	@if [ "$(DEBUG)" = "1" ]; then \
+		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] $(call get_color,Purple)$(NAME)$(call get_color,Off) with $(call get_color,Yellow)BONUS$(call get_color,Off) compiled in $(call get_color,Red)DEBUG$(call get_color,Off) mode!"; \
+	else \
+		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] $(call get_color,Purple)$(NAME)$(call get_color,Off) with $(call get_color,Yellow)BONUS$(call get_color,Off) has been compiled!"; \
+	fi
+
+clean:
+	@echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] Cleaning object files..."
+	@if [ -d $(OBJ_DIR) ]; then \
+		rm -rf $(OBJ_DIR) && \
+		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] Removed object and dependency files"; \
+	else \
+		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] No object files to clean"; \
+	fi
+	@if [ -f $(BONUS_MARKER) ]; then \
+		rm -f $(BONUS_MARKER) && \
+		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] Removed bonus marker"; \
+	fi
+	@$(MAKE) --no-print-directory -C $(TEST_DIR) clean
+
+fclean: clean
+	@if [ -f $(NAME) ]; then \
+		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] Removing $(call get_color,Purple)$(NAME)$(call get_color,Off)..."; \
+		rm -f $(NAME) && \
+		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] $(call get_color,Purple)$(NAME)$(call get_color,Off) is GONE!!"; \
+	else \
+		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] $(call get_color,Purple)$(NAME)$(call get_color,Off) is already gone"; \
+	fi
+	@$(MAKE) --no-print-directory -C $(TEST_DIR) fclean
+
+re: fclean all
+
+debug:
+	@$(MAKE) --no-print-directory re DEBUG=1
+
+fsan:
+	@$(MAKE) --no-print-directory re FSAN=1
 
 test:
 	@$(MAKE) -C $(TEST_DIR)
@@ -82,17 +178,6 @@ docker-test-shell:
 docker-test-filter:
 	@$(MAKE) -C $(TEST_DIR) docker-test-filter FILTER=$(FILTER)
 
-clean:
-	rm -f $(OBJ)
-	rm -rf $(OBJ_DIR)
-	$(MAKE) -C $(TEST_DIR) clean
-
-fclean: clean
-	rm -f $(NAME)
-	$(MAKE) -C $(TEST_DIR) fclean
-
-re: fclean all
-
 format:
 	@find . -type f \( -name "*.cpp" -o -name "*.hpp" \) -exec clang-format -i {} +
 
@@ -101,5 +186,3 @@ lint:
 
 lint-fix:
 	run-clang-tidy -fix
-
-.PHONY: all clean fclean re format lint lint-fix test test_run test_filter docker-test docker-test-shell docker-test-filter
