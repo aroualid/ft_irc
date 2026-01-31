@@ -1,6 +1,11 @@
 #include "bot/BotMessageBuffer.hpp"
+#include "CommandType.hpp"
+#include "IClient.hpp"
+#include "Logger.hpp"
+#include "protocol/Message.hpp"
+#include "protocol/MessageParser.hpp"
 
-BotMessageBuffer::BotMessageBuffer(IServer& server) : m_server(server), m_readBuffer(), m_writeBuffer()
+BotMessageBuffer::BotMessageBuffer(IServer& server) : m_server(server), m_bot(NULL) 
 {
 }
 
@@ -44,6 +49,7 @@ size_t BotMessageBuffer::getReadBufferSize() const
 void BotMessageBuffer::appendWrite(const std::string& data)
 {
 	m_writeBuffer += data;
+	processIncomingMessage(data);
 }
 
 const std::string& BotMessageBuffer::getWriteBuffer() const
@@ -64,16 +70,21 @@ void BotMessageBuffer::clearWriteBuffer()
 	m_writeBuffer.clear();
 }
 
-
-void	BotMessageBuffer::parseAndDispatch(const std::string& prefix, const std::string& command, const std::vector<std::string>& params)
+void BotMessageBuffer::setBot(IBot *bot)
 {
-	if (command != "PRIVMSG" || params.size() < 2)
+	m_bot = bot;
+}
+
+void	BotMessageBuffer::parseAndDispatch(const Message &message)
+{
+
+	if (message.m_command_type != irc::PRIVMSG)
 		return;
 
-	std::string	target = params[0];
-	std::string	text = params[1];
+	std::string	target = message.m_params[0];
+	std::string	text = message.m_params[1];
+	std::string	senderNick = message.m_prefix.substr(0, message.m_prefix.find('!'));
 
-	std::string	senderNick = prefix.substr(0, prefix.find('!'));
 	IClient* sender = m_server.getClientByNickname(senderNick);
 	if (!sender)
 		return;
@@ -92,29 +103,11 @@ void	BotMessageBuffer::parseAndDispatch(const std::string& prefix, const std::st
 
 void	BotMessageBuffer::processIncomingMessage(const std::string& raw)
 {
-	std::string line = raw;
-	if (line.size() >= 2 && line.substr(line.size()-2) == "\r\n")
-		line = line.substr(0, line.size()-2);
-	//\r\n removed
+	Message receivedMsg = MessageParser::parse(raw);
+	if (!receivedMsg.isValid())
+		return ;
 
-	std::string	prefix;
-	std::string	command;
-	std::vector<std::string> params;
-
-	size_t	pos = 0;
-	if (line[0] == ':')
-	{
-		pos = line.find(' ');
-		prefix = line.substr(1, pos - 1);
-		pos++;
-	}
-	//we've got the prefix
-	
-	size_t	nextSpace = line.find(' ', pos);
-	command = line.substr(pos, nextSpace - pos);
-	//we've got the command
-
-	parseAndDispatch(prefix, command, params);
+	parseAndDispatch(receivedMsg);
 }
 
 //:prefix COMMAND param1 param2 :trailing parameter with spaces

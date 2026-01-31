@@ -90,7 +90,8 @@ void BotClient::leaveChannel(IChannel* channel)
 
 bool BotClient::isInChannel(const std::string& channelName) const
 {
-	for (std::set< IChannel* >::const_iterator it = m_channels.begin(); it != m_channels.end(); ++it)
+	for (std::set< IChannel* >::const_iterator it = m_channels.begin(); it != m_channels.end();
+		 ++it)
 	{
 		if ((*it)->getName() == channelName)
 			return true;
@@ -158,5 +159,5 @@ std::string BotClient::getPrefix() const
 
 void BotClient::setBot(IBot* bot)
 {
-	(void) bot;
+	(void)bot;
 }

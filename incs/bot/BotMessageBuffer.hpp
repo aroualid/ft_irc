@@ -6,6 +6,7 @@
 #include "core/IMessageBuffer.hpp"
 #include "core/IServer.hpp"
 #include "bot/IBot.hpp"
+#include "protocol/Message.hpp"
 
 
 class	BotMessageBuffer : public IMessageBuffer
@@ -17,12 +18,7 @@ class	BotMessageBuffer : public IMessageBuffer
 		std::string m_writeBuffer;
 
 		void	processIncomingMessage(const std::string& raw);
-		void	parseAndDispatch(const std::string& prefix,
-								const std::string& command,
-								const std::vector<std::string>& params);
-
-		void	setBot(IBot* bot);
-		void	setBotClient(IClient* client);
+		void	parseAndDispatch(const Message &message);
 
 	public:
 		BotMessageBuffer(IServer& server);
@@ -38,4 +34,5 @@ class	BotMessageBuffer : public IMessageBuffer
 		const std::string& getWriteBuffer() const;
 		void clearWriteBuffer();
 
+		void	setBot(IBot* bot);
 };

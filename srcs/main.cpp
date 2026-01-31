@@ -1,4 +1,5 @@
 #include "Logger.hpp"
+#include "bot/SixSevenBot.hpp"
 #include "core/Server.hpp"
 #include <csignal>
 #include <cstdlib>
@@ -26,6 +27,12 @@ int main(int argc, char** argv)
 	{
 		Config cfg = Config::checkArgs(argc, argv);
 		Server srv(cfg);
+
+		#ifdef BONUS
+		SixSevenBot *sixSevenBot = new SixSevenBot(srv);
+		srv.registerBot(sixSevenBot);
+		sixSevenBot->joinChannel("#eighty-nine");
+		#endif
 		srv.run();
 		return (0);
 	}
