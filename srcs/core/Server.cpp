@@ -264,6 +264,13 @@ void Server::writeClientsData(int fd)
 		return;
 	}
 
+	if (out.size() > 1048576)
+	{
+		LOG_NOTICE << "Write buffer too large for Client #" << fd << ", disconnecting it" << std::endl;
+		disconnectClient(fd);
+		return;
+	}
+
 	ssize_t sent = send(fd, out.data(), out.size(), MSG_NOSIGNAL);
 
 	if (sent > 0)
@@ -281,13 +288,6 @@ void Server::writeClientsData(int fd)
 		else
 			m_sm->modifySocket(fd, EPOLLIN | EPOLLOUT);
 	}
-
-	else if (sent == -1)
-	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return;
-		disconnectClient(fd);
-	}
 }
 
 void Server::readClientsData(int fd)
@@ -300,57 +300,38 @@ void Server::readClientsData(int fd)
 	}
 
 	char buffer[4096];
-	while (true)
+	ssize_t receiving = recv(fd, buffer, sizeof(buffer), 0);
+	if (receiving > 0)
 	{
-		ssize_t receiving = recv(fd, buffer, sizeof(buffer), 0);
-		if (receiving > 0)
+		client->updateLastActivity();
+		client->getBuffer().appendRead(std::string(buffer, receiving));
+		while (client->getBuffer().hasCompleteMessage())
 		{
-			client->updateLastActivity();
-			client->getBuffer().appendRead(std::string(buffer, receiving));
-			while (client->getBuffer().hasCompleteMessage())
-			{
-				std::string line = client->getBuffer().getNextMessage();
-				onIrcLine(fd, line);
-			}
-			if (client->getBuffer().getReadBufferSize() > 65536)
-			{
-				LOG_NOTICE << "Input buffer is too big, so I'm killing Client #" << fd << std::endl;
-				disconnectClient(fd);
-				return;
-			}
+			std::string line = client->getBuffer().getNextMessage();
+			onIrcLine(fd, line);
 		}
-		else if (receiving == 0)
+		if (client->getBuffer().getReadBufferSize() > 65536)
 		{
+			LOG_NOTICE << "Input buffer is too big, so I'm killing Client #" << fd << std::endl;
 			disconnectClient(fd);
-			return;
-		}
-		else
-		{
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				return;
-			disconnectClient(fd);
-			return;
 		}
 	}
+	else if (receiving == 0)
+		disconnectClient(fd);
+	else
+		return;
 }
 
 void Server::acceptNewClients()
 {
-	while (true)
-	{
-		int clientFd = accept(m_listenFd, 0, 0);
-		if (clientFd == -1)
-		{
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				break;
-			throw std::runtime_error("Acceptation of a New Client failed\n");
-		}
-		setNonBlocking(clientFd);
-		m_sm->addSocket(clientFd, EPOLLIN);
+	int clientFd = accept(m_listenFd, 0, 0);
+	if (clientFd == -1)
+		return;
+	setNonBlocking(clientFd);
+	m_sm->addSocket(clientFd, EPOLLIN);
 
-		m_clients[clientFd] = new Client(clientFd, "unknown", *this);
-		LOG_NOTICE << "New client has joined! (#" << clientFd << ")" << std::endl;
-	}
+	m_clients[clientFd] = new Client(clientFd, "unknown", *this);
+	LOG_NOTICE << "New client has joined! (#" << clientFd << ")" << std::endl;
 }
 
 void Server::handleDisconnections(int fd, unsigned int evt)
