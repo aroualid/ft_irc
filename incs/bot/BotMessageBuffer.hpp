@@ -1,4 +1,5 @@
 #pragma once
+
 #include <iostream>
 #include <cstddef>
 #include <vector>
@@ -7,7 +8,6 @@
 #include "core/IServer.hpp"
 #include "bot/IBot.hpp"
 #include "protocol/Message.hpp"
-
 
 class	BotMessageBuffer : public IMessageBuffer
 {
