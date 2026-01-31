@@ -11,7 +11,8 @@ class MiaouBot : public IBot
 private:
 	IServer& m_server;
 	BotClient* m_client;
-
+	int _count_message;
+	int _index;
 	void sendToChannel(IChannel* channel, const std::string& message);
 
 public:

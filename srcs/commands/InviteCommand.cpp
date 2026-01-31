@@ -29,12 +29,6 @@ void InviteCommand::doExecute(IClient* client, const Message& message)
 	}
 
 	IChannel* channel = m_server.getChannel(channelName);
-	if (target && target->getFd() < 0)  // It's a bot!
-    {
-        channel->addMember(target);
-        target->joinChannel(channel);
-        return;
-    }	
 	if (!channel)
 	{
 		sendReply(client, NumericReply::noSuchChannel(client->getNickname(), channelName));

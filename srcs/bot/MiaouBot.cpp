@@ -6,10 +6,14 @@
 #include <cstdlib>
 
 
-MiaouBot::MiaouBot(IServer& server, const std::string& nick) : m_server(server)
+
+MiaouBot::MiaouBot(IServer& server, const std::string& nick) : m_server(server), _count_message(0), _index(0)
 {
 	m_client = new BotClient(nick, server);
-
+	m_client->setBot(this);
+	BotMessageBuffer *bmb = dynamic_cast<BotMessageBuffer *>(&m_client->getBuffer());
+	bmb->setBot(this);
+	std::srand(std::time(0));
 }
 
 MiaouBot::~MiaouBot()
@@ -20,42 +24,30 @@ MiaouBot::~MiaouBot()
 
 void MiaouBot::onChannelMessage(IClient *sender, IChannel *channel, const std::string &message)
 {
-	(void) sender;
-	(void) message;
-	std::time_t start = std::time(NULL);
-	while (true)
+
+	if (sender == m_client)
+		return;
+	if (message.empty())
+        return;
+	_count_message++;
+
+	if (_count_message >= 5)
 	{
-		std::time_t now = std::time(NULL);
-		double difftime = std::difftime(start, now);
-		if (difftime >= 30.0)
-		{
-			int i = 1 + (rand()% 6);
-			switch (i)
-			{
-				case 1:
-					sendToChannel(channel, "MIAOUUUUUUUUU");
-					break;
-				case 2:
-					sendToChannel(channel, "Quack i'm a DUCK NOW LET'S GOOO! 🦆🦆🦆🦆🦆");
-					break;
-				case 3:
-					sendToChannel(channel, "Meow i'm a british cat 🇬🇧");
-					break;
-				case 4:
-					sendToChannel(channel, "WAF im a weird cat");
-					break;
-				case 5:
-					sendToChannel(channel, "ᵐᶦᵃᵒᵘ ᶦ ᵃᵐ ˢʰʸ ᵘʷᵘ ⁽,,>﹏<,,⁾👉👈");
-					break;
-				case 6:
-					sendToChannel(channel, "check tes mails.");
-					break;
-				default:
-					break;
-			}
-			start = std::time(NULL);
-		}
+		_count_message = 0;
+		_index++;
+
+		const char* responses[] = {
+            "MIAOUUUUUUUUU",
+            "Quack i'm a DUCK NOW LET'S GOOO! 🦆🦆🦆🦆",
+            "Meow i'm a british cat 🇬🇧 ",
+            "WAF im a weird cat",
+            "miaou I am shy uwu (,,>﹏<,,)👉👈",
+            "check tes mails."
+		};
+
+        sendToChannel(channel, responses[_index%6]);
 	}
+
 }
 
 void MiaouBot::sendToChannel(IChannel *channel, const std::string &message)

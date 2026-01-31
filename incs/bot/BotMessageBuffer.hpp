@@ -8,7 +8,6 @@
 #include "bot/IBot.hpp"
 #include "protocol/Message.hpp"
 
-
 class	BotMessageBuffer : public IMessageBuffer
 {
 	private:
