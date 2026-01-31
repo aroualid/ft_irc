@@ -110,7 +110,7 @@ $(NAME): $(OBJS)
 	@if [ "$(DEBUG)" = "1" ]; then \
 		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] $(call get_color,Purple)$(NAME)$(call get_color,Off) compiled in $(call get_color,Red)DEBUG$(call get_color,Off) mode!"; \
 	else \
-		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] $(call get_color,Purple)$(NAME)$(call get_color,Off) has been compiled!"; \
+		echo "$(call get_color,Off)[$(ANNOUNCER_NAME)] $(call get_color,Purple)$(NAME)$(call get_color,Off) has been compiled! Netsplits are now a philosophical concept and PING timeouts build character :) (discord remains the disaster recovery plan)"; \
 	fi
 
 $(BONUS_MARKER): $(OBJS_BONUS)
