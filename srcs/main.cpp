@@ -1,4 +1,5 @@
 #include "Logger.hpp"
+#include "bot/SixSevenBot.hpp"
 #include "core/Server.hpp"
 #include <csignal>
 #include <cstdlib>
@@ -17,14 +18,24 @@ int main(int argc, char** argv)
 	std::signal(SIGINT, signalHandler);
 	std::signal(SIGTERM, signalHandler);
 
+#ifdef DEBUG_MODE
 	Logger::getInstance().setMinLevel(Logger::DEBUG);
+#else
+	Logger::getInstance().setMinLevel(Logger::NOTICE);
+#endif
 
 	try
 	{
 		Config cfg = Config::checkArgs(argc, argv);
-		Server srv(cfg);	
-	    MiaouBot* bot = new MiaouBot(srv, "larry");
-	    srv.registerBot(bot);
+		Server srv(cfg);
+
+		#ifdef BONUS
+		SixSevenBot *sixSevenBot = new SixSevenBot(srv);
+		srv.registerBot(sixSevenBot);
+		sixSevenBot->joinChannel("#eighty-nine");
+	    MiaouBot* miaouBot = new MiaouBot(srv, "larry");
+	    srv.registerBot(miaouBot);
+		#endif
 		srv.run();
 		return (0);
 	}

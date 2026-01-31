@@ -1,6 +1,11 @@
 #include "bot/BotMessageBuffer.hpp"
+#include "CommandType.hpp"
+#include "IClient.hpp"
+#include "Logger.hpp"
+#include "protocol/Message.hpp"
+#include "protocol/MessageParser.hpp"
 
-BotMessageBuffer::BotMessageBuffer() : m_readBuffer(), m_writeBuffer()
+BotMessageBuffer::BotMessageBuffer(IServer& server) : m_server(server), m_bot(NULL) 
 {
 }
 
@@ -44,6 +49,7 @@ size_t BotMessageBuffer::getReadBufferSize() const
 void BotMessageBuffer::appendWrite(const std::string& data)
 {
 	m_writeBuffer += data;
+	processIncomingMessage(data);
 }
 
 const std::string& BotMessageBuffer::getWriteBuffer() const
@@ -63,3 +69,45 @@ void BotMessageBuffer::clearWriteBuffer()
 {
 	m_writeBuffer.clear();
 }
+
+void BotMessageBuffer::setBot(IBot *bot)
+{
+	m_bot = bot;
+}
+
+void	BotMessageBuffer::parseAndDispatch(const Message &message)
+{
+
+	if (message.m_command_type != irc::PRIVMSG)
+		return;
+
+	std::string	target = message.m_params[0];
+	std::string	text = message.m_params[1];
+	std::string	senderNick = message.m_prefix.substr(0, message.m_prefix.find('!'));
+
+	IClient* sender = m_server.getClientByNickname(senderNick);
+	if (!sender)
+		return;
+
+	if (target[0] == '#')
+	{
+		IChannel* channel = m_server.getChannel(target);
+		if (channel)
+			m_bot->onChannelMessage(sender, channel, text);
+	}
+	else
+	{
+		m_bot->onPrivateMessage(sender, text);
+	}
+}
+
+void	BotMessageBuffer::processIncomingMessage(const std::string& raw)
+{
+	Message receivedMsg = MessageParser::parse(raw);
+	if (!receivedMsg.isValid())
+		return ;
+
+	parseAndDispatch(receivedMsg);
+}
+
+//:prefix COMMAND param1 param2 :trailing parameter with spaces

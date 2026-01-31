@@ -6,7 +6,7 @@ int BotClient::s_nextBotId = -1;
 
 BotClient::BotClient(const std::string& nick, IServer& server)
 	: m_id(s_nextBotId--), m_nickname(nick), m_username(""), m_realname(""), 
-	m_hostname("internal"), m_server(server), _passwordProvided(true),	
+	m_hostname("internal"), m_server(server), m_buffer(server), _passwordProvided(true),
 	m_lastActivity(std::time(NULL)), m_lastPingSent(0)
 {
 }
@@ -90,7 +90,8 @@ void BotClient::leaveChannel(IChannel* channel)
 
 bool BotClient::isInChannel(const std::string& channelName) const
 {
-	for (std::set< IChannel* >::const_iterator it = m_channels.begin(); it != m_channels.end(); ++it)
+	for (std::set< IChannel* >::const_iterator it = m_channels.begin(); it != m_channels.end();
+		 ++it)
 	{
 		if ((*it)->getName() == channelName)
 			return true;
@@ -158,5 +159,5 @@ std::string BotClient::getPrefix() const
 
 void BotClient::setBot(IBot* bot)
 {
-	(void) bot;
+	(void)bot;
 }

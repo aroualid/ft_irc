@@ -26,6 +26,7 @@ int Server::getPort() const
 	return m_cfg.getPort();
 }
 
+#ifdef BONUS
 void	Server::registerBot(IBot* bot)
 {
 	if (!bot)
@@ -53,6 +54,7 @@ void	Server::unregisterBot(IBot* bot)
 	if (botClient)
 		m_clientsByNick.erase(botClient->getNickname());
 }
+#endif
 
 const std::string& Server::getPassword() const
 {
@@ -74,7 +76,6 @@ void Server::deleteChannelIfEmpty(IChannel* channel)
 void Server::checkClientTimeouts()
 {
 	std::time_t now = std::time(NULL);
-	std::vector< int > to_disconnect;
 
 	for (std::map< int, IClient* >::iterator it = m_clients.begin(); it != m_clients.end(); ++it)
 	{
@@ -82,6 +83,8 @@ void Server::checkClientTimeouts()
 		IClient* client = it->second;
 
 		if (client_fd == m_listenFd)
+			continue;
+		if (m_pendingDisconnects.count(client_fd))
 			continue;
 
 		std::time_t last_ping = client->getLastPingSent();
@@ -93,8 +96,9 @@ void Server::checkClientTimeouts()
 					   << std::endl;
 			std::string error_msg = "ERROR :You didn't respond to my ping and that's mean :( "
 									"Therefore you're gonna die :D\r\n";
-			send(client_fd, error_msg.c_str(), error_msg.length(), MSG_NOSIGNAL);
-			to_disconnect.push_back(client_fd);
+			client->getBuffer().appendWrite(error_msg);
+			m_sm->modifySocket(client_fd, EPOLLIN | EPOLLOUT);
+			m_pendingDisconnects.insert(client_fd);
 			continue;
 		}
 		else if (last_ping == 0 && (now - last_activity) > PING_TIMEOUT)
@@ -108,9 +112,6 @@ void Server::checkClientTimeouts()
 			m_sm->modifySocket(client_fd, EPOLLIN | EPOLLOUT);
 		}
 	}
-
-	for (size_t i = 0; i < to_disconnect.size(); i++)
-		disconnectClient(to_disconnect[i]);
 }
 
 IChannel* Server::createChannel(const std::string& name, IClient* creator)
@@ -211,22 +212,15 @@ void Server::onIrcLine(int fd, const std::string& line)
 
 static void setNonBlocking(int fd)
 {
-	int flags = fcntl(fd, F_GETFL, 0);
-	if (flags == -1)
-		throw std::runtime_error("Function fcntl with command F_GETFL failed\n");
-	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
+	if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
 		throw std::runtime_error("Function fcntl with command F_SETFL failed\n");
 }
 
 void Server::disconnectClient(int fd)
 {
-	try
-	{
-		m_sm->removeSocket(fd);
-	}
-	catch (...)
-	{ // catch any exception "..."
-	}
+	m_pendingDisconnects.erase(fd);
+
+	m_sm->removeSocket(fd);
 	close(fd);
 	std::map< int, IClient* >::iterator it = m_clients.find(fd);
 	if (it != m_clients.end())
@@ -261,6 +255,11 @@ void Server::writeClientsData(int fd)
 	const std::string& out = client->getBuffer().getWriteBuffer();
 	if (out.empty())
 	{
+		if (m_pendingDisconnects.count(fd))
+		{
+			disconnectClient(fd);
+			return;
+		}
 		m_sm->modifySocket(fd, EPOLLIN);
 		return;
 	}
@@ -271,7 +270,14 @@ void Server::writeClientsData(int fd)
 	{
 		client->getBuffer().consumeWriteBuffer((size_t)sent);
 		if (client->getBuffer().getWriteBuffer().empty())
+		{
+			if (m_pendingDisconnects.count(fd))
+			{
+				disconnectClient(fd);
+				return;
+			}
 			m_sm->modifySocket(fd, EPOLLIN);
+		}
 		else
 			m_sm->modifySocket(fd, EPOLLIN | EPOLLOUT);
 	}
@@ -358,6 +364,14 @@ void Server::handleDisconnections(int fd, unsigned int evt)
 bool Server::requiresPassword() const
 {
 	return !m_cfg.getPassword().empty();
+}
+
+void Server::markForDisconnect(int fd)
+{
+	m_pendingDisconnects.insert(fd);
+	IClient* client = getClient(fd);
+	if (client && !client->getBuffer().getWriteBuffer().empty())
+		m_sm->modifySocket(fd, EPOLLIN | EPOLLOUT);
 }
 
 static int createListeningSocket(int port) // fd that listens to all interfaces trying to bind
@@ -474,12 +488,6 @@ Server::~Server()
 	LOG_NOTICE << "Cleaning up my stuff" << std::endl;
 	for (std::map< int, IClient* >::iterator it = m_clients.begin(); it != m_clients.end(); it++)
 	{
-		if (it->first != m_listenFd)
-		{
-			std::string goodbye =
-				"ERROR :Server shutting down. Say goodbye. (sike it's too late :p)\r\n";
-			send(it->first, goodbye.c_str(), goodbye.length(), MSG_NOSIGNAL);
-		}
 		close(it->first);
 		delete (it->second);
 	}
@@ -489,6 +497,9 @@ Server::~Server()
 		 it != m_channels.end(); ++it)
 		delete it->second;
 	m_channels.clear();
+
+	for (std::vector <IBot *>::iterator it = m_bots.begin(); it != m_bots.end(); it++)
+		delete *it;
 
 	if (m_listenFd != -1)
 		close(m_listenFd);

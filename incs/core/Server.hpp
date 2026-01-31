@@ -19,8 +19,6 @@
 #include <set>
 #include <sstream>
 
-// #include "PollSocketManager.hpp"
-
 #include "IChannel.hpp"
 #include "IClient.hpp"
 #include "core/Config.hpp"
@@ -51,6 +49,7 @@ private:
 	std::map< int, IClient* > m_clients;
 	std::map< std::string, IClient* > m_clientsByNick;
 	std::map< std::string, IChannel* > m_channels;
+	std::set< int > m_pendingDisconnects;
 
 	IClient* getClient(int fd);
 	void onIrcLine(int fd, const std::string& line);
@@ -86,6 +85,10 @@ public:
 	std::string getServerName() const;
 	bool requiresPassword() const;
 
+	void markForDisconnect(int fd);
+
+	#ifdef BONUS
 	void	registerBot(IBot* bot);
 	void	unregisterBot(IBot* bot);
+	#endif
 };

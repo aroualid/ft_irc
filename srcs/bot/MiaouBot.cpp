@@ -25,7 +25,6 @@ void MiaouBot::onChannelMessage(IClient *sender, IChannel *channel, const std::s
 	std::time_t start = std::time(NULL);
 	while (true)
 	{
-		std::cout << "salut" << std::endl;
 		std::time_t now = std::time(NULL);
 		double difftime = std::difftime(start, now);
 		if (difftime >= 30.0)
