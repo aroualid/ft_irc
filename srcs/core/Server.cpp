@@ -194,13 +194,8 @@ static void setNonBlocking(int fd)
 void Server::disconnectClient(int fd)
 {
 	m_pendingDisconnects.erase(fd);
-	try
-	{
-		m_sm->removeSocket(fd);
-	}
-	catch (...)
-	{ // catch any exception "..."
-	}
+
+	m_sm->removeSocket(fd);
 	close(fd);
 	std::map< int, IClient* >::iterator it = m_clients.find(fd);
 	if (it != m_clients.end())
