@@ -4,6 +4,7 @@
 #include "core/Server.hpp"
 #include <csignal>
 #include <cstdlib>
+#include "bot/MiaouBot.hpp"
 
 volatile sig_atomic_t g_shutdown = 0;
 
@@ -33,6 +34,10 @@ int main(int argc, char** argv)
 		SixSevenBot *sixSevenBot = new SixSevenBot(srv);
 		srv.registerBot(sixSevenBot);
 		sixSevenBot->joinChannel("#eighty-nine");
+	  
+    MiaouBot *miaouBot = new MiaouBot(srv);
+	  srv.registerBot(miaouBot);
+		miaouBot->joinChannel("#cat");
 
 		NielBot *nielBot = new NielBot(srv);
 		srv.registerBot(nielBot);

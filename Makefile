@@ -66,6 +66,7 @@ OBJ = $(SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
 BONUS_SRCS := $(SRCS_DIR)/bot/BotMessageBuffer.cpp \
 			  $(SRCS_DIR)/bot/BotClient.cpp \
+			  $(SRCS_DIR)/bot/MiaouBot.cpp \
 			  $(SRCS_DIR)/bot/SixSevenBot.cpp \
 			  $(SRCS_DIR)/bot/NielBot.cpp
 
