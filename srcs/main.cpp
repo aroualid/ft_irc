@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 		#ifdef BONUS
 		SixSevenBot *sixSevenBot = new SixSevenBot(srv);
 		srv.registerBot(sixSevenBot);
-		sixSevenBot->joinChannel("#tg");
+		sixSevenBot->joinChannel("#eighty-nine");
 		#endif
 		srv.run();
 		return (0);
