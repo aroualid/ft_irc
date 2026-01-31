@@ -1,7 +1,11 @@
-#pragma one
+#pragma once
 
+#include "IChannel.hpp"
+#include "IClient.hpp"
+#include "IServer.hpp"
+#include "bot/BotClient.hpp"
 #include "bot/IBot.hpp"
-#include "core/IServer.hpp"
+
 
 class	NielBot : public IBot
 {
