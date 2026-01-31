@@ -498,6 +498,9 @@ Server::~Server()
 		delete it->second;
 	m_channels.clear();
 
+	for (std::vector <IBot *>::iterator it = m_bots.begin(); it != m_bots.end(); it++)
+		delete *it;
+
 	if (m_listenFd != -1)
 		close(m_listenFd);
 

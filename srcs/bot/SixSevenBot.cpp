@@ -1,12 +1,17 @@
 #include "bot/SixSevenBot.hpp"
 #include "CommandType.hpp"
+#include "Logger.hpp"
 #include "bot/BotClient.hpp"
+#include "bot/BotMessageBuffer.hpp"
 #include "protocol/Message.hpp"
 #include "protocol/MessageParser.hpp"
 
 SixSevenBot::SixSevenBot(IServer& server, const std::string& nick) : m_server(server)
 {
 	m_client = new BotClient(nick, server);
+	m_client->setBot(this);
+	BotMessageBuffer *bmb = dynamic_cast<BotMessageBuffer *>(&m_client->getBuffer());
+	bmb->setBot(this);
 }
 
 SixSevenBot::~SixSevenBot()

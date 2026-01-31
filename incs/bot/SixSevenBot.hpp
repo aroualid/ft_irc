@@ -15,7 +15,7 @@ private:
 	void sendToChannel(IChannel* channel, const std::string& message);
 
 public:
-	SixSevenBot(IServer& server, const std::string& nick = "The 67 Kid");
+	SixSevenBot(IServer& server, const std::string& nick = "The67Kid");
 	~SixSevenBot();
 
 	void onPrivateMessage(IClient* sender, const std::string& message);
