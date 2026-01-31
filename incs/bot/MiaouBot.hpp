@@ -3,8 +3,8 @@
 #include "IChannel.hpp"
 #include "IClient.hpp"
 #include "IServer.hpp"
-#include "bot/IBot.hpp"
 #include "bot/BotClient.hpp"
+#include "bot/IBot.hpp"
 
 class MiaouBot : public IBot
 {

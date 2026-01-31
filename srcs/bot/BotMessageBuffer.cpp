@@ -5,11 +5,13 @@
 #include "protocol/Message.hpp"
 #include "protocol/MessageParser.hpp"
 
-BotMessageBuffer::BotMessageBuffer(IServer& server) : m_server(server), m_bot(NULL) 
+BotMessageBuffer::BotMessageBuffer(IServer& server) : m_server(server), m_bot(NULL)
 {
 }
 
-BotMessageBuffer::~BotMessageBuffer(){}
+BotMessageBuffer::~BotMessageBuffer()
+{
+}
 
 void BotMessageBuffer::appendRead(const std::string& data)
 {
@@ -70,20 +72,19 @@ void BotMessageBuffer::clearWriteBuffer()
 	m_writeBuffer.clear();
 }
 
-void BotMessageBuffer::setBot(IBot *bot)
+void BotMessageBuffer::setBot(IBot* bot)
 {
 	m_bot = bot;
 }
 
-void	BotMessageBuffer::parseAndDispatch(const Message &message)
+void BotMessageBuffer::parseAndDispatch(const Message& message)
 {
-
 	if (message.m_command_type != irc::PRIVMSG)
 		return;
 
-	std::string	target = message.m_params[0];
-	std::string	text = message.m_params[1];
-	std::string	senderNick = message.m_prefix.substr(0, message.m_prefix.find('!'));
+	std::string target = message.m_params[0];
+	std::string text = message.m_params[1];
+	std::string senderNick = message.m_prefix.substr(0, message.m_prefix.find('!'));
 
 	IClient* sender = m_server.getClientByNickname(senderNick);
 	if (!sender)
@@ -101,13 +102,13 @@ void	BotMessageBuffer::parseAndDispatch(const Message &message)
 	}
 }
 
-void	BotMessageBuffer::processIncomingMessage(const std::string& raw)
+void BotMessageBuffer::processIncomingMessage(const std::string& raw)
 {
 	Message receivedMsg = MessageParser::parse(raw);
 	if (!receivedMsg.isValid())
-		return ;
+		return;
 
 	parseAndDispatch(receivedMsg);
 }
 
-//:prefix COMMAND param1 param2 :trailing parameter with spaces
+//: prefix COMMAND param1 param2 :trailing parameter with spaces

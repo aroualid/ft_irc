@@ -6,12 +6,11 @@
 #include "protocol/Message.hpp"
 #include "protocol/MessageParser.hpp"
 
-
 NielBot::NielBot(IServer& server, const std::string& nick) : m_server(server)
 {
 	m_client = new BotClient(nick, server);
 	m_client->setBot(this);
-	BotMessageBuffer *bmb = dynamic_cast<BotMessageBuffer *>(&m_client->getBuffer());
+	BotMessageBuffer* bmb = dynamic_cast< BotMessageBuffer* >(&m_client->getBuffer());
 	bmb->setBot(this);
 }
 
@@ -20,7 +19,7 @@ NielBot::~NielBot()
 	delete m_client;
 }
 
-void	NielBot::onChannelMessage(IClient* sender, IChannel* channel, const std::string& msg)
+void NielBot::onChannelMessage(IClient* sender, IChannel* channel, const std::string& msg)
 {
 	if (sender == m_client)
 		return;
@@ -29,20 +28,20 @@ void	NielBot::onChannelMessage(IClient* sender, IChannel* channel, const std::st
 	if (has42)
 	{
 		std::ifstream file("ascii/xavier.txt");
-		std::string	line;
+		std::string line;
 		while (std::getline(file, line))
 			sendToChannel(channel, line);
 	}
 }
 
-void	NielBot::onPrivateMessage(IClient* sender, const std::string& msg)
+void NielBot::onPrivateMessage(IClient* sender, const std::string& msg)
 {
 	if (sender == m_client)
 		return;
 	(void)msg;
 }
 
-void	NielBot::joinChannel(const std::string& channelName)
+void NielBot::joinChannel(const std::string& channelName)
 {
 	IChannel* channel = m_server.getChannel(channelName);
 	if (!channel)
@@ -54,7 +53,7 @@ void	NielBot::joinChannel(const std::string& channelName)
 	}
 }
 
-void	NielBot::sendToChannel(IChannel* channel, const std::string& message)
+void NielBot::sendToChannel(IChannel* channel, const std::string& message)
 {
 	Message msg;
 	msg.m_prefix = m_client->getPrefix();
@@ -67,7 +66,7 @@ void	NielBot::sendToChannel(IChannel* channel, const std::string& message)
 	channel->broadcast(serialized, m_client);
 }
 
-IClient*	NielBot::getClient()
+IClient* NielBot::getClient()
 {
 	return (m_client);
 }

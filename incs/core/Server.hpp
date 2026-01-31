@@ -21,10 +21,10 @@
 
 #include "IChannel.hpp"
 #include "IClient.hpp"
+#include "bot/IBot.hpp"
 #include "core/Config.hpp"
 #include "core/IServer.hpp"
 #include "network/ISocketManager.hpp"
-#include "bot/IBot.hpp"
 
 #define RESET "\033[0m"
 #define RED "\033[91m"
@@ -63,7 +63,7 @@ private:
 
 	void checkClientTimeouts();
 
-	std::vector<IBot*>	m_bots;
+	std::vector< IBot* > m_bots;
 
 public:
 	Server(const Config& cfg);
@@ -87,8 +87,8 @@ public:
 
 	void markForDisconnect(int fd);
 
-	#ifdef BONUS
-	void	registerBot(IBot* bot);
-	void	unregisterBot(IBot* bot);
-	#endif
+#ifdef BONUS
+	void registerBot(IBot* bot);
+	void unregisterBot(IBot* bot);
+#endif
 };

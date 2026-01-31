@@ -3,8 +3,8 @@
 #include "commands/CommandType.hpp"
 #include "core/IMessageBuffer.hpp"
 #include "protocol/MessageParser.hpp"
-#include <new>
 #include <iostream>
+#include <new>
 
 REGISTER_COMMAND(InviteCommand, irc::INVITE, "INVITE");
 
@@ -52,7 +52,7 @@ void InviteCommand::doExecute(IClient* client, const Message& message)
 		sendReply(client,
 				  NumericReply::userOnChannel(client->getNickname(), targetNick, channelName));
 		return;
-	}    
+	}
 
 	channel->addInvite(target);
 

@@ -2,16 +2,15 @@
 #include "CommandType.hpp"
 #include "protocol/Message.hpp"
 #include "protocol/MessageParser.hpp"
-#include <ctime>
 #include <cstdlib>
+#include <ctime>
 
-
-
-MiaouBot::MiaouBot(IServer& server, const std::string& nick) : m_server(server), _count_message(0), _index(0)
+MiaouBot::MiaouBot(IServer& server, const std::string& nick)
+	: m_server(server), _count_message(0), _index(0)
 {
 	m_client = new BotClient(nick, server);
 	m_client->setBot(this);
-	BotMessageBuffer *bmb = dynamic_cast<BotMessageBuffer *>(&m_client->getBuffer());
+	BotMessageBuffer* bmb = dynamic_cast< BotMessageBuffer* >(&m_client->getBuffer());
 	bmb->setBot(this);
 	std::srand(std::time(0));
 }
@@ -21,14 +20,12 @@ MiaouBot::~MiaouBot()
 	delete m_client;
 }
 
-
-void MiaouBot::onChannelMessage(IClient *sender, IChannel *channel, const std::string &message)
+void MiaouBot::onChannelMessage(IClient* sender, IChannel* channel, const std::string& message)
 {
-
 	if (sender == m_client)
 		return;
 	if (message.empty())
-        return;
+		return;
 	_count_message++;
 
 	if (_count_message >= 5)
@@ -36,21 +33,18 @@ void MiaouBot::onChannelMessage(IClient *sender, IChannel *channel, const std::s
 		_count_message = 0;
 		_index++;
 
-		const char* responses[] = {
-            "MIAOUUUUUUUUU",
-            "Quack i'm a DUCK NOW LET'S GOOO! 🦆🦆🦆🦆",
-            "Meow i'm a british cat 🇬🇧 ",
-            "WAF im a weird cat",
-            "miaou I am shy uwu (,,>﹏<,,)👉👈",
-            "check tes mails."
-		};
+		const char* responses[] = {"MIAOUUUUUUUUU",
+								   "Quack i'm a DUCK NOW LET'S GOOO! 🦆🦆🦆🦆",
+								   "Meow i'm a british cat 🇬🇧 ",
+								   "WAF im a weird cat",
+								   "miaou I am shy uwu (,,>﹏<,,)👉👈",
+								   "check tes mails."};
 
-        sendToChannel(channel, responses[_index%6]);
+		sendToChannel(channel, responses[_index % 6]);
 	}
-
 }
 
-void MiaouBot::sendToChannel(IChannel *channel, const std::string &message)
+void MiaouBot::sendToChannel(IChannel* channel, const std::string& message)
 {
 	Message msg;
 	msg.m_prefix = m_client->getPrefix();
@@ -74,7 +68,6 @@ void MiaouBot::joinChannel(const std::string& channelName)
 		m_client->joinChannel(channel);
 	}
 }
-
 
 void MiaouBot::onPrivateMessage(IClient* sender, const std::string& message)
 {

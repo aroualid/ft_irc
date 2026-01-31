@@ -7,23 +7,23 @@
 #include "bot/IBot.hpp"
 #include <fstream>
 
-class	NielBot : public IBot
+class NielBot : public IBot
 {
-	private:
-		IServer& m_server;
-		BotClient* m_client;
+private:
+	IServer& m_server;
+	BotClient* m_client;
 
-		void	sendToChannel(IChannel* channel, const std::string& msg);
+	void sendToChannel(IChannel* channel, const std::string& msg);
 
-	public:
-		NielBot(IServer& server, const std::string& nick = "NielBot");
-		~NielBot();
+public:
+	NielBot(IServer& server, const std::string& nick = "NielBot");
+	~NielBot();
 
-		void	onPrivateMessage(IClient* sender, const std::string& msg);
-		void	onChannelMessage(IClient* sender, IChannel* channel, const std::string& msg);
+	void onPrivateMessage(IClient* sender, const std::string& msg);
+	void onChannelMessage(IClient* sender, IChannel* channel, const std::string& msg);
 
-		IClient* getClient();
+	IClient* getClient();
 
-		void	joinChannel(const std::string& channelName);
-		void	loadAscii(const std::string& path);
+	void joinChannel(const std::string& channelName);
+	void loadAscii(const std::string& path);
 };

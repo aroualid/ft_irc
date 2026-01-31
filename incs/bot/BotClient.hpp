@@ -1,10 +1,10 @@
 #pragma once
 
+#include "BotMessageBuffer.hpp"
+#include "IBot.hpp"
 #include "IChannel.hpp"
 #include "IClient.hpp"
 #include "IServer.hpp"
-#include "BotMessageBuffer.hpp"
-#include "IBot.hpp"
 #include "bot/BotMessageBuffer.hpp"
 
 class BotClient : public IClient

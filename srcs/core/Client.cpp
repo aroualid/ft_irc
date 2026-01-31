@@ -156,4 +156,3 @@ std::string Client::getPrefix() const
 		prefix += "!" + _username + "@" + _hostname;
 	return prefix;
 }
-

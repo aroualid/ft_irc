@@ -2,10 +2,10 @@
 #include "IChannel.hpp"
 #include "IClient.hpp"
 #include "IServer.hpp"
-#include "core/IMessageBuffer.hpp"
 #include "commands/ACommand.hpp"
 #include "commands/CommandRegistration.hpp"
 #include "commands/CommandType.hpp"
+#include "core/IMessageBuffer.hpp"
 #include "protocol/Message.hpp"
 #include "protocol/MessageParser.hpp"
 #include <new>

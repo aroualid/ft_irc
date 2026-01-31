@@ -10,7 +10,7 @@ SixSevenBot::SixSevenBot(IServer& server, const std::string& nick) : m_server(se
 {
 	m_client = new BotClient(nick, server);
 	m_client->setBot(this);
-	BotMessageBuffer *bmb = dynamic_cast<BotMessageBuffer *>(&m_client->getBuffer());
+	BotMessageBuffer* bmb = dynamic_cast< BotMessageBuffer* >(&m_client->getBuffer());
 	bmb->setBot(this);
 }
 

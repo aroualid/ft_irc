@@ -11,13 +11,13 @@
 #include "commands/CommandFactory.hpp"
 #include "protocol/Message.hpp"
 #include "protocol/MessageParser.hpp"
+#include <algorithm>
 #include <cerrno>
 #include <csignal>
 #include <cstdlib>
 #include <ostream>
 #include <sstream>
 #include <stdexcept>
-#include <algorithm>
 
 extern volatile sig_atomic_t g_shutdown;
 
@@ -27,7 +27,7 @@ int Server::getPort() const
 }
 
 #ifdef BONUS
-void	Server::registerBot(IBot* bot)
+void Server::registerBot(IBot* bot)
 {
 	if (!bot)
 		return;
@@ -35,7 +35,7 @@ void	Server::registerBot(IBot* bot)
 
 	if (!botClient)
 		return;
-	
+
 	if (std::find(m_bots.begin(), m_bots.end(), bot) != m_bots.end())
 		return;
 	m_clientsByNick[botClient->getNickname()] = botClient;
@@ -43,11 +43,11 @@ void	Server::registerBot(IBot* bot)
 	m_bots.push_back(bot);
 }
 
-void	Server::unregisterBot(IBot* bot)
+void Server::unregisterBot(IBot* bot)
 {
 	if (!bot)
 		return;
-	std::vector<IBot*>::iterator it = std::find(m_bots.begin(), m_bots.end(), bot);
+	std::vector< IBot* >::iterator it = std::find(m_bots.begin(), m_bots.end(), bot);
 	if (it != m_bots.end())
 		m_bots.erase(it);
 	IClient* botClient = bot->getClient();
@@ -266,7 +266,8 @@ void Server::writeClientsData(int fd)
 
 	if (out.size() > 1048576)
 	{
-		LOG_NOTICE << "Write buffer too large for Client #" << fd << ", disconnecting it" << std::endl;
+		LOG_NOTICE << "Write buffer too large for Client #" << fd << ", disconnecting it"
+				   << std::endl;
 		disconnectClient(fd);
 		return;
 	}
@@ -479,7 +480,7 @@ Server::~Server()
 		delete it->second;
 	m_channels.clear();
 
-	for (std::vector <IBot *>::iterator it = m_bots.begin(); it != m_bots.end(); it++)
+	for (std::vector< IBot* >::iterator it = m_bots.begin(); it != m_bots.end(); it++)
 		delete *it;
 
 	if (m_listenFd != -1)
@@ -487,8 +488,6 @@ Server::~Server()
 
 	delete (m_sm);
 
-
-	//cleaning bots here !!!!
+	// cleaning bots here !!!!
 	LOG_INFO << "All resources freed. I can die in peace! :D" << std::endl;
 }
-
