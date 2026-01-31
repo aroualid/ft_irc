@@ -5,7 +5,6 @@
 
 #include "core/IMessageBuffer.hpp"
 #include "core/IServer.hpp"
-#include "bot/BotClient.hpp"
 #include "bot/IBot.hpp"
 
 

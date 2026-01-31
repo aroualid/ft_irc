@@ -106,8 +106,9 @@ void Logger::flush()
 {
 	if (m_lineStarted && m_currentLevel >= m_minLevel)
 	{
-		*m_output << m_buffer.str() << "\033[0m" << '\n';
-		m_output->flush();
+		std::ostream& out = (m_currentLevel >= ERROR) ? std::cerr : *m_output;
+		out << m_buffer.str() << "\033[0m" << '\n';
+		out.flush();
 	}
 	m_buffer.str("");
 	m_buffer.clear();

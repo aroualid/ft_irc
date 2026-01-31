@@ -1,5 +1,7 @@
 #include "PollSocketManager.hpp"
+#include "Logger.hpp"
 #include <cerrno>
+#include <ostream>
 
 const std::vector< epoll_event >& PollSocketManager::getEvents() const
 {
@@ -11,7 +13,7 @@ int PollSocketManager::wait(int timeout_ms)
 	int n = epoll_wait(m_epollFd, &m_events[0], (int)m_events.size(), timeout_ms);
 
 	if (n == -1 && errno != EINTR)
-		throw std::runtime_error("epoll_wait failed\n");
+		throw std::runtime_error("epoll_wait failed");
 
 	if (n == (int)m_events.size())
 		m_events.resize(m_events.size() * 2);
@@ -29,13 +31,16 @@ void PollSocketManager::modifySocket(int fd, int events)
 	evt.data.fd = fd;
 
 	if (epoll_ctl(m_epollFd, EPOLL_CTL_MOD, fd, &evt) == -1)
-		throw std::runtime_error("Modification of socket failed\n");
+		throw std::runtime_error("Modification of socket failed");
 }
 
 void PollSocketManager::removeSocket(int fd)
 {
+	// if this fail we most likely don't care as it isn't critical per se
+	// basically it's caused by the fd already being removed from epoll so that's fine
+	// we can still log it though :)
 	if (epoll_ctl(m_epollFd, EPOLL_CTL_DEL, fd, 0) == -1)
-		throw std::runtime_error("Deletion of socket failed\n");
+		LOG_WARNING << "Deletion of socket " << fd << " failed" << std::endl;
 }
 
 void PollSocketManager::addSocket(int fd, int events)
